@@ -1,0 +1,214 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <title>{% block title %}{% endblock %}</title>
+
+    <!-- Favicons -->
+    <link href="{% static 'products/img/favicon.png' %}" rel="icon">
+    <link href="{% static 'products/img/favicon.png' %}" rel="apple-touch-icon">
+
+    <!-- Custom Google font-->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@100;200;300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet" />
+       
+    <!-- Bootstrap icons-->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css" rel="stylesheet" />
+        
+    <!-- Core theme CSS (includes Bootstrap)-->
+    <link rel="stylesheet" href="{% static 'products/css/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'products/css/main.css' %}">
+
+    <!-- AOS Library -->
+    <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+
+</head>
+<body class="d-flex flex-column h-100" style="padding-top: 80px;">
+    <main class="flex-shrink-0">
+        <!-- Navigation-->
+        <nav class="navbar fixed-top navbar-expand-lg navbar-light bg-white py-3 shadow">
+            <div class="container px-5">
+                <a href="/admin/"><img src="{% static 'products/img/logo.png' %}" class="logo" alt="Logo"></a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+                        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <ul class="navbar-nav ms-auto mb-2 mb-lg-0 small fw-bolder">
+                        <li class="nav-item"><a class="nav-link" href="#about">About</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#products">Products</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#net_banking">Net Banking & Payment</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </main>
+
+    <main>
+    {% block content %}
+    
+    {% endblock %}
+  </main>
+
+ <!-- Floating Enquiry Form -->
+<div id="enquiryForm" class="floating-form shadow">
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <strong>Enquiry Form</strong>
+    <button id="closeEnquiry" class="close-btn" aria-label="Close enquiry form">&times;</button>
+  </div>
+  <form method="POST" enctype="multipart/form-data" class="php-email-forms flex-fill d-flex flex-column justify-content-between">
+    {% csrf_token %}
+    {% if messages %}
+    <div id="message-container">
+      {% for message in messages %}
+      <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+      {% endfor %}
+    </div>
+    <script>
+      setTimeout(() => {
+        const msg = document.getElementById('message-container');
+        if (msg) msg.style.display = 'none';
+      }, 3000);
+    </script>
+    {% endif %}
+
+    <div class="mb-2">
+      <label for="name" class="form-label">Name</label>
+      <input id="name" name="name" type="text" class="form-control" placeholder="Enter your name" required>
+    </div>
+    <div class="mb-2">
+      <label for="phone" class="form-label">Phone Number</label>
+      <input id="phone" name="phone" type="tel" class="form-control" placeholder="Enter your phone number" pattern="[0-9]{10}" required>
+    </div>
+    <div class="mb-2">
+      <label for="subject" class="form-label">Subject</label>
+      <input id="subject" name="subject" type="text" class="form-control" placeholder="Enter the subject" required maxlength="50">
+    </div>
+    <div class="mb-2">
+      <label for="email" class="form-label">Email</label>
+      <input id="email" name="email" type="email" class="form-control" placeholder="Enter your email" required>
+    </div>
+    <div class="mb-2">
+      <label for="message" class="form-label">Message</label>
+      <textarea id="message" name="message" class="form-control" placeholder="Enter your message" rows="3" required></textarea>
+    </div>
+    <button type="submit" class="btn btn-primary w-100">Send</button>
+  </form>
+</div>
+
+<!-- Minimized Enquiry Icon -->
+<div id="enquiryIcon" class="enquiry-icon" role="button" aria-label="Open enquiry form" tabindex="0">
+  <i class="bi bi-chat-dots fs-4"></i>
+</div>
+
+<!-- Styles -->
+<style>
+  .floating-form {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    width: 300px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 15px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.15);
+    z-index: 1050;
+    transition: transform 0.4s ease;
+  }
+
+  .enquiry-icon {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    width: 50px;
+    height: 50px;
+    background: #007bff;
+    color: white;
+    border-radius: 50%;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 1050;
+    animation: floatUpDown 3s ease-in-out infinite alternate;
+  }
+
+  .close-btn {
+    background: none;
+    border: none;
+    font-size: 20px;
+    color: #888;
+    cursor: pointer;
+  }
+
+  @keyframes floatUpDown {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(-10px); }
+  }
+
+  /* Responsive for tablets and phones */
+  @media (max-width: 768px) {
+    .floating-form {
+      transform: translateX(-120%);
+    }
+
+    .enquiry-icon {
+      display: flex;
+    }
+  }
+</style>
+
+<!-- Script -->
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const form = document.getElementById('enquiryForm');
+    const icon = document.getElementById('enquiryIcon');
+    const closeBtn = document.getElementById('closeEnquiry');
+
+    function showForm() {
+      form.style.transform = 'translateX(0)';
+      icon.style.display = 'none';
+    }
+
+    function hideForm() {
+      form.style.transform = 'translateX(-120%)';
+      icon.style.display = 'flex';
+    }
+
+    closeBtn.onclick = hideForm;
+    icon.onclick = showForm;
+
+    icon.addEventListener('keydown', function(event) {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        icon.click();
+      }
+    });
+
+    // Automatically hide form on small screens initially
+    if (window.innerWidth <= 768) {
+      hideForm();
+    }
+  });
+</script>
+
+
+
+
+  {% block footer %}
+      {% include 'products/footer.html' %}
+  {% endblock %}
+
+  <!-- Your custom JS -->
+  <script src="{% static 'products/js/scripts.js' %}"></script>
+
+</body>
+</html>

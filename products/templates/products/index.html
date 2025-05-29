@@ -1,0 +1,206 @@
+{% extends 'products/base.html' %}
+
+{% load static %}
+
+{% block title %}Fusiontec - Home{% endblock %}
+
+{% block content %}
+
+<main>
+<!-- About Section -->
+<section class="bg-light py-5" id="about">
+    <div class="container px-5">
+        <div class="row gx-5 justify-content-center">
+            <div class="col-xxl-8">
+                <div class="text-center my-5">
+                    <h2 class="display-5 fw-bolder"><span class="text-gradient d-inline">About Me</span></h2>
+                    <p class="lead fw-light mb-4">Empowering Businesses with Smart IT Solutions</p>
+                    <p class="text-muted">Fusiontec Software is a Chennai-based IT and Management Consultancy firm dedicated to delivering practical, cost-effective solutions that drive business growth. We specialize in ready-to-use software packages and customized software solutions tailored to meet the specific needs of diverse industries. Our mission is to foster lasting client relationships by combining quality products with exceptional customer service.</p>
+                    <div class="d-flex justify-content-center fs-2 gap-4">
+                        <div class="text-center text-lg-start">
+                            <a href="https://fusiontecsoftware.com/" target="_blank"
+                                class="btn-read-more d-inline-flex align-items-center justify-content-center align-self-center"
+                                style="text-decoration: none;">
+                                <span>Know More</span>
+                                <i class="bi bi-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-center fs-2 gap-4">
+                        <a class="text-gradient" href="#"><i class="bi bi-facebook"></i></a>
+                        <a class="text-gradient" href="#"><i class="bi bi-linkedin"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Products Section -->
+<section class="py-5" id="products">
+    <div class="container px-4 px-lg-5 mb-5">
+        <div class="text-center mb-5">
+            <h1 class="display-5 fw-bolder mb-0">
+                <span class="text-gradient d-inline">Products</span>
+            </h1>
+        </div>
+        <div class="row gx-5 justify-content-center">
+            <div class="col-lg-11 col-xl-9 col-xxl-8">
+                {% for product in products %}
+                <div class="card overflow-hidden shadow rounded-4 border-0 mb-5">
+                    <div class="card-body p-0">
+                        <div class="d-flex flex-column flex-lg-row align-items-center">
+                            <!-- Content on left -->
+                            <div class="p-4 p-lg-5" style="flex:1;">
+                                <h2 class="fw-bolder">{{ product.name }}</h2>
+                                <p>{{ product.description }}</p>
+                                <a href="#" class="btn-get-started">
+                                    Price list <i class="bi bi-arrow-right"></i>
+                                </a>
+                            </div>
+                            <!-- Image on right -->
+                            <a href="{{ product.link|default:'#' }}" style="flex-shrink:0;">
+                                <img class="img-fluid w-100 w-lg-auto mb-4 mb-lg-0" 
+                                     style="max-width: 300px; padding-right: 20px;" 
+                                     src="{{ product.image.url }}" 
+                                     alt="{{ product.name }}" />
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+
+
+{% comment %} <section class="py-5" id="products" >
+    <div class="container px-4 px-lg-5 mb-5">
+        <div class="text-center mb-5">
+            <h1 class="display-5 fw-bolder mb-0">
+                <span class="text-gradient d-inline">Products</span>
+            </h1>
+        </div>
+        <div class="row gx-5 justify-content-center">
+            <div class="col-lg-11 col-xl-9 col-xxl-8">
+                <div class="card overflow-hidden shadow rounded-4 border-0 mb-5">
+                    <div class="card-body p-0">
+                        <div class="d-flex flex-column flex-lg-row align-items-center">
+                            <div class="p-4 p-lg-5">
+                                <h2 class="fw-bolder">Tally</h2>
+                                <p>Lorem ipsum dolor sit amet consectetur adipisicing elit...</p>
+                                <a href="#" class="btn-get-started">Price list <i class="bi bi-arrow-right"></i></a> 
+                            </div>
+                            <a href="https://tallysolutions.com/"><img class="img-fluid w-100 w-lg-auto mb-4 mb-lg-0" style="max-width: 300px;padding-right:20px;" src="{% static 'products/img/tally.jpeg' %}" alt="Tally"/></a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card overflow-hidden shadow rounded-4 border-0 mb-5">
+                    <div class="card-body p-0">
+                        <div class="d-flex flex-column flex-lg-row align-items-center">
+                            <div class="p-4 p-lg-5">
+                                <h2 class="fw-bolder">Digital Signature <br> E-Mudhra</h2>
+                                <p>Lorem ipsum dolor sit amet consectetur adipisicing elit...</p>
+                                <a href="#" class="btn-get-started">Price list <i class="bi bi-arrow-right"></i></a> 
+                            </div>
+                            <a href="#"><img class="img-fluid w-100 w-lg-auto mb-4 mb-lg-0" style="max-width: 300px;padding-right:30px;" src="{% static 'products/img/e-mudhra.jpg' %}" alt="e-mudhra"/></a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card overflow-hidden shadow rounded-4 border-0 mb-5">
+                    <div class="card-body p-0">
+                        <div class="d-flex flex-column flex-lg-row align-items-center">
+                            <div class="p-4 p-lg-5">
+                                <h2 class="fw-bolder">Digital Signature<br> Pantasign</h2>
+                                <p>Lorem ipsum dolor sit amet consectetur adipisicing elit...</p>
+                                <a href="#" class="btn-get-started">Price list <i class="bi bi-arrow-right"></i></a> 
+                            </div>
+                            <a href="#"><img class="img-fluid w-100 w-lg-auto mb-4 mb-lg-0" style="max-width: 300px;padding-right:30px;" src="{% static 'products/img/pantasign.jpeg' %}" alt="pantasign"/></a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card overflow-hidden shadow rounded-4 border-0 mb-5">
+                    <div class="card-body p-0">
+                        <div class="d-flex flex-column flex-lg-row align-items-center">
+                            <div class="p-4 p-lg-5">
+                                <h2 class="fw-bolder">Biz Analyst</h2>
+                                <p>Lorem ipsum dolor sit amet consectetur adipisicing elit...</p>
+                                <a href="#" class="btn-get-started">Price list <i class="bi bi-arrow-right"></i></a> 
+                            </div>
+                            <a href="#"><img class="img-fluid w-100 w-lg-auto mb-4 mb-lg-0" style="max-width: 300px;padding-right:30px;" src="{% static 'products/img/biz_analyst.png' %}" alt="Biz Analyst"/></a>
+                        </div>
+                    </div>
+                </div>               
+            </div>
+        </div>
+    </div>
+</section> {% endcomment %}
+<!-- End Products Section -->
+
+<!-- Net Banking Section -->
+<section class="py-5 bg-light" id="net_banking">
+  <div class="container px-4 px-lg-5">
+    <div class="text-center mb-5">
+      <h1 class="display-5 fw-bold text-dark">Net Banking</h1>
+      <p class="text-muted">Choose your preferred method to make a payment</p>
+    </div>
+
+    <div class="row g-4 justify-content-center">
+
+      <!-- Razorpay -->
+      <div class="col-md-6">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-body text-center">
+            <div class="mb-3">
+              <i class="bi bi-credit-card-2-front-fill fs-2 text-primary"></i>
+            </div>
+            <h5 class="fw-semibold">Online Payment</h5>
+            <a href="https://rzp.io/l/demo" target="_blank" class="btn btn-primary mt-3 px-4">Pay with Razorpay</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- QR Code -->
+      <div class="col-md-6">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-body text-center">
+            <div class="mb-3">
+              <i class="bi bi-qr-code-scan fs-2 text-success"></i>
+            </div>
+            <h5 class="fw-semibold">Scan & Pay</h5>
+            <img src="{% static 'products/img/fusiotec_QR.png' %}" alt="QR Code" class="img-fluid rounded my-3" style="max-width: 160px;">
+            <p class="mb-0 text-muted small">UPI ID: <strong>demo@Qrfusiontec</strong></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bank Transfer -->
+      <div class="col-md-10">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-body text-center">
+            <div class="mb-3">
+              <i class="bi bi-bank fs-2 text-warning"></i>
+            </div>
+            <h5 class="fw-semibold">Bank Transfer</h5>
+            <div class="row mt-4">
+              <div class="col-md-3 col-6 mb-3"><strong>Account Name</strong><br>Fusiontec Software</div>
+              <div class="col-md-3 col-6 mb-3"><strong>Account No.</strong><br>123456789012</div>
+              <div class="col-md-3 col-6 mb-3"><strong>IFSC</strong><br>DEMO0000123</div>
+              <div class="col-md-3 col-6 mb-3"><strong>Bank</strong><br>Demo Bank</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+
+
+
+</main>
+
+{% endblock %}
