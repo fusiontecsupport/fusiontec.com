@@ -17,8 +17,10 @@ class ContactSubmission(models.Model):
 class Product(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField()
-    image = models.ImageField(upload_to='products/')  # configure MEDIA_ROOT, MEDIA_URL
+    image = models.ImageField(upload_to='products/')
     link = models.URLField(blank=True, null=True)
+    rate = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)  # new field
 
     def __str__(self):
         return self.name
+

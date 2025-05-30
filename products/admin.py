@@ -10,9 +10,9 @@ class ContactSubmissionAdmin(admin.ModelAdmin):
     ordering = ('-submitted_at',)
 
 
-# from django.contrib import admin
 from .models import Product
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ('name', 'link')
+    list_display = ('name', 'link', 'rate')  # show rate in admin list
+
