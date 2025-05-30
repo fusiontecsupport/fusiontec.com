@@ -250,6 +250,54 @@
 
 
 
+  <!-- Scroll to Top Button -->
+  <div id="scrollTopBtn" class="scroll-top-btn" role="button" aria-label="Scroll to top">
+    <i class="bi bi-arrow-up fs-5"></i>
+    <span class="scroll-label">Top</span>
+  </div>
+  <style>
+    .scroll-top-btn {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: #007bff;
+  color: white;
+  border-radius: 30px;
+  padding: 8px 14px;
+  display: none;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  z-index: 9999;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.scroll-top-btn:hover {
+  background-color: #0056b3;
+}
+
+.scroll-label {
+  font-size: 14px;
+  font-weight: 500;
+}
+</style>
+<script>
+  const scrollBtn = document.getElementById("scrollTopBtn");
+
+  window.addEventListener("scroll", () => {
+    if (window.scrollY > 100) {
+      scrollBtn.style.display = "flex";
+    } else {
+      scrollBtn.style.display = "none";
+    }
+  });
+
+  scrollBtn.addEventListener("click", () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
+</script>
+
 
   {% block footer %}
       {% include 'products/footer.html' %}
