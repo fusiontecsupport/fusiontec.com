@@ -16,8 +16,10 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from products.views import custom_admin_logout 
 
 urlpatterns = [
+    path('admin/logout/', custom_admin_logout, name='custom_admin_logout'),  # Override default logout
     path('admin/', admin.site.urls),
     path('', include('products.urls')),
 

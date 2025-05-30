@@ -44,6 +44,9 @@
   /* padding-bottom: 50px; */
   position: relative;
 }
+.footer a{
+  text-decoration: none;
+}
 .sitename img{
   max-width: 60%;
   height: auto;

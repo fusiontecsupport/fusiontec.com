@@ -6,6 +6,7 @@ from .models import ContactSubmission
 import mimetypes
 from django.template.loader import render_to_string
 from .models import Product
+from django.contrib.auth import logout
 
 
 
@@ -72,3 +73,9 @@ def index(request):
     # for product section
     products = Product.objects.all()
     return render(request, 'products/index.html', {'products': products})
+
+
+def custom_admin_logout(request):
+    logout(request)
+    messages.success(request, "Logout successfully")
+    return redirect('/')
