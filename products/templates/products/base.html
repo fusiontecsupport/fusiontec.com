@@ -104,12 +104,50 @@
 </div>
 
 <!-- Minimized Enquiry Icon -->
+{% comment %} <div id="enquiryIcon" class="enquiry-icon" role="button" aria-label="Open enquiry form" tabindex="0">
+  <i class="bi bi-chat-dots fs-4"></i>
+</div> {% endcomment %}
+<!-- Minimized Enquiry Icon with Hover Tooltip -->
 <div id="enquiryIcon" class="enquiry-icon" role="button" aria-label="Open enquiry form" tabindex="0">
+  <span class="tooltip-text">Enquiry Form</span>
   <i class="bi bi-chat-dots fs-4"></i>
 </div>
 
+
 <!-- Styles -->
 <style>
+  .enquiry-icon {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  width: 50px;
+  height: 50px;
+  background: #007bff;
+  color: white;
+  border-radius: 50%;
+  display: none; /* shown dynamically */
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 1050;
+  animation: floatUpDown 3s ease-in-out infinite alternate;
+}
+
+/* Tooltip label positioned above the icon */
+.enquiry-icon .tooltip-text {
+  position: absolute;
+  bottom: 60px; /* distance above the icon */
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #333;
+  color: #fff;
+  padding: 3px 10px;
+  border-radius: 10px;
+  font-size: 12px;
+  white-space: nowrap;
+  z-index: 1060;
+}
+
   .floating-form {
     position: fixed;
     bottom: 20px;
