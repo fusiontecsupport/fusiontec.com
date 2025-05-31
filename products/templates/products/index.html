@@ -4,6 +4,9 @@
 
 {% block title %}Fusiontec - Home{% endblock %}
 
+    <!-- Core theme CSS (includes Bootstrap)-->
+    <link rel="stylesheet" href="{% static 'products/css/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'products/css/main.css' %}">
 {% block content %}
 
 <main>
@@ -36,118 +39,182 @@
     </div>
 </section>
 
+
 <!-- Products Section -->
 <section class="py-5" id="products">
-    <div class="container px-4 px-lg-5 mb-5">
-        <div class="text-center mb-5">
-            <h1 class="display-5 fw-bolder mb-0">
-                <span class="text-gradient d-inline">Products</span>
-            </h1>
-        </div>
-        <div class="row gx-5 justify-content-center">
-            <div class="col-lg-11 col-xl-9 col-xxl-8">
-                {% for product in products %}
-                <div class="card overflow-hidden shadow rounded-4 border-0 mb-5">
-                    <div class="card-body p-0">
-                        <div class="d-flex flex-column flex-lg-row align-items-center">
-                            <!-- Content on left -->
-                            <div class="p-4 p-lg-5" style="flex:1;">
-                                <h2 class="fw-bolder">{{ product.name }}</h2>
-                                <p>{{ product.description }}</p>
-                                <a href="#" class="btn-get-started">
-                                    Price list <i class="bi bi-arrow-right"></i>
-                                </a>
-                                <br>
-                                {% comment %} <button class="btn btn-light mt-3 px-4"><i class="bi bi-arrow-left"></i>Send Enquiry</button> {% endcomment %}
-                                <button id="sendEnquiryBtn" class="btn btn-light mt-3 px-4">
-                                    <i class="bi bi-arrow-left"></i> Send Enquiry
-                                </button>
-
-                                <button class="btn btn-light mt-3 px-4">See More Details</button>
-                                <button class="btn btn-light mt-3 px-4">Generate PI</button>
-                                <a href="#online_payment"><button class="btn btn-light mt-3 px-4">Pay Online<i class="bi bi-arrow-right"></i></button></a>
-                                
-                            </div>
-                            <!-- Image on right -->
-                            <a href="{{ product.link|default:'#' }}" style="flex-shrink:0;">
-                                <img class="img-fluid w-100 w-lg-auto mb-4 mb-lg-0" 
-                                     style="max-width: 300px; padding-right: 20px;" 
-                                     src="{{ product.image.url }}" 
-                                     alt="{{ product.name }}" />
-                            </a>
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
+  <div class="container px-4 px-lg-5 mb-5">
+    <div class="text-center mb-5">
+      <h1 class="display-5 fw-bolder mb-0">
+        <span class="text-gradient d-inline">Products</span>
+      </h1>
     </div>
+
+    <div class="row gx-5 justify-content-center">
+      <div class="col-lg-11 col-xl-9 col-xxl-8">
+        {% for product in products %}
+        <div class="card overflow-hidden shadow rounded-4 border-0 mb-5">
+          <div class="card-body p-0">
+            <div class="d-flex flex-column flex-lg-row align-items-stretch">
+
+              <!-- Left -->
+              <div class="product-image d-flex flex-column justify-content-center align-items-center p-3">
+                <a href="{{ product.tally_link|default:'#' }}">
+                  <img class="img-fluid mb-2" src="{{ product.tally_image.url }}" alt="{{ product.tally_name }}" />
+                </a>
+              </div>
+
+              <!-- Right -->
+              <div class="product-actions d-flex flex-column justify-content-center align-items-start p-3">
+                <div class="row g-2 w-100">
+                  <div class="col-6">
+                    <button id="sendEnquiryBtn" class="btn btn-light w-100 px-4">
+                      <i class="bi bi-arrow-left"></i> Send Enquiry
+                    </button>
+                  </div>
+                  <div class="col-6">
+                    <button class="btn btn-light w-100 px-4">See More Details</button>
+                  </div>
+                  <div class="col-12">
+                    <a href="{% url 'tally_form' %}">
+                      <button class="btn btn-light w-100 px-4">Price list <i class="bi bi-arrow-right"></i></button>
+                    </a>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Repeat similar blocks for emudhra_products, fusiontec_products, biz_products -->
+
+    <!-- Second loop for Emudhra_2 products -->
+    <div class="row gx-5 justify-content-center">
+      <div class="col-lg-11 col-xl-9 col-xxl-8">
+        {% for product in emudhra_products %}
+        <div class="card overflow-hidden shadow rounded-4 border-0 mb-5">
+          <div class="card-body p-0">
+            <div class="d-flex flex-column flex-lg-row align-items-stretch">
+
+              <!-- Left -->
+              <div class="product-image d-flex flex-column justify-content-center align-items-center p-3">
+                <a href="{{ product.emudhra_link|default:'#' }}">
+                  <img class="img-fluid mb-2" src="{{ product.emudhra_image.url }}" alt="{{ product.emudhra_name }}" />
+                </a>
+              </div>
+
+              <!-- Right -->
+              <div class="product-actions d-flex flex-column justify-content-center align-items-start p-3">
+                <div class="row g-2 w-100">
+                  <div class="col-6">
+                    <button id="sendEnquiryBtn" class="btn btn-light w-100 px-4">
+                      <i class="bi bi-arrow-left"></i> Send Enquiry
+                    </button>
+                  </div>
+                  <div class="col-6">
+                    <button class="btn btn-light w-100 px-4">See More Details</button>
+                  </div>
+                  <div class="col-12">
+                    <a href="{% url 'emudhra_form' %}">
+                      <button class="btn btn-light w-100 px-4">Price list <i class="bi bi-arrow-right"></i></button>
+                    </a>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Third loop for Fusiontec products -->
+    <div class="row gx-5 justify-content-center">
+      <div class="col-lg-11 col-xl-9 col-xxl-8">
+        {% for product in fusiontec_products %}
+        <div class="card overflow-hidden shadow rounded-4 border-0 mb-5">
+          <div class="card-body p-0">
+            <div class="d-flex flex-column flex-lg-row align-items-stretch">
+
+              <!-- Left -->
+              <div class="product-image d-flex flex-column justify-content-center align-items-center p-3">
+                <a href="{{ product.fusiontec_link|default:'#' }}">
+                  <img class="img-fluid mb-2" src="{{ product.fusiontec_image.url }}" alt="{{ product.fusiontec_name }}" />
+                </a>
+              </div>
+
+              <!-- Right -->
+              <div class="product-actions d-flex flex-column justify-content-center align-items-start p-3">
+                <div class="row g-2 w-100">
+                  <div class="col-6">
+                    <button id="sendEnquiryBtn" class="btn btn-light w-100 px-4">
+                      <i class="bi bi-arrow-left"></i> Send Enquiry
+                    </button>
+                  </div>
+                  <div class="col-6">
+                    <button class="btn btn-light w-100 px-4">See More Details</button>
+                  </div>
+                  <div class="col-12">
+                    <a href="{% url 'fusiontec_form' %}">
+                      <button class="btn btn-light w-100 px-4">Price list <i class="bi bi-arrow-right"></i></button>
+                    </a>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Fourth loop for Biz_analyst products -->
+    <div class="row gx-5 justify-content-center">
+      <div class="col-lg-11 col-xl-9 col-xxl-8">
+        {% for product in biz_products %}
+        <div class="card overflow-hidden shadow rounded-4 border-0 mb-5">
+          <div class="card-body p-0">
+            <div class="d-flex flex-column flex-lg-row align-items-stretch">
+
+              <!-- Left -->
+              <div class="product-image d-flex flex-column justify-content-center align-items-center p-3">
+                <a href="{{ product.biz_link|default:'#' }}">
+                  <img class="img-fluid mb-2" src="{{ product.biz_image.url }}" alt="{{ product.biz_name }}" />
+                </a>
+              </div>
+
+              <!-- Right -->
+              <div class="product-actions d-flex flex-column justify-content-center align-items-start p-3">
+                <div class="row g-2 w-100">
+                  <div class="col-6">
+                    <button id="sendEnquiryBtn" class="btn btn-light w-100 px-4">
+                      <i class="bi bi-arrow-left"></i> Send Enquiry
+                    </button>
+                  </div>
+                  <div class="col-6">
+                    <button class="btn btn-light w-100 px-4">See More Details</button>
+                  </div>
+                  <div class="col-12">
+                    <a href="{% url 'biz_form' %}">
+                      <button class="btn btn-light w-100 px-4">Price list <i class="bi bi-arrow-right"></i></button>
+                    </a>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
 </section>
-
-
-
-{% comment %} <section class="py-5" id="products" >
-    <div class="container px-4 px-lg-5 mb-5">
-        <div class="text-center mb-5">
-            <h1 class="display-5 fw-bolder mb-0">
-                <span class="text-gradient d-inline">Products</span>
-            </h1>
-        </div>
-        <div class="row gx-5 justify-content-center">
-            <div class="col-lg-11 col-xl-9 col-xxl-8">
-                <div class="card overflow-hidden shadow rounded-4 border-0 mb-5">
-                    <div class="card-body p-0">
-                        <div class="d-flex flex-column flex-lg-row align-items-center">
-                            <div class="p-4 p-lg-5">
-                                <h2 class="fw-bolder">Tally</h2>
-                                <p>Lorem ipsum dolor sit amet consectetur adipisicing elit...</p>
-                                <a href="#" class="btn-get-started">Price list <i class="bi bi-arrow-right"></i></a> 
-                            </div>
-                            <a href="https://tallysolutions.com/"><img class="img-fluid w-100 w-lg-auto mb-4 mb-lg-0" style="max-width: 300px;padding-right:20px;" src="{% static 'products/img/tally.jpeg' %}" alt="Tally"/></a>
-                        </div>
-                    </div>
-                </div>
-                <div class="card overflow-hidden shadow rounded-4 border-0 mb-5">
-                    <div class="card-body p-0">
-                        <div class="d-flex flex-column flex-lg-row align-items-center">
-                            <div class="p-4 p-lg-5">
-                                <h2 class="fw-bolder">Digital Signature <br> E-Mudhra</h2>
-                                <p>Lorem ipsum dolor sit amet consectetur adipisicing elit...</p>
-                                <a href="#" class="btn-get-started">Price list <i class="bi bi-arrow-right"></i></a> 
-                            </div>
-                            <a href="#"><img class="img-fluid w-100 w-lg-auto mb-4 mb-lg-0" style="max-width: 300px;padding-right:30px;" src="{% static 'products/img/e-mudhra.jpg' %}" alt="e-mudhra"/></a>
-                        </div>
-                    </div>
-                </div>
-                <div class="card overflow-hidden shadow rounded-4 border-0 mb-5">
-                    <div class="card-body p-0">
-                        <div class="d-flex flex-column flex-lg-row align-items-center">
-                            <div class="p-4 p-lg-5">
-                                <h2 class="fw-bolder">Digital Signature<br> Pantasign</h2>
-                                <p>Lorem ipsum dolor sit amet consectetur adipisicing elit...</p>
-                                <a href="#" class="btn-get-started">Price list <i class="bi bi-arrow-right"></i></a> 
-                            </div>
-                            <a href="#"><img class="img-fluid w-100 w-lg-auto mb-4 mb-lg-0" style="max-width: 300px;padding-right:30px;" src="{% static 'products/img/pantasign.jpeg' %}" alt="pantasign"/></a>
-                        </div>
-                    </div>
-                </div>
-                <div class="card overflow-hidden shadow rounded-4 border-0 mb-5">
-                    <div class="card-body p-0">
-                        <div class="d-flex flex-column flex-lg-row align-items-center">
-                            <div class="p-4 p-lg-5">
-                                <h2 class="fw-bolder">Biz Analyst</h2>
-                                <p>Lorem ipsum dolor sit amet consectetur adipisicing elit...</p>
-                                <a href="#" class="btn-get-started">Price list <i class="bi bi-arrow-right"></i></a> 
-                            </div>
-                            <a href="#"><img class="img-fluid w-100 w-lg-auto mb-4 mb-lg-0" style="max-width: 300px;padding-right:30px;" src="{% static 'products/img/biz_analyst.png' %}" alt="Biz Analyst"/></a>
-                        </div>
-                    </div>
-                </div>               
-            </div>
-        </div>
-    </div>
-</section> {% endcomment %}
-<!-- End Products Section -->
 
 <!-- Net Banking Section -->
 <section class="py-5 bg-light" id="net_banking">
@@ -207,7 +274,6 @@
     </div>
   </div>
 </section>
-
 
 
 

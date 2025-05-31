@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Price List Form</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+<style>
+  body {
+    background-color: #f8f9fa;
+  }
+  .form-container {
+    background: #fff;
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    padding: 2rem;
+    max-width: 600px;
+    margin: 2rem auto;
+  }
+  .form-container h4 {
+    margin-bottom: 1.5rem;
+  }
+  .form-section {
+    margin-bottom: 1.5rem;
+  }
+  .form-section h6 {
+    margin-bottom: 0.75rem;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="form-container">
+    <h4 class="text-primary text-center">Biz Analyst List Form</h4>
+
+    <form id="priceListForm">
+      <div class="form-section">
+        <label for="customerName" class="form-label">Customer Name</label>
+        <input type="text" id="customerName" name="customer_name" class="form-control" required />
+      </div>
+
+      <div class="form-section">
+        <label for="companyName" class="form-label">Company Name</label>
+        <input type="text" id="companyName" name="company_name" class="form-control" />
+      </div>
+
+      <div class="form-section">
+        <label for="gstSelector" class="form-label">GST Number</label>
+        <select id="gstSelector" name="has_gst" class="form-select">
+          <option value="yes">Yes</option>
+          <option value="no">No</option>
+        </select>
+      </div>
+
+      <div class="form-section" id="gstNumberField">
+        <label for="gstNumber" class="form-label">GST Number</label>
+        <input type="text" id="gstNumber" name="gst_number" class="form-control" />
+      </div>
+
+      <div class="form-section" id="nonGstFields" style="display: none;">
+        <label for="address" class="form-label">Address</label>
+        <textarea id="address" name="address" class="form-control"></textarea>
+        <div class="row g-2 mt-2">
+          <div class="col-4"><input type="text" name="area" placeholder="Area" class="form-control" /></div>
+          <div class="col-4"><input type="text" name="state" placeholder="State" class="form-control" /></div>
+          <div class="col-4"><input type="text" name="pincode" placeholder="Pincode" class="form-control" /></div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <label for="mobile" class="form-label">Mobile Number</label>
+        <input type="text" id="mobile" name="mobile" class="form-control" required />
+      </div>
+
+      <div class="form-section">
+        <label for="email" class="form-label">Email ID</label>
+        <input type="email" id="email" name="email" class="form-control" />
+      </div>
+
+      <div class="form-section">
+        <label for="popupProductName" class="form-label">Product Name</label>
+        <input
+          type="text"
+          id="popupProductName"
+          name="product_name"
+          class="form-control"
+          required
+          value="Biz analyst"
+          readonly
+        />
+      </div>
+
+      <!-- Business Plans Dropdown -->
+      <div class="form-section" id="businessPlansContainer">
+        <label for="businessPlanSelector" class="form-label">Business Plans</label>
+        <select name="business_plan" id="businessPlanSelector" class="form-select" required>
+          <option value="">Select Business Plan</option>
+          <option value="business_1yr" data-basic="3300" data-original="3600"
+            >Business,<br /> For Sales Team ,<br /> Billed for 1 Year | Per Device</option
+          >
+          <option value="business_3yr" data-basic="6600" data-original="9000"
+            >Business,<br /> For Sales Team ,<br /> Billed for 3 Year | Per Device</option
+          >
+        </select>
+      </div>
+
+      <!-- Pricing details -->
+      <div class="form-section bg-light rounded p-3" id="pricingDetailsContainer" style="display: none;">
+        <h6 class="text-secondary">Pricing Details</h6>
+        <p>
+          Original Price:
+          <strong><s>₹<span id="pricingOriginalPrice"></span></s></strong>
+        </p>
+        <p>
+          Total Price: <strong>₹<span id="pricingTotalPrice"></span></strong>
+        </p>
+      </div>
+
+      <button type="button" id="generatePiBtn" class="btn btn-success w-100 mt-3 mb-2">
+        Generate PI Preview
+      </button>
+
+      <button type="submit" class="btn btn-primary w-100">PAY-ONLINE</button>
+    </form>
+  </div>
+</div>
+
+<!-- Modal for PI Preview -->
+<div
+  class="modal fade"
+  id="piPreviewModal"
+  tabindex="-1"
+  aria-labelledby="piPreviewModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="piPreviewModalLabel">PI Preview</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body" id="piPreviewContent" style="font-family: monospace;">
+        <!-- Preview table will be injected here -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="downloadPiBtn" class="btn btn-primary">
+          Download PDF
+        </button>
+        <button
+          type="button"
+          class="btn btn-secondary"
+          data-bs-dismiss="modal"
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<script>
+  const gstSelector = document.getElementById('gstSelector');
+  const gstNumberField = document.getElementById('gstNumberField');
+  const nonGstFields = document.getElementById('nonGstFields');
+
+  gstSelector.addEventListener('change', () => {
+    if (gstSelector.value === 'yes') {
+      gstNumberField.style.display = 'block';
+      nonGstFields.style.display = 'none';
+    } else {
+      gstNumberField.style.display = 'none';
+      nonGstFields.style.display = 'block';
+    }
+  });
+
+  // Trigger change once on load to set proper visibility
+  gstSelector.dispatchEvent(new Event('change'));
+
+  const businessDropdown = document.getElementById('businessPlanSelector');
+  const pricingDetailsContainer = document.getElementById('pricingDetailsContainer');
+  const pricingOriginalPrice = document.getElementById('pricingOriginalPrice');
+  const pricingTotalPrice = document.getElementById('pricingTotalPrice');
+
+  function clearPricing() {
+    pricingDetailsContainer.style.display = 'none';
+    pricingOriginalPrice.textContent = '';
+    pricingTotalPrice.textContent = '';
+  }
+
+  businessDropdown.addEventListener('change', () => {
+    const option = businessDropdown.selectedOptions[0];
+    const basic = parseFloat(option.dataset.basic) || 0;
+    const original = parseFloat(option.dataset.original) || 0;
+
+    if (basic > 0) {
+      pricingOriginalPrice.textContent = original > basic ? original.toFixed(2) : '';
+      pricingTotalPrice.textContent = basic.toFixed(2);
+      pricingDetailsContainer.style.display = 'block';
+    } else {
+      clearPricing();
+    }
+  });
+
+  // Modal and PI Preview logic
+  const piPreviewModal = new bootstrap.Modal(document.getElementById('piPreviewModal'));
+  const piPreviewContent = document.getElementById('piPreviewContent');
+  const generatePiBtn = document.getElementById('generatePiBtn');
+  const downloadPiBtn = document.getElementById('downloadPiBtn');
+
+  function gatherFormData() {
+    return {
+      customerName: document.getElementById('customerName').value.trim(),
+      companyName: document.getElementById('companyName').value.trim(),
+      hasGST: gstSelector.value,
+      gstNumber: document.getElementById('gstNumber').value.trim(),
+      address: document.getElementById('address').value.trim(),
+      area: document.querySelector('input[name="area"]').value.trim(),
+      state: document.querySelector('input[name="state"]').value.trim(),
+      pincode: document.querySelector('input[name="pincode"]').value.trim(),
+      mobile: document.getElementById('mobile').value.trim(),
+      email: document.getElementById('email').value.trim(),
+      productName: document.getElementById('popupProductName').value.trim(),
+      businessPlan: businessDropdown.selectedOptions[0]
+        ? businessDropdown.selectedOptions[0].innerHTML.replace(/<br\s*\/?>/gi, '\n')
+        : '',
+    };
+  }
+
+  function generatePreviewText(data) {
+    const rows = [
+      ['Customer Name', data.customerName],
+      ['Company Name', data.companyName || '-'],
+      ['GST Applicable', data.hasGST === 'yes' ? 'Yes' : 'No'],
+    ];
+
+    if (data.hasGST === 'yes') {
+      rows.push(['GST Number', data.gstNumber || '-']);
+    } else {
+      rows.push(['Address', data.address || '-']);
+      rows.push(['Area', data.area || '-']);
+      rows.push(['State', data.state || '-']);
+      rows.push(['Pincode', data.pincode || '-']);
+    }
+
+    rows.push(
+      ['Mobile', data.mobile],
+      ['Email', data.email || '-'],
+      ['Product Name', data.productName],
+      ['Business Plan', data.businessPlan]
+    );
+
+    let tableHtml = `<table style="width:100%; border-collapse: collapse; font-family: monospace;">
+      <thead>
+        <tr style="background:#f0f0f0;">
+          <th style="border: 1px solid #ccc; padding: 8px; text-align:left; width:35%;">Field</th>
+          <th style="border: 1px solid #ccc; padding: 8px; text-align:left;">Value</th>
+        </tr>
+      </thead>
+      <tbody>`;
+
+    for (const [field, value] of rows) {
+      tableHtml += `
+        <tr>
+          <td style="border: 1px solid #ccc; padding: 8px; vertical-align: top;">${field}</td>
+          <td style="border: 1px solid #ccc; padding: 8px; white-space: pre-wrap;">${value}</td>
+        </tr>`;
+    }
+
+    tableHtml += '</tbody></table>';
+
+    return tableHtml;
+  }
+
+  generatePiBtn.addEventListener('click', () => {
+    const data = gatherFormData();
+
+    if (!data.customerName || !data.mobile || !data.productName || !businessDropdown.value) {
+      alert('Please fill all required fields before generating PI.');
+      return;
+    }
+
+    const previewHtml = generatePreviewText(data);
+    piPreviewContent.innerHTML = previewHtml;
+
+    piPreviewModal.show();
+  });
+
+  // PDF Generation using jsPDF
+  downloadPiBtn.addEventListener('click', () => {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    const data = gatherFormData();
+
+    let lines = [];
+    lines.push('Customer Name: ' + data.customerName);
+    lines.push('Company Name: ' + (data.companyName || '-'));
+    lines.push('GST Applicable: ' + (data.hasGST === 'yes' ? 'Yes' : 'No'));
+    if (data.hasGST === 'yes') {
+      lines.push('GST Number: ' + (data.gstNumber || '-'));
+    } else {
+      lines.push('Address: ' + (data.address || '-'));
+      lines.push('Area: ' + (data.area || '-'));
+      lines.push('State: ' + (data.state || '-'));
+      lines.push('Pincode: ' + (data.pincode || '-'));
+    }
+    lines.push('Mobile: ' + data.mobile);
+    lines.push('Email: ' + (data.email || '-'));
+    lines.push('Product Name: ' + data.productName);
+    lines.push('Business Plan: ' + businessDropdown.selectedOptions[0].innerText);
+
+    const lineHeight = 10;
+    let y = 20;
+
+    doc.setFont('courier');
+    doc.setFontSize(12);
+    lines.forEach(line => {
+      doc.text(line, 10, y);
+      y += lineHeight;
+    });
+
+    doc.save('biz_analyst_PI.pdf');
+  });
+
+  // Form submit (example prevent default here)
+  const form = document.getElementById('priceListForm');
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    alert('Form submitted! You can integrate backend here.');
+  });
+</script>
+</body>
+</html>

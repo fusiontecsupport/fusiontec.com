@@ -68,7 +68,7 @@
   </main>
 
  <!-- Floating Enquiry Form -->
-<div id="enquiryForm" class="floating-form shadow">
+<div id="enquiryForm" class="floating-form">
   <div class="d-flex justify-content-between align-items-center mb-2">
     <strong>Enquiry Form</strong>
     <button id="closeEnquiry" class="close-btn" aria-label="Close enquiry form">&times;</button>
@@ -113,63 +113,48 @@
   </form>
 </div>
 
-<!-- Minimized Enquiry Icon -->
-{% comment %} <div id="enquiryIcon" class="enquiry-icon" role="button" aria-label="Open enquiry form" tabindex="0">
-  <i class="bi bi-chat-dots fs-4"></i>
-</div> {% endcomment %}
 <!-- Minimized Enquiry Icon with Hover Tooltip -->
 <div id="enquiryIcon" class="enquiry-icon" role="button" aria-label="Open enquiry form" tabindex="0">
   <span class="tooltip-text">Enquiry Form</span>
   <i class="bi bi-chat-dots fs-4"></i>
 </div>
 
-
 <!-- Styles -->
 <style>
-  .enquiry-icon {
-  position: fixed;
-  bottom: 20px;
-  left: 20px;
-  width: 50px;
-  height: 50px;
-  background: #007bff;
-  color: white;
-  border-radius: 50%;
-  display: none; /* shown dynamically */
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  z-index: 1050;
-  animation: floatUpDown 3s ease-in-out infinite alternate;
-}
-
-/* Tooltip label positioned above the icon */
-.enquiry-icon .tooltip-text {
-  position: absolute;
-  bottom: 60px; /* distance above the icon */
-  left: 50%;
-  transform: translateX(-50%);
-  background-color: #333;
-  color: #fff;
-  padding: 3px 10px;
-  border-radius: 10px;
-  font-size: 12px;
-  white-space: nowrap;
-  z-index: 1060;
-}
-
   .floating-form {
     position: fixed;
     bottom: 20px;
     left: 20px;
-    width: 300px;
+    width: 180px; /* your preferred width */
+    max-width: 220px;
     background: #fff;
     border: 1px solid #ddd;
     border-radius: 10px;
-    padding: 15px;
+    padding: 10px 12px;
     box-shadow: 0 0 15px rgba(0,0,0,0.15);
     z-index: 1050;
     transition: transform 0.4s ease;
+    overflow-y: auto;
+    max-height: 350px; /* reduced height for desktop */
+    transform: translateX(0);
+  }
+
+  .floating-form.hide {
+    transform: translateX(-110%);
+  }
+
+  .floating-form .form-label {
+    font-size: 0.85rem;
+  }
+
+  .floating-form input,
+  .floating-form textarea,
+  .floating-form button {
+    font-size: 0.8rem;
+  }
+
+  .floating-form button {
+    padding: 6px 0;
   }
 
   .enquiry-icon {
@@ -189,12 +174,28 @@
     animation: floatUpDown 3s ease-in-out infinite alternate;
   }
 
+  /* Tooltip label positioned above the icon */
+  .enquiry-icon .tooltip-text {
+    position: absolute;
+    bottom: 60px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #333;
+    color: #fff;
+    padding: 3px 10px;
+    border-radius: 10px;
+    font-size: 12px;
+    white-space: nowrap;
+    z-index: 1060;
+  }
+
   .close-btn {
     background: none;
     border: none;
-    font-size: 20px;
+    font-size: 18px;
     color: #888;
     cursor: pointer;
+    padding: 0 4px;
   }
 
   @keyframes floatUpDown {
@@ -203,11 +204,31 @@
   }
 
   /* Responsive for tablets and phones */
-  @media (max-width: 768px) {
+  @media (max-width: 992px) {
     .floating-form {
-      transform: translateX(-120%);
+      width: 90vw;
+      left: 5vw;
+      max-height: 300px; /* reduced height for tablets */
+      padding: 12px 15px;
+      border-radius: 8px;
     }
+  }
 
+  @media (max-width: 576px) {
+    .floating-form {
+      max-height: 280px; /* reduced height for mobiles */
+    }
+  }
+
+  .floating-form.hide {
+    transform: translateX(-110%);
+  }
+
+  .enquiry-icon {
+    display: none; /* initially hidden */
+  }
+
+  @media (max-width: 768px) {
     .enquiry-icon {
       display: flex;
     }
@@ -222,12 +243,12 @@
     const closeBtn = document.getElementById('closeEnquiry');
 
     function showForm() {
-      form.style.transform = 'translateX(0)';
+      form.classList.remove('hide');
       icon.style.display = 'none';
     }
 
     function hideForm() {
-      form.style.transform = 'translateX(-120%)';
+      form.classList.add('hide');
       icon.style.display = 'flex';
     }
 
@@ -241,12 +262,12 @@
       }
     });
 
-    // Automatically hide form on small screens initially
     if (window.innerWidth <= 768) {
       hideForm();
     }
   });
 </script>
+
 
 
 

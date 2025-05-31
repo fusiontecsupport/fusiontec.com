@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Price List Form with Proforma Invoice</title>
+<link
+  href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+  rel="stylesheet"
+/>
+<style>
+  body {
+    background-color: #f8f9fa;
+  }
+  .form-container {
+    background: #fff;
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    padding: 2rem;
+    max-width: 600px;
+    margin: 2rem auto;
+  }
+  .form-container h4 {
+    margin-bottom: 1.5rem;
+  }
+  .form-section {
+    margin-bottom: 1.5rem;
+  }
+  .form-section h6 {
+    margin-bottom: 0.75rem;
+  }
+
+  /* Proforma Invoice Modal styling */
+  #piContent {
+    color: #2c3e50;
+    padding: 1rem 2rem;
+  }
+  #piContent h4 {
+    font-weight: 700;
+    font-size: 1.8rem;
+    color: #1a237e;
+    text-align: center;
+    margin-bottom: 1rem;
+    border-bottom: 2px solid #1a237e;
+    padding-bottom: 0.3rem;
+  }
+  #piContent table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1.25rem;
+  }
+  #piContent th,
+  #piContent td {
+    padding: 10px 14px;
+    border: 1px solid #b0bec5;
+  }
+  #piContent th {
+    background-color: #e8eaf6;
+    color: #3949ab;
+    text-align: left;
+    font-weight: 600;
+    width: 35%;
+  }
+  #piContent td {
+    background-color: #f8f9fa;
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <div class="form-container">
+      <h4 class="text-primary text-center">Tally Price List Form</h4>
+
+      <form id="priceListForm">
+        <div class="form-section">
+          <label for="customerName" class="form-label">Customer Name</label>
+          <input
+            type="text"
+            id="customerName"
+            name="customer_name"
+            class="form-control"
+            required
+          />
+        </div>
+
+        <div class="form-section">
+          <label for="companyName" class="form-label">Company Name</label>
+          <input
+            type="text"
+            id="companyName"
+            name="company_name"
+            class="form-control"
+          />
+        </div>
+
+        <div class="form-section">
+          <label for="gstSelector" class="form-label">GST Number?</label>
+          <select id="gstSelector" name="has_gst" class="form-select">
+            <option value="yes">Yes</option>
+            <option value="no">No</option>
+          </select>
+        </div>
+
+        <div class="form-section" id="gstNumberField">
+          <label for="gstNumber" class="form-label">GST Number</label>
+          <input
+            type="text"
+            id="gstNumber"
+            name="gst_number"
+            class="form-control"
+          />
+        </div>
+
+        <div class="form-section" id="nonGstFields" style="display: none;">
+          <label for="address" class="form-label">Address</label>
+          <textarea id="address" name="address" class="form-control"></textarea>
+          <div class="row g-2 mt-2">
+            <div class="col-4">
+              <input
+                type="text"
+                name="area"
+                placeholder="Area"
+                class="form-control"
+              />
+            </div>
+            <div class="col-4">
+              <input
+                type="text"
+                name="state"
+                placeholder="State"
+                class="form-control"
+              />
+            </div>
+            <div class="col-4">
+              <input
+                type="text"
+                name="pincode"
+                placeholder="Pincode"
+                class="form-control"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <label for="mobile" class="form-label">Mobile Number</label>
+          <input
+            type="text"
+            id="mobile"
+            name="mobile"
+            class="form-control"
+            required
+          />
+        </div>
+
+        <div class="form-section">
+          <label for="email" class="form-label">Email ID</label>
+          <input type="email" id="email" name="email" class="form-control" />
+        </div>
+
+        <div class="form-section">
+          <label for="popupProductName" class="form-label">Product Name</label>
+          <input
+            type="text"
+            id="popupProductName"
+            name="product_name"
+            class="form-control"
+            value="Tally" readonly 
+            required
+          />
+        </div>
+
+        <div class="form-section">
+          <label for="productTypeSelector" class="form-label">Product Type</label>
+          <select name="product_type" id="productTypeSelector" class="form-select" required>
+            <option value="">Select</option>
+            <option value="product">Product</option>
+            <option value="service">Service</option>
+            <option value="upgrade">Upgrade</option>
+          </select>
+        </div>
+
+        <div class="form-section" id="dynamicDropdownContainer" style="display: none;">
+          <label for="productTypeDetailSelector" class="form-label"
+            >Product Type Details</label
+          >
+          <select name="product_type_detail" id="productTypeDetailSelector" class="form-select"></select>
+        </div>
+
+        <div
+          class="form-section bg-light rounded p-3"
+          id="productDetailsContainer"
+          style="display: none;"
+        >
+          <h6 class="text-secondary">Product Details</h6>
+          <p>
+            Basic Amount: <strong><span id="basicAmount"></span></strong>
+          </p>
+          <p>
+            CGST (9%): <strong><span id="cgst"></span></strong>
+          </p>
+          <p>
+            SGST (9%): <strong><span id="sgst"></span></strong>
+          </p>
+          <p>
+            Total Price: <strong><span id="totalPrice"></span></strong>
+          </p>
+        </div>
+
+        <!-- Generate PI Button -->
+        <button
+          type="button"
+          id="generatePiBtn"
+          class="btn btn-outline-primary w-100 mb-3"
+          style="font-weight: 600;"
+        >
+          Generate PI
+        </button>
+
+        <button type="submit" class="btn btn-primary w-100">PAY-ONLINE</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Proforma Invoice Modal -->
+  <div
+    class="modal fade"
+    id="piModal"
+    tabindex="-1"
+    aria-labelledby="piModalLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="piModalLabel">Proforma Invoice Preview</h5>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div class="modal-body" id="piContent">
+          <!-- PI content inserted here dynamically -->
+        </div>
+        <div class="modal-footer">
+          <button
+            type="button"
+            id="downloadPiBtn"
+            class="btn btn-primary"
+          >
+            Download PDF
+          </button>
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+  ></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <script>
+    const dummyData = {
+      product: {
+        options: [
+          { id: "basicProduct", name: "Basic Product", basic: 1000 },
+          { id: "premiumProduct", name: "Premium Product", basic: 2000 },
+        ],
+      },
+      service: {
+        options: [
+          { id: "installation", name: "Installation", basic: 500 },
+          { id: "maintenance", name: "Maintenance", basic: 800 },
+        ],
+      },
+      upgrade: {
+        options: [
+          { id: "v1to2", name: "Version 1 to 2", basic: 1200 },
+          { id: "v2to3", name: "Version 2 to 3", basic: 1500 },
+        ],
+      },
+    };
+
+    function formatINR(value) {
+      return `₹${parseFloat(value).toFixed(2)}`;
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      // GST toggle
+      document
+        .getElementById("gstSelector")
+        .addEventListener("change", (e) => {
+          if (e.target.value === "yes") {
+            document.getElementById("gstNumberField").style.display = "block";
+            document.getElementById("nonGstFields").style.display = "none";
+          } else {
+            document.getElementById("gstNumberField").style.display = "none";
+            document.getElementById("nonGstFields").style.display = "block";
+          }
+        });
+
+      // Product type dropdown
+      document
+        .getElementById("productTypeSelector")
+        .addEventListener("change", (e) => {
+          const selectedType = e.target.value;
+          const dropdownContainer =
+            document.getElementById("dynamicDropdownContainer");
+          const dropdown = document.getElementById("productTypeDetailSelector");
+          const productNameInput = document.getElementById("popupProductName");
+
+          if (selectedType) {
+            const options = dummyData[selectedType].options;
+            dropdown.innerHTML = '<option value="">Select</option>';
+            options.forEach((opt) => {
+              dropdown.innerHTML += `<option value="${opt.id}">${opt.name}</option>`;
+            });
+            dropdownContainer.style.display = "block";
+            productNameInput.value = "";
+            document.getElementById("productDetailsContainer").style.display =
+              "none";
+          } else {
+            dropdownContainer.style.display = "none";
+            document.getElementById("productDetailsContainer").style.display =
+              "none";
+          }
+        });
+
+      // Product type detail dropdown
+      document
+        .getElementById("productTypeDetailSelector")
+        .addEventListener("change", (e) => {
+          const selectedId = e.target.value;
+          const selectedType =
+            document.getElementById("productTypeSelector").value;
+          const detailsContainer =
+            document.getElementById("productDetailsContainer");
+          const productNameInput = document.getElementById("popupProductName");
+
+          if (selectedId) {
+            const selectedOption = dummyData[selectedType].options.find(
+              (opt) => opt.id === selectedId
+            );
+            if (selectedOption) {
+              productNameInput.value = selectedOption.name;
+              const basic = selectedOption.basic;
+              const cgst = basic * 0.09;
+              const sgst = basic * 0.09;
+              const total = basic + cgst + sgst;
+
+              document.getElementById("basicAmount").textContent = formatINR(
+                basic
+              );
+              document.getElementById("cgst").textContent = formatINR(cgst);
+              document.getElementById("sgst").textContent = formatINR(sgst);
+              document.getElementById("totalPrice").textContent = formatINR(
+                total
+              );
+
+              detailsContainer.style.display = "block";
+            }
+          } else {
+            detailsContainer.style.display = "none";
+            productNameInput.value = "";
+          }
+        });
+
+      // Generate Proforma Invoice modal content and show modal
+      document
+        .getElementById("generatePiBtn")
+        .addEventListener("click", () => {
+          const customerName = document.getElementById("customerName").value;
+          const companyName = document.getElementById("companyName").value;
+          const hasGst = document.getElementById("gstSelector").value;
+          const gstNumber = document.getElementById("gstNumber").value;
+          const address = document.querySelector("#nonGstFields textarea").value;
+          const area = document.querySelector("#nonGstFields input[name='area']")
+            .value;
+          const state = document.querySelector("#nonGstFields input[name='state']")
+            .value;
+          const pincode = document.querySelector(
+            "#nonGstFields input[name='pincode']"
+          ).value;
+          const mobile = document.getElementById("mobile").value;
+          const email = document.getElementById("email").value;
+          const productType =
+            document.getElementById("productTypeSelector").value || "";
+          const productName = document.getElementById("popupProductName").value;
+
+          const basicAmountText = document.getElementById("basicAmount")
+            .textContent;
+          const cgstText = document.getElementById("cgst").textContent;
+          const sgstText = document.getElementById("sgst").textContent;
+          const totalPriceText = document.getElementById("totalPrice")
+            .textContent;
+
+          if (!customerName || !mobile || !productName || !productType) {
+            alert("Please fill in required fields and select product details.");
+            return;
+          }
+
+          let piHtml = `
+            <h4>Proforma Invoice</h4>
+            <table>
+              <tbody>
+                <tr><th>Customer Name</th><td>${customerName}</td></tr>
+                <tr><th>Company Name</th><td>${companyName || "-"}</td></tr>
+                <tr><th>GST Number?</th><td>${hasGst.toUpperCase()}</td></tr>
+                ${
+                  hasGst === "yes"
+                    ? `<tr><th>GST Number</th><td>${gstNumber || "-"}</td></tr>`
+                    : ""
+                }
+                ${
+                  hasGst === "no"
+                    ? `
+                <tr><th>Address</th><td>${address || "-"}</td></tr>
+                <tr><th>Area</th><td>${area || "-"}</td></tr>
+                <tr><th>State</th><td>${state || "-"}</td></tr>
+                <tr><th>Pincode</th><td>${pincode || "-"}</td></tr>
+                `
+                    : ""
+                }
+                <tr><th>Mobile</th><td>${mobile}</td></tr>
+                <tr><th>Email</th><td>${email || "-"}</td></tr>
+                <tr><th>Product Type</th><td>${
+                  productType.charAt(0).toUpperCase() + productType.slice(1)
+                }</td></tr>
+                <tr><th>Product Details</th><td>${productName}</td></tr>
+              </tbody>
+            </table>
+
+            <h5>Pricing Details</h5>
+            <table>
+              <tbody>
+                <tr><th>Basic Amount</th><td>${basicAmountText || "₹0.00"}</td></tr>
+                <tr><th>CGST (9%)</th><td>${cgstText || "₹0.00"}</td></tr>
+                <tr><th>SGST (9%)</th><td>${sgstText || "₹0.00"}</td></tr>
+                <tr><th>Total Price</th><td><strong>${totalPriceText || "₹0.00"}</strong></td></tr>
+              </tbody>
+            </table>
+          `;
+
+          document.getElementById("piContent").innerHTML = piHtml;
+
+          const piModal = new bootstrap.Modal(
+            document.getElementById("piModal")
+          );
+          piModal.show();
+        });
+
+      // Download PDF with classy styling (default font)
+      document
+        .getElementById("downloadPiBtn")
+        .addEventListener("click", () => {
+          const { jsPDF } = window.jspdf;
+          const doc = new jsPDF({ unit: "pt" });
+          const leftMargin = 40;
+          let y = 40;
+
+          // Title with blue color (default font)
+          doc.setFontSize(22);
+          doc.setTextColor("#1a237e");
+          doc.text(
+            "Proforma Invoice",
+            doc.internal.pageSize.getWidth() / 2,
+            y,
+            { align: "center" }
+          );
+          y += 30;
+
+          // Data tables in default font
+          doc.setFontSize(12);
+          doc.setTextColor("#2c3e50");
+
+          function addTable(title, rows) {
+            doc.setFillColor(232, 234, 246);
+            doc.setDrawColor(176, 190, 197);
+            doc.setTextColor("#3949ab");
+            let tableTop = y;
+
+            // Header row background
+            doc.rect(leftMargin, tableTop, 520, 20, "F");
+            doc.setTextColor("#3949ab");
+            doc.setFont(undefined, "bold");
+            doc.text(title, leftMargin + 10, tableTop + 15);
+            y += 25;
+
+            doc.setFont(undefined, "normal");
+            doc.setTextColor("#2c3e50");
+            rows.forEach(([key, value]) => {
+              // Key cell background
+              doc.setFillColor(232, 234, 246);
+              doc.rect(leftMargin, y, 160, 20, "F");
+              doc.setTextColor("#3949ab");
+              doc.text(key, leftMargin + 5, y + 15);
+
+              // Value cell background
+              doc.setFillColor(248, 249, 250);
+              doc.rect(leftMargin + 160, y, 360, 20, "F");
+              doc.setTextColor("#2c3e50");
+              doc.text(value, leftMargin + 165, y + 15);
+
+              y += 20;
+            });
+            y += 15;
+          }
+
+          const piContent = document.getElementById("piContent");
+          const rows = Array.from(
+            piContent.querySelectorAll("table tbody tr")
+          ).map((tr) => {
+            const key = tr.querySelector("th").textContent.trim();
+            const val = tr.querySelector("td").textContent.trim();
+            return [key, val];
+          });
+
+          // Split the two tables by heading
+          const firstTableEndIndex = rows.findIndex((r) => r[0] === "Mobile") + 1;
+          const firstTableRows = rows.slice(0, firstTableEndIndex);
+          const secondTableRows = rows.slice(firstTableEndIndex);
+
+          addTable("Customer Details", firstTableRows);
+          addTable("Pricing Details", secondTableRows);
+
+          doc.save("tally_PI.pdf");
+        });
+    });
+  </script>
+</body>
+</html>

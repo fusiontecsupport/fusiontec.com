@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Price List Form</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+<style>
+  body {
+    background-color: #f8f9fa;
+  }
+  .form-container {
+    background: #fff;
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    padding: 2rem;
+    max-width: 600px;
+    margin: 2rem auto;
+  }
+  .form-container h4 {
+    margin-bottom: 1.5rem;
+  }
+  .form-section {
+    margin-bottom: 1.5rem;
+  }
+  .form-section h6 {
+    margin-bottom: 0.75rem;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="form-container">
+    <h4 class="text-primary text-center">Fusiontec Price List Form</h4>
+
+    <form id="priceListForm">
+      <div class="form-section">
+        <label for="customerName" class="form-label">Customer Name</label>
+        <input type="text" id="customerName" name="customer_name" class="form-control" required />
+      </div>
+
+      <div class="form-section">
+        <label for="companyName" class="form-label">Company Name</label>
+        <input type="text" id="companyName" name="company_name" class="form-control" />
+      </div>
+
+      <div class="form-section">
+        <label for="gstSelector" class="form-label">GST Number?</label>
+        <select id="gstSelector" name="has_gst" class="form-select">
+          <option value="yes">Yes</option>
+          <option value="no">No</option>
+        </select>
+      </div>
+
+      <div class="form-section" id="gstNumberField">
+        <label for="gstNumber" class="form-label">GST Number</label>
+        <input type="text" id="gstNumber" name="gst_number" class="form-control" />
+      </div>
+
+      <div class="form-section" id="nonGstFields" style="display:none;">
+        <label for="address" class="form-label">Address</label>
+        <textarea id="address" name="address" class="form-control"></textarea>
+        <div class="row g-2 mt-2">
+          <div class="col-4"><input type="text" name="area" placeholder="Area" class="form-control" /></div>
+          <div class="col-4"><input type="text" name="state" placeholder="State" class="form-control" /></div>
+          <div class="col-4"><input type="text" name="pincode" placeholder="Pincode" class="form-control" /></div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <label for="mobile" class="form-label">Mobile Number</label>
+        <input type="text" id="mobile" name="mobile" class="form-control" required />
+      </div>
+
+      <div class="form-section">
+        <label for="email" class="form-label">Email ID</label>
+        <input type="email" id="email" name="email" class="form-control" />
+      </div>
+
+      <div class="form-section">
+        <label for="popupProductName" class="form-label">Product Name</label>
+        <input type="text" id="popupProductName" name="product_name" class="form-control" required value="Fusiontec" readonly />
+      </div>
+
+    <div class="form-section" id="dynamicDropdownContainer">
+        <label for="productTypeDetailSelector" class="form-label">Product Type Details</label>
+        <select name="product_type_detail" id="productTypeDetailSelector" class="form-select" required>
+            <option value="">Select Product</option>
+            <option value="cloud_billing">Cloud Based Billing Software</option>
+            <option value="e_invoicing">E Invoicing Software</option>
+            <option value="integra">Integra</option>
+            <option value="custom_development">Custom Development</option>
+        </select>
+        </div>
+
+
+      <!-- Generate PI Button -->
+      <button
+        type="button"
+        id="generatePiBtn"
+        class="btn btn-outline-primary w-100 mb-3"
+        style="font-weight: 600;">
+        Generate PI
+      </button>
+
+      <button class="btn btn-primary w-100 mt-3">CONTACT-US</button>
+    </form>
+  </div>
+</div>
+<!-- PI Preview Modal with styled table -->
+<div class="modal fade" id="piPreviewModal" tabindex="-1" aria-labelledby="piPreviewLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title" id="piPreviewLabel">Proforma Invoice Preview</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <table class="table table-bordered">
+          <tbody id="piPreviewTableBody">
+            <!-- Dynamic rows will be inserted here -->
+          </tbody>
+        </table>
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="downloadPdfBtn" class="btn btn-success">Download PDF</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  // GST field toggle
+  const gstSelector = document.getElementById('gstSelector');
+  const gstNumberField = document.getElementById('gstNumberField');
+  const nonGstFields = document.getElementById('nonGstFields');
+
+  gstSelector.addEventListener('change', (e) => {
+    if (e.target.value === 'yes') {
+      gstNumberField.style.display = 'block';
+      nonGstFields.style.display = 'none';
+    } else {
+      gstNumberField.style.display = 'none';
+      nonGstFields.style.display = 'block';
+    }
+  });
+
+  // Product details display
+  const dropdown = document.getElementById('productTypeDetailSelector');
+  const detailsContainer = document.getElementById('productDetailsContainer');
+  const basicAmountEl = document.getElementById('basicAmount');
+  const productNameInput = document.getElementById('popupProductName');
+
+  dropdown.addEventListener('change', (e) => {
+    const option = e.target.selectedOptions[0];
+    const basic = parseFloat(option.dataset.basic || 0);
+
+    if (basic > 0) {
+      basicAmountEl.textContent = basic.toFixed(2);
+      detailsContainer.style.display = 'block';
+      // Removed productNameInput update to keep default "E-Mudhra"
+    } else {
+      detailsContainer.style.display = 'none';
+    }
+  });
+
+    const { jsPDF } = window.jspdf;
+
+  const piPreviewModal = new bootstrap.Modal(document.getElementById('piPreviewModal'));
+  const piPreviewTableBody = document.getElementById('piPreviewTableBody');
+  const generatePiBtn = document.getElementById('generatePiBtn');
+  const downloadPdfBtn = document.getElementById('downloadPdfBtn');
+
+  generatePiBtn.addEventListener('click', () => {
+    const form = document.getElementById('priceListForm');
+    const formData = new FormData(form);
+
+    // Clear previous table rows
+    piPreviewTableBody.innerHTML = '';
+
+    // Helper function to add table row
+    function addRow(label, value) {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<th style="width:40%">${label}</th><td>${value || 'N/A'}</td>`;
+      piPreviewTableBody.appendChild(tr);
+    }
+
+    addRow('Customer Name', formData.get('customer_name'));
+    addRow('Company Name', formData.get('company_name'));
+
+    const hasGst = formData.get('has_gst');
+    addRow('Has GST', hasGst.toUpperCase());
+
+    if (hasGst === 'yes') {
+      addRow('GST Number', formData.get('gst_number'));
+    } else {
+      addRow('Address', formData.get('address'));
+      addRow('Area', formData.get('area'));
+      addRow('State', formData.get('state'));
+      addRow('Pincode', formData.get('pincode'));
+    }
+
+    addRow('Mobile', formData.get('mobile'));
+    addRow('Email', formData.get('email'));
+
+    addRow('Product Name', formData.get('product_name'));
+    addRow('Product Type Detail', formData.get('product_type_detail'));
+
+    piPreviewModal.show();
+  });
+
+  downloadPdfBtn.addEventListener('click', () => {
+    const form = document.getElementById('priceListForm');
+    const formData = new FormData(form);
+
+    const doc = new jsPDF();
+    doc.setFontSize(18);
+    doc.text('Proforma Invoice (PI)', 14, 22);
+
+    doc.setFontSize(12);
+    const startY = 30;
+    let y = startY;
+
+    const leftColX = 14;
+    const rightColX = 90;
+    const rowHeight = 10;
+
+    // Draw table headers
+    doc.setFillColor(220, 220, 220);
+    doc.rect(leftColX - 2, y - 8, 180, rowHeight, 'F');
+    doc.setTextColor(0, 0, 0);
+    doc.text('Description', leftColX, y);
+    doc.text('Value', rightColX, y);
+    y += rowHeight;
+
+    // Helper to add row in PDF
+    function addPdfRow(label, value) {
+      doc.text(label, leftColX, y);
+      doc.text(value || 'N/A', rightColX, y);
+      y += rowHeight;
+      if (y > 270) { // page break
+        doc.addPage();
+        y = 20;
+      }
+    }
+
+    addPdfRow('Customer Name', formData.get('customer_name'));
+    addPdfRow('Company Name', formData.get('company_name'));
+
+    const hasGst = formData.get('has_gst');
+    addPdfRow('Has GST', hasGst.toUpperCase());
+
+    if (hasGst === 'yes') {
+      addPdfRow('GST Number', formData.get('gst_number'));
+    } else {
+      addPdfRow('Address', formData.get('address'));
+      addPdfRow('Area', formData.get('area'));
+      addPdfRow('State', formData.get('state'));
+      addPdfRow('Pincode', formData.get('pincode'));
+    }
+
+    addPdfRow('Mobile', formData.get('mobile'));
+    addPdfRow('Email', formData.get('email'));
+
+    addPdfRow('Product Name', formData.get('product_name'));
+    addPdfRow('Product Type Detail', formData.get('product_type_detail'));
+
+    doc.save('fusiontec_PI.pdf');
+  });
+
+
+</script>
+</body>
+</html>

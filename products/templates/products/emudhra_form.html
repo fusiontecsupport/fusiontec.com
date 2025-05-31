@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Price List Form</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+<style>
+  body {
+    background-color: #f8f9fa;
+  }
+  .form-container {
+    background: #fff;
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    padding: 2rem;
+    max-width: 600px;
+    margin: 2rem auto;
+  }
+  .form-container h4 {
+    margin-bottom: 1.5rem;
+  }
+  .form-section {
+    margin-bottom: 1.5rem;
+  }
+  .form-section h6 {
+    margin-bottom: 0.75rem;
+  }
+  /* Table styling for PI */
+  #piPreviewContent table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  #piPreviewContent th, #piPreviewContent td {
+    border: 1px solid #dee2e6;
+    padding: 8px 12px;
+  }
+  #piPreviewContent th {
+    background-color: #e9ecef;
+    text-align: left;
+  }
+  #piPreviewContent caption {
+    font-weight: 600;
+    font-size: 1.2rem;
+    margin-bottom: 12px;
+    caption-side: top;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="form-container">
+    <h4 class="text-primary text-center">E-Mudhra Price List Form</h4>
+
+    <form id="priceListForm">
+      <div class="form-section">
+        <label for="customerName" class="form-label">Customer Name</label>
+        <input type="text" id="customerName" name="customer_name" class="form-control" required />
+      </div>
+
+      <div class="form-section">
+        <label for="companyName" class="form-label">Company Name</label>
+        <input type="text" id="companyName" name="company_name" class="form-control" />
+      </div>
+
+      <div class="form-section">
+        <label for="gstSelector" class="form-label">GST Number?</label>
+        <select id="gstSelector" name="has_gst" class="form-select">
+          <option value="yes">Yes</option>
+          <option value="no">No</option>
+        </select>
+      </div>
+
+      <div class="form-section" id="gstNumberField">
+        <label for="gstNumber" class="form-label">GST Number</label>
+        <input type="text" id="gstNumber" name="gst_number" class="form-control" />
+      </div>
+
+      <div class="form-section" id="nonGstFields" style="display:none;">
+        <label for="address" class="form-label">Address</label>
+        <textarea id="address" name="address" class="form-control"></textarea>
+        <div class="row g-2 mt-2">
+          <div class="col-4"><input type="text" name="area" placeholder="Area" class="form-control" /></div>
+          <div class="col-4"><input type="text" name="state" placeholder="State" class="form-control" /></div>
+          <div class="col-4"><input type="text" name="pincode" placeholder="Pincode" class="form-control" /></div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <label for="mobile" class="form-label">Mobile Number</label>
+        <input type="text" id="mobile" name="mobile" class="form-control" required />
+      </div>
+
+      <div class="form-section">
+        <label for="email" class="form-label">Email ID</label>
+        <input type="email" id="email" name="email" class="form-control" />
+      </div>
+
+      <div class="form-section">
+        <label for="popupProductName" class="form-label">Product Name</label>
+        <input type="text" id="popupProductName" name="product_name" class="form-control" required value="E-Mudhra" readonly />
+      </div>
+
+      <div class="form-section" id="dynamicDropdownContainer">
+        <label for="productTypeDetailSelector" class="form-label">Product Type Details</label>
+        <select name="product_type_detail" id="productTypeDetailSelector" class="form-select" required>
+          <option value="">Select Product</option>
+          <option value="class3_2yr" data-basic="1500">Class 3 - 2 Year</option>
+          <option value="class3_combo_2yr" data-basic="2250">Class 3 Combo - 2 Year</option>
+          <option value="dgft_2yr" data-basic="2000">DGFT - 2 Year</option>
+          <option value="foreign_class3_2yr" data-basic="10000">Foreign Class 3 - 2 Years</option>
+          <option value="foreign_class3_combo_2yr" data-basic="15000">Foreign Class 3 Combo - 2 Years</option>
+          <option value="hyp2003_auto_token" data-basic="600">Hyp2003 (HyperSecu / ePass) Auto Token</option>
+        </select>
+      </div>
+
+      <div class="form-section bg-light rounded p-3" id="productDetailsContainer" style="display:none;">
+        <h6 class="text-secondary">Product Details</h6>
+        <p>Basic Amount: <strong>₹<span id="basicAmount"></span></strong></p>
+      </div>
+
+      <!-- Generate PI Button -->
+      <button
+        type="button"
+        id="generatePiBtn"
+        class="btn btn-outline-primary w-100 mb-3"
+        style="font-weight: 600;">
+        Generate PI
+      </button>
+      
+      <button type="submit" class="btn btn-primary w-100 mt-3">PAY-ONLINE</button>
+    </form>
+  </div>
+</div>
+
+<!-- Bootstrap Modal for PI Preview -->
+<div class="modal fade" id="piPreviewModal" tabindex="-1" aria-labelledby="piPreviewLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="piPreviewLabel">Proforma Invoice Preview</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="piPreviewContent" style="font-family: Arial, sans-serif;">
+        <!-- PI content will be injected here -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="downloadPdfBtn" class="btn btn-success">Download PDF</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close Preview</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- jsPDF library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<script>
+  // GST field toggle
+  const gstSelector = document.getElementById('gstSelector');
+  const gstNumberField = document.getElementById('gstNumberField');
+  const nonGstFields = document.getElementById('nonGstFields');
+
+  gstSelector.addEventListener('change', (e) => {
+    if (e.target.value === 'yes') {
+      gstNumberField.style.display = 'block';
+      nonGstFields.style.display = 'none';
+    } else {
+      gstNumberField.style.display = 'none';
+      nonGstFields.style.display = 'block';
+    }
+  });
+
+  // Product details display
+  const dropdown = document.getElementById('productTypeDetailSelector');
+  const detailsContainer = document.getElementById('productDetailsContainer');
+  const basicAmountEl = document.getElementById('basicAmount');
+
+  dropdown.addEventListener('change', (e) => {
+    const option = e.target.selectedOptions[0];
+    const basic = parseFloat(option.dataset.basic || 0);
+
+    if (basic > 0) {
+      basicAmountEl.textContent = basic.toFixed(2);
+      detailsContainer.style.display = 'block';
+    } else {
+      detailsContainer.style.display = 'none';
+    }
+  });
+
+  // Generate PI logic
+  const generatePiBtn = document.getElementById('generatePiBtn');
+  const piPreviewModal = new bootstrap.Modal(document.getElementById('piPreviewModal'));
+  const piPreviewContent = document.getElementById('piPreviewContent');
+  const downloadPdfBtn = document.getElementById('downloadPdfBtn');
+
+  generatePiBtn.addEventListener('click', () => {
+    // Gather form data
+    const customerName = document.getElementById('customerName').value.trim();
+    const companyName = document.getElementById('companyName').value.trim();
+    const hasGst = gstSelector.value;
+    const gstNumber = document.getElementById('gstNumber').value.trim();
+    const address = document.getElementById('address').value.trim();
+    const area = document.querySelector('input[name="area"]').value.trim();
+    const state = document.querySelector('input[name="state"]').value.trim();
+    const pincode = document.querySelector('input[name="pincode"]').value.trim();
+    const mobile = document.getElementById('mobile').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const productName = document.getElementById('popupProductName').value.trim();
+    const productTypeSelect = dropdown.selectedOptions[0];
+    const productType = productTypeSelect ? productTypeSelect.text : '';
+    const basicAmount = productTypeSelect ? parseFloat(productTypeSelect.dataset.basic || 0).toFixed(2) : '0.00';
+
+    // Construct table HTML for PI preview
+    let gstInfoHtml = hasGst === 'yes' 
+      ? `<tr><th>GST Number</th><td>${gstNumber || 'N/A'}</td></tr>`
+      : `<tr><th>GST Number</th><td>No GST</td></tr>
+         <tr><th>Address</th><td>${address}</td></tr>
+         <tr><th>Area</th><td>${area}</td></tr>
+         <tr><th>State</th><td>${state}</td></tr>
+         <tr><th>Pincode</th><td>${pincode}</td></tr>`;
+
+    const piTableHtml = `
+      <table>
+        <caption>Proforma Invoice (PI)</caption>
+        <tbody>
+          <tr><th>Customer Name</th><td>${customerName}</td></tr>
+          <tr><th>Company Name</th><td>${companyName || 'N/A'}</td></tr>
+          ${gstInfoHtml}
+          <tr><th>Mobile Number</th><td>${mobile}</td></tr>
+          <tr><th>Email ID</th><td>${email || 'N/A'}</td></tr>
+          <tr><th>Product</th><td>${productName}</td></tr>
+          <tr><th>Product Type Details</th><td>${productType}</td></tr>
+          <tr><th>Basic Amount</th><td>₹${basicAmount}</td></tr>
+        </tbody>
+      </table>
+      <p class="mt-3">Thank you for your business!</p>
+    `;
+
+    piPreviewContent.innerHTML = piTableHtml;
+
+    // Show modal
+    piPreviewModal.show();
+  });
+
+  downloadPdfBtn.addEventListener('click', () => {
+    // Using jsPDF to generate PDF from the preview table
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    // Get text content from PI preview table
+    const table = piPreviewContent.querySelector('table');
+    if (!table) return;
+
+    // Simple approach: add text line by line
+    let y = 10;
+    doc.setFontSize(16);
+    doc.text('Proforma Invoice (PI)', 10, y);
+    y += 10;
+
+    doc.setFontSize(12);
+    const rows = table.querySelectorAll('tbody tr');
+    rows.forEach(row => {
+      const th = row.querySelector('th').textContent.trim();
+      const td = row.querySelector('td').textContent.trim();
+
+      doc.text(`${th}: ${td}`, 10, y);
+      y += 10;
+    });
+
+    doc.save('emudhra_PI.pdf');
+  });
+
+  // Optional: Form submission handling placeholder
+  document.getElementById('priceListForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    alert('Payment process integration not implemented in this snippet.');
+  });
+</script>
+
+</body>
+</html>

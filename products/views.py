@@ -5,7 +5,7 @@ from django.core.mail import EmailMessage, send_mail
 from .models import ContactSubmission
 import mimetypes
 from django.template.loader import render_to_string
-from .models import Product
+from .models import Tally_1, Emudhra_2, Fusiontec_3, Biz_4
 from django.contrib.auth import logout
 
 
@@ -71,11 +71,35 @@ def index(request):
             messages.error(request, f'Error sending message: {str(e)}')
 
     # for product section
-    products = Product.objects.all()
-    return render(request, 'products/index.html', {'products': products})
+    products = Tally_1.objects.all()    # First product model
+    emudhra_products = Emudhra_2.objects.all()  # Second product model
+    fusiontec_products = Fusiontec_3.objects.all()  #third product model
+    biz_products = Biz_4.objects.all()  # Fourth product model
+
+    context = {
+        "products": products,
+        "emudhra_products": emudhra_products,
+        "fusiontec_products": fusiontec_products,
+        "biz_products": biz_products,
+    }
+
+    # return render(request, "products.html", context)
+    return render(request, 'products/index.html', context)
 
 
 def custom_admin_logout(request):
     logout(request)
     messages.success(request, "Logout successfully")
     return redirect('/')
+
+def tally_form(request):
+    return render(request, 'products/tally_form.html')
+
+def emudhra_form(request):
+    return render(request, 'products/emudhra_form.html')
+
+def fusiontec_form(request):
+    return render(request, 'products/fusiontec_form.html')
+
+def biz_form(request):
+    return render(request, 'products/biz_form.html')
