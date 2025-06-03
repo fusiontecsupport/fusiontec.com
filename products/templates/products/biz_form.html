@@ -1,9 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8" />
-<title>Price List Form</title>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+{% extends 'products/base2.html' %}
+
+{% load static %}
+
+{% block title %}Fusiontec - Biz Analyst Form{% endblock %}
+
+{% block content %}
 <style>
   body {
     background-color: #f8f9fa;
@@ -33,7 +34,8 @@
   <div class="form-container">
     <h4 class="text-primary text-center">Biz Analyst List Form</h4>
 
-    <form id="priceListForm">
+    <form id="priceListForm" method="POST" action="{% url 'biz_form' %}">
+      {% csrf_token %}
       <div class="form-section">
         <label for="customerName" class="form-label">Customer Name</label>
         <input type="text" id="customerName" name="customer_name" class="form-control" required />
@@ -61,7 +63,7 @@
         <label for="address" class="form-label">Address</label>
         <textarea id="address" name="address" class="form-control"></textarea>
         <div class="row g-2 mt-2">
-          <div class="col-4"><input type="text" name="area" placeholder="Area" class="form-control" /></div>
+          <div class="col-4"><input type="text" name="district" placeholder="District" class="form-control" /></div>
           <div class="col-4"><input type="text" name="state" placeholder="State" class="form-control" /></div>
           <div class="col-4"><input type="text" name="pincode" placeholder="Pincode" class="form-control" /></div>
         </div>
@@ -77,17 +79,9 @@
         <input type="email" id="email" name="email" class="form-control" />
       </div>
 
-      <div class="form-section">
+       <div class="form-section">
         <label for="popupProductName" class="form-label">Product Name</label>
-        <input
-          type="text"
-          id="popupProductName"
-          name="product_name"
-          class="form-control"
-          required
-          value="Biz analyst"
-          readonly
-        />
+        <input type="text" id="popupProductName" name="product_name" class="form-control" required value="{{ bizz_info.biz_name }}" readonly/>
       </div>
 
       <!-- Business Plans Dropdown -->
@@ -95,69 +89,46 @@
         <label for="businessPlanSelector" class="form-label">Business Plans</label>
         <select name="business_plan" id="businessPlanSelector" class="form-select" required>
           <option value="">Select Business Plan</option>
-          <option value="business_1yr" data-basic="3300" data-original="3600"
-            >Business,<br /> For Sales Team ,<br /> Billed for 1 Year | Per Device</option
-          >
-          <option value="business_3yr" data-basic="6600" data-original="9000"
-            >Business,<br /> For Sales Team ,<br /> Billed for 3 Year | Per Device</option
-          >
+          {% for plan in bizz_products %}
+            <option value="{{ plan.id }}" data-basic="{{ plan.new_price|default:"0" }}" data-original="{{ plan.old_price|default:"0" }}">
+              {{ plan.team_name }} , {{ plan.billing_cycle }}</option>
+          {% endfor %}
         </select>
       </div>
 
       <!-- Pricing details -->
       <div class="form-section bg-light rounded p-3" id="pricingDetailsContainer" style="display: none;">
         <h6 class="text-secondary">Pricing Details</h6>
-        <p>
-          Original Price:
-          <strong><s>₹<span id="pricingOriginalPrice"></span></s></strong>
-        </p>
-        <p>
-          Total Price: <strong>₹<span id="pricingTotalPrice"></span></strong>
-        </p>
+        <p>Original Price:<strong><s>₹<span id="pricingOriginalPrice"></span></s></strong></p>
+        <p>Total Price: <strong>₹<span id="pricingTotalPrice"></span></strong></p>
       </div>
+      <input type="hidden" id="businessPlanNameInput" name="business_plan_name" />
+      <input type="hidden" id="originalPriceInput" name="original_price" />
+      <input type="hidden" id="totalPriceInput" name="total_price" />
 
       <button type="button" id="generatePiBtn" class="btn btn-success w-100 mt-3 mb-2">
         Generate PI Preview
       </button>
 
-      <button type="submit" class="btn btn-primary w-100">PAY-ONLINE</button>
     </form>
   </div>
 </div>
 
 <!-- Modal for PI Preview -->
-<div
-  class="modal fade"
-  id="piPreviewModal"
-  tabindex="-1"
-  aria-labelledby="piPreviewModalLabel"
-  aria-hidden="true"
->
+<div class="modal fade" id="piPreviewModal" tabindex="-1" aria-labelledby="piPreviewModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg modal-dialog-scrollable">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="piPreviewModalLabel">PI Preview</h5>
-        <button
-          type="button"
-          class="btn-close"
-          data-bs-dismiss="modal"
-          aria-label="Close"
-        ></button>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body" id="piPreviewContent" style="font-family: monospace;">
         <!-- Preview table will be injected here -->
       </div>
       <div class="modal-footer">
-        <button type="button" id="downloadPiBtn" class="btn btn-primary">
-          Download PDF
-        </button>
-        <button
-          type="button"
-          class="btn btn-secondary"
-          data-bs-dismiss="modal"
-        >
-          Close
-        </button>
+        <button type="submit" class="btn btn-primary">PAY-ONLINE</button>
+        <button type="button" id="downloadPiBtn" class="btn btn-primary"> Download PDF </button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"> Close</button>
       </div>
     </div>
   </div>
@@ -166,7 +137,50 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
+
 <script>
+  // Elements related to business plan pricing hidden inputs
+  const businessDropdown = document.getElementById('businessPlanSelector');
+  const businessPlanNameInput = document.getElementById('businessPlanNameInput');
+  const originalPriceInput = document.getElementById('originalPriceInput');
+  const totalPriceInput = document.getElementById('totalPriceInput');
+
+  // On business plan change, update hidden inputs and pricing display
+  businessDropdown.addEventListener('change', () => {
+    const selectedOption = businessDropdown.selectedOptions[0];
+    if (selectedOption) {
+      businessPlanNameInput.value = selectedOption.text.trim();
+      originalPriceInput.value = selectedOption.dataset.original || '0';
+      totalPriceInput.value = selectedOption.dataset.basic || '0';
+    } else {
+      businessPlanNameInput.value = '';
+      originalPriceInput.value = '0';
+      totalPriceInput.value = '0';
+    }
+
+    // Update visible pricing details
+    const pricingDetailsContainer = document.getElementById('pricingDetailsContainer');
+    const pricingOriginalPrice = document.getElementById('pricingOriginalPrice');
+    const pricingTotalPrice = document.getElementById('pricingTotalPrice');
+
+    const basic = parseFloat(selectedOption?.dataset.basic) || 0;
+    const original = parseFloat(selectedOption?.dataset.original) || 0;
+
+    if (basic > 0) {
+      pricingOriginalPrice.textContent = original > basic ? original.toFixed(2) : '';
+      pricingTotalPrice.textContent = basic.toFixed(2);
+      pricingDetailsContainer.style.display = 'block';
+    } else {
+      pricingDetailsContainer.style.display = 'none';
+      pricingOriginalPrice.textContent = '';
+      pricingTotalPrice.textContent = '';
+    }
+  });
+
+  // Initialize on page load
+  businessDropdown.dispatchEvent(new Event('change'));
+
+  // GST toggle logic (unchanged)
   const gstSelector = document.getElementById('gstSelector');
   const gstNumberField = document.getElementById('gstNumberField');
   const nonGstFields = document.getElementById('nonGstFields');
@@ -181,161 +195,143 @@
     }
   });
 
-  // Trigger change once on load to set proper visibility
   gstSelector.dispatchEvent(new Event('change'));
 
-  const businessDropdown = document.getElementById('businessPlanSelector');
-  const pricingDetailsContainer = document.getElementById('pricingDetailsContainer');
-  const pricingOriginalPrice = document.getElementById('pricingOriginalPrice');
-  const pricingTotalPrice = document.getElementById('pricingTotalPrice');
+  // Modal and buttons
+  const piPreviewModalEl = document.getElementById('piPreviewModal');
+  const piPreviewModal = new bootstrap.Modal(piPreviewModalEl);
 
-  function clearPricing() {
-    pricingDetailsContainer.style.display = 'none';
-    pricingOriginalPrice.textContent = '';
-    pricingTotalPrice.textContent = '';
-  }
-
-  businessDropdown.addEventListener('change', () => {
-    const option = businessDropdown.selectedOptions[0];
-    const basic = parseFloat(option.dataset.basic) || 0;
-    const original = parseFloat(option.dataset.original) || 0;
-
-    if (basic > 0) {
-      pricingOriginalPrice.textContent = original > basic ? original.toFixed(2) : '';
-      pricingTotalPrice.textContent = basic.toFixed(2);
-      pricingDetailsContainer.style.display = 'block';
-    } else {
-      clearPricing();
-    }
-  });
-
-  // Modal and PI Preview logic
-  const piPreviewModal = new bootstrap.Modal(document.getElementById('piPreviewModal'));
-  const piPreviewContent = document.getElementById('piPreviewContent');
   const generatePiBtn = document.getElementById('generatePiBtn');
   const downloadPiBtn = document.getElementById('downloadPiBtn');
+  const piPreviewContent = document.getElementById('piPreviewContent');
 
-  function gatherFormData() {
-    return {
-      customerName: document.getElementById('customerName').value.trim(),
-      companyName: document.getElementById('companyName').value.trim(),
-      hasGST: gstSelector.value,
-      gstNumber: document.getElementById('gstNumber').value.trim(),
-      address: document.getElementById('address').value.trim(),
-      area: document.querySelector('input[name="area"]').value.trim(),
-      state: document.querySelector('input[name="state"]').value.trim(),
-      pincode: document.querySelector('input[name="pincode"]').value.trim(),
-      mobile: document.getElementById('mobile').value.trim(),
-      email: document.getElementById('email').value.trim(),
-      productName: document.getElementById('popupProductName').value.trim(),
-      businessPlan: businessDropdown.selectedOptions[0]
-        ? businessDropdown.selectedOptions[0].innerHTML.replace(/<br\s*\/?>/gi, '\n')
-        : '',
-    };
-  }
+  generatePiBtn.addEventListener('click', async () => {
+    // Before collecting form data, ensure hidden inputs are up-to-date
+    businessDropdown.dispatchEvent(new Event('change'));
 
-  function generatePreviewText(data) {
-    const rows = [
-      ['Customer Name', data.customerName],
-      ['Company Name', data.companyName || '-'],
-      ['GST Applicable', data.hasGST === 'yes' ? 'Yes' : 'No'],
-    ];
+    const form = document.getElementById('priceListForm');
+    const formData = new FormData(form);
 
-    if (data.hasGST === 'yes') {
-      rows.push(['GST Number', data.gstNumber || '-']);
-    } else {
-      rows.push(['Address', data.address || '-']);
-      rows.push(['Area', data.area || '-']);
-      rows.push(['State', data.state || '-']);
-      rows.push(['Pincode', data.pincode || '-']);
-    }
+    // Convert FormData to plain object for validation & preview
+    const data = {};
+    formData.forEach((value, key) => (data[key] = value));
 
-    rows.push(
-      ['Mobile', data.mobile],
-      ['Email', data.email || '-'],
-      ['Product Name', data.productName],
-      ['Business Plan', data.businessPlan]
-    );
-
-    let tableHtml = `<table style="width:100%; border-collapse: collapse; font-family: monospace;">
-      <thead>
-        <tr style="background:#f0f0f0;">
-          <th style="border: 1px solid #ccc; padding: 8px; text-align:left; width:35%;">Field</th>
-          <th style="border: 1px solid #ccc; padding: 8px; text-align:left;">Value</th>
-        </tr>
-      </thead>
-      <tbody>`;
-
-    for (const [field, value] of rows) {
-      tableHtml += `
-        <tr>
-          <td style="border: 1px solid #ccc; padding: 8px; vertical-align: top;">${field}</td>
-          <td style="border: 1px solid #ccc; padding: 8px; white-space: pre-wrap;">${value}</td>
-        </tr>`;
-    }
-
-    tableHtml += '</tbody></table>';
-
-    return tableHtml;
-  }
-
-  generatePiBtn.addEventListener('click', () => {
-    const data = gatherFormData();
-
-    if (!data.customerName || !data.mobile || !data.productName || !businessDropdown.value) {
-      alert('Please fill all required fields before generating PI.');
+    // Basic validation
+    if (!data.customer_name || !data.mobile || !data.product_name || !data.business_plan) {
+      alert('Please fill all required fields including Business Plan!');
       return;
     }
 
-    const previewHtml = generatePreviewText(data);
-    piPreviewContent.innerHTML = previewHtml;
+    try {
+      // POST formData to backend
+      const response = await fetch("{% url 'save_pi_data' %}", {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': '{{ csrf_token }}',
+        },
+        body: formData,
+      });
 
-    piPreviewModal.show();
-  });
+      const result = await response.json();
 
-  // PDF Generation using jsPDF
-  downloadPiBtn.addEventListener('click', () => {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
+      if (result.status !== 'success') {
+        alert('Failed to save PI data: ' + (result.message || 'Unknown error'));
+        return;
+      }
 
-    const data = gatherFormData();
+      // Prepare preview table
+      let previewHTML = '<table class="table table-bordered">';
+      previewHTML += `<tr><th>Customer Name</th><td>${data.customer_name}</td></tr>`;
+      previewHTML += `<tr><th>Company Name</th><td>${data.company_name || '-'}</td></tr>`;
+      previewHTML += `<tr><th>Has GST</th><td>${data.has_gst}</td></tr>`;
+      if(data.has_gst === 'yes'){
+        previewHTML += `<tr><th>GST Number</th><td>${data.gst_number || '-'}</td></tr>`;
+      } else {
+        previewHTML += `<tr><th>Address</th><td>${data.address || '-'}</td></tr>`;
+        previewHTML += `<tr><th>District</th><td>${data.district || '-'}</td></tr>`;
+        previewHTML += `<tr><th>State</th><td>${data.state || '-'}</td></tr>`;
+        previewHTML += `<tr><th>Pincode</th><td>${data.pincode || '-'}</td></tr>`;
+      }
+      previewHTML += `<tr><th>Mobile</th><td>${data.mobile}</td></tr>`;
+      previewHTML += `<tr><th>Email</th><td>${data.email || '-'}</td></tr>`;
+      previewHTML += `<tr><th>Product</th><td>${data.product_name}</td></tr>`;
 
-    let lines = [];
-    lines.push('Customer Name: ' + data.customerName);
-    lines.push('Company Name: ' + (data.companyName || '-'));
-    lines.push('GST Applicable: ' + (data.hasGST === 'yes' ? 'Yes' : 'No'));
-    if (data.hasGST === 'yes') {
-      lines.push('GST Number: ' + (data.gstNumber || '-'));
-    } else {
-      lines.push('Address: ' + (data.address || '-'));
-      lines.push('Area: ' + (data.area || '-'));
-      lines.push('State: ' + (data.state || '-'));
-      lines.push('Pincode: ' + (data.pincode || '-'));
+      previewHTML += `<tr><th>Business Plan</th><td>${data.business_plan_name}</td></tr>`;
+      previewHTML += `<tr><th>Original Price</th><td>${data.original_price > data.total_price ? '₹' + parseFloat(data.original_price).toFixed(2) : '-'}</td></tr>`;
+      previewHTML += `<tr><th>Total Price</th><td>₹${parseFloat(data.total_price).toFixed(2)}</td></tr>`;
+      previewHTML += '</table>';
+
+      piPreviewContent.innerHTML = previewHTML;
+
+      piPreviewModal.show();
+
+    } catch (error) {
+      alert('Error saving PI data: ' + error);
     }
-    lines.push('Mobile: ' + data.mobile);
-    lines.push('Email: ' + (data.email || '-'));
-    lines.push('Product Name: ' + data.productName);
-    lines.push('Business Plan: ' + businessDropdown.selectedOptions[0].innerText);
-
-    const lineHeight = 10;
-    let y = 20;
-
-    doc.setFont('courier');
-    doc.setFontSize(12);
-    lines.forEach(line => {
-      doc.text(line, 10, y);
-      y += lineHeight;
-    });
-
-    doc.save('biz_analyst_PI.pdf');
   });
 
-  // Form submit (example prevent default here)
-  const form = document.getElementById('priceListForm');
-  form.addEventListener('submit', (e) => {
-    e.preventDefault();
-    alert('Form submitted! You can integrate backend here.');
+
+  //code for downloading the PI as PDF
+  downloadPiBtn.addEventListener('click', () => {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+
+  const rows = piPreviewContent.querySelectorAll('tr');
+
+  const marginLeft = 14;
+  let y = 20;
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const cellPadding = 3;
+  const labelColWidth = 60;
+  const valueColWidth = pageWidth - marginLeft * 2 - labelColWidth;
+
+  // Header
+  doc.setFontSize(16);
+  doc.setFont(undefined, 'bold');
+  doc.text('Proforma Invoice (PI)', marginLeft, y);
+  y += 10;
+
+  doc.setLineWidth(0.5);
+  doc.line(marginLeft, y, pageWidth - marginLeft, y);
+  y += 8;
+
+  doc.setFontSize(12);
+  doc.setFont(undefined, 'normal');
+
+  rows.forEach((row) => {
+    const cols = row.querySelectorAll('th, td');
+    const label = cols[0].textContent.trim();
+    const value = cols[1].textContent.trim();
+
+    const rowHeight = 10;
+
+    // Draw label cell border
+    doc.rect(marginLeft, y, labelColWidth, rowHeight);
+    // Draw value cell border
+    doc.rect(marginLeft + labelColWidth, y, valueColWidth, rowHeight);
+
+    // Add label text (bold)
+    doc.setFont(undefined, 'bold');
+    doc.text(label, marginLeft + cellPadding, y + 7);
+
+    // Add value text (normal)
+    doc.setFont(undefined, 'normal');
+    doc.text(value, marginLeft + labelColWidth + cellPadding, y + 7);
+
+    y += rowHeight;
+
+    // Add page break if near bottom
+    if (y > 280) {
+      doc.addPage();
+      y = 20;
+    }
   });
+
+  doc.save('Biz_Proforma_Invoice.pdf');
+});
+
 </script>
-</body>
-</html>
+
+
+
+{% endblock %}

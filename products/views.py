@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.conf import settings
 from django.contrib import messages
 from django.core.mail import EmailMessage, send_mail
@@ -6,10 +6,20 @@ from .models import ContactSubmission
 import mimetypes
 from django.template.loader import render_to_string
 from .models import Tally_1, Emudhra_2, Fusiontec_3, Biz_4
+from .models import Emudhra_product
 from django.contrib.auth import logout
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from .models import EmudhraPriceListSubmission, biz_product
 
+#for redirecting admin page to home page after logout
+def custom_admin_logout(request):
+    logout(request)
+    messages.success(request, "Logout successfully")
+    return redirect('/')
 
-
+#------------------------------------------------------------------------------------------------
+#home page view
 def index(request):
     if request.method == 'POST':
         name = request.POST.get('name', '').strip()
@@ -86,20 +96,243 @@ def index(request):
     # return render(request, "products.html", context)
     return render(request, 'products/index.html', context)
 
+#------------------------------------------------------------------------------------------------
+import json
+import logging
 
-def custom_admin_logout(request):
-    logout(request)
-    messages.success(request, "Logout successfully")
-    return redirect('/')
+from django.shortcuts import render
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_GET
+
+from .models import (
+    TallyPriceListSubmission,
+    Tally_1,
+    Tally_Product,
+    Tally_Software_Service,
+    Tally_Upgrade,
+)
+
+logger = logging.getLogger(__name__)
 
 def tally_form(request):
+    # Render the HTML form template
     return render(request, 'products/tally_form.html')
 
+
+@require_GET
+def fetch_tally_details(request):
+    product_type = request.GET.get('product_type')
+
+    try:
+        tally = Tally_1.objects.get(tally_name="Tally")
+    except Tally_1.DoesNotExist:
+        return JsonResponse({'error': 'Tally not found'}, status=404)
+
+    if product_type == "product":
+        items = Tally_Product.objects.filter(tally_1=tally)
+    elif product_type == "service":
+        items = Tally_Software_Service.objects.filter(tally_1=tally)
+    elif product_type == "upgrade":
+        items = Tally_Upgrade.objects.filter(tally_1=tally)
+    else:
+        return JsonResponse({'error': 'Invalid product_type'}, status=400)
+
+    data = [{
+        'type_name': item.type_name,
+        'basic_amount': str(item.basic_amount),
+        'cgst': str(item.cgst),
+        'sgst': str(item.sgst),
+        'total_price': str(item.total_price),
+    } for item in items]
+
+    return JsonResponse({'items': data}, status=200)
+
+
+@csrf_exempt  # REMOVE this in production and use CSRF tokens instead!
+def save_tally_form(request):
+    if request.method != "POST":
+        return JsonResponse({"success": False, "error": "Invalid request method"}, status=400)
+
+    try:
+        data = json.loads(request.body)
+        logger.info(f"Received data for save_tally_form: {data}")
+
+        pi = TallyPriceListSubmission.objects.create(
+            customer_name=data.get('customer_name'),
+            company_name=data.get('company_name'),
+            has_gst=(data.get('has_gst') == 'yes'),
+            gst_number=data.get('gst_number'),
+            address=data.get('address'),
+            area=data.get('area'),
+            state=data.get('state'),
+            pincode=data.get('pincode'),
+            mobile=data.get('mobile'),
+            email=data.get('email'),
+            product_name=data.get('product_name'),
+            product_type=data.get('product_type'),
+            product_type_detail=data.get('product_type_detail'),
+            basic_amount=data.get('basic_amount'),
+            cgst=data.get('cgst'),
+            sgst=data.get('sgst'),
+            total_price=data.get('total_price'),
+        )
+
+        return JsonResponse({"success": True, "pi_id": pi.id})
+
+    except Exception as e:
+        logger.error(f"Error saving tally form: {e}")
+        return JsonResponse({"success": False, "error": str(e)}, status=400)
+
+
+
+
+#------------------------------------------------------------------------------------------------
+#emudhra form view
+
 def emudhra_form(request):
-    return render(request, 'products/emudhra_form.html')
+    emudhra_products = Emudhra_product.objects.all()
+    emudhra_info = Emudhra_2.objects.first() 
+
+    return render(request, 'products/emudhra_form.html', {
+        'emudhra_products': emudhra_products,
+        'emudhra_info': emudhra_info,
+    })
+# for saving form for e-mudhra section
+
+@csrf_exempt
+def save_price_list_submission(request):
+    if request.method == 'POST':
+        data = request.POST
+        # Save data to model
+        submission = EmudhraPriceListSubmission.objects.create(
+            customer_name = data.get('customer_name'),
+            company_name = data.get('company_name'),
+            has_gst = data.get('has_gst'),
+            gst_number = data.get('gst_number'),
+            address = data.get('address'),
+            district = data.get('district'),
+            state = data.get('state'),
+            pincode = data.get('pincode'),
+            mobile = data.get('mobile'),
+            email = data.get('email'),
+            product_name = data.get('product_name'),
+            product_type_detail = data.get('product_type_detail'),
+            basic_amount = data.get('basic_amount') or 0,
+        )
+        return JsonResponse({'status': 'success', 'message': 'Data saved successfully'})
+    return JsonResponse({'status': 'error', 'message': 'Invalid request'}, status=400)  
+
+#------------------------------------------------------------------------------------------------
+#fusiontec form view
 
 def fusiontec_form(request):
-    return render(request, 'products/fusiontec_form.html')
+    fusiontec_instance = get_object_or_404(Fusiontec_3, fusiontec_name="Fusiontec")  # or use pk if preferred
+    products = fusiontec_instance.fusiontec_product_set.all()  # related products
 
+    context = {
+        'fusiontec_name': fusiontec_instance.fusiontec_name,
+        'product_types': products,
+    }
+    return render(request, 'products/fusiontec_form.html', context)
+
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from .models import FusiontecPriceListSubmission
+
+@csrf_exempt
+def fusiontec_price_list_form(request):
+    if request.method == "POST":
+        data = request.POST
+        # Save data to model
+        submission = FusiontecPriceListSubmission.objects.create(
+            customer_name=data.get('customer_name'),
+            company_name=data.get('company_name'),
+            has_gst=data.get('has_gst'),
+            gst_number=data.get('gst_number'),
+            address=data.get('address'),
+            district=data.get('district'),
+            state=data.get('state'),
+            pincode=data.get('pincode'),
+            mobile=data.get('mobile'),
+            email=data.get('email'),
+            product_name=data.get('product_name'),
+            product_type_detail=data.get('product_type_detail'),
+        )
+        return JsonResponse({'success': True})
+    return JsonResponse({'success': False, 'error': 'Invalid request'})
+
+#------------------------------------------------------------------------------------------------
+#biz form view
 def biz_form(request):
-    return render(request, 'products/biz_form.html')
+    bizz_products = biz_product.objects.all()
+    bizz_info = Biz_4.objects.first() 
+
+    return render(request, 'products/biz_form.html', {
+          'bizz_products': bizz_products,
+          'bizz_info': bizz_info,
+    })
+
+
+# products/views.py
+
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from .models import BizPriceListSubmission
+
+@csrf_exempt  # or use csrf token properly in ajax headers
+def save_pi_data(request):
+    if request.method == 'POST':
+        data = request.POST
+
+        # Extract fields safely, fallback to empty strings if missing
+        customer_name = data.get('customer_name', '')
+        company_name = data.get('company_name', '')
+        has_gst = data.get('has_gst', 'no')
+        gst_number = data.get('gst_number', '')
+        address = data.get('address', '')
+        district = data.get('district', '')
+        state = data.get('state', '')
+        pincode = data.get('pincode', '')
+        mobile = data.get('mobile', '')
+        email = data.get('email', '')
+        product_name = data.get('product_name', '')
+        business_plan_id = data.get('business_plan', '0')
+        business_plan_name = ''
+        original_price = 0
+        total_price = 0
+
+        # Optionally, get business plan info from DB if needed for name and prices
+        from .models import BizPriceListSubmission  # replace with your actual model
+        try:
+            plan = BizPriceListSubmission.objects.get(id=business_plan_id)
+            business_plan_name = f"{plan.team_name}, {plan.billing_cycle}"
+            original_price = plan.old_price or 0
+            total_price = plan.new_price or 0
+        except:
+            pass
+
+        # Save the PI data
+        pi = BizPriceListSubmission.objects.create(
+        customer_name=data.get('customer_name'),
+        company_name=data.get('company_name'),
+        has_gst=data.get('has_gst'),
+        gst_number=data.get('gst_number'),
+        address=data.get('address'),
+        district=data.get('district'),
+        state=data.get('state'),
+        pincode=data.get('pincode'),
+        mobile=data.get('mobile'),
+        email=data.get('email'),
+        product_name=data.get('product_name'),
+        business_plan_id=int(data.get('business_plan')) if data.get('business_plan') else None,
+        business_plan_name=data.get('business_plan_name', ''),
+        original_price=data.get('original_price') or 0,
+        total_price=data.get('total_price') or 0,
+    )
+
+
+        return JsonResponse({'status': 'success', 'pi_id': pi.id})
+
+    return JsonResponse({'status': 'error', 'message': 'Invalid request'}, status=400)
+  

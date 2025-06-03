@@ -1,9 +1,11 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8" />
-<title>Price List Form</title>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+{% extends 'products/base2.html' %}
+
+{% load static %}
+
+{% block title %}Fusiontec - Fusiontec Form{% endblock %}
+
+{% block content %}
+
 <style>
   body {
     background-color: #f8f9fa;
@@ -34,6 +36,7 @@
     <h4 class="text-primary text-center">Fusiontec Price List Form</h4>
 
     <form id="priceListForm">
+      {% csrf_token %}
       <div class="form-section">
         <label for="customerName" class="form-label">Customer Name</label>
         <input type="text" id="customerName" name="customer_name" class="form-control" required />
@@ -61,7 +64,7 @@
         <label for="address" class="form-label">Address</label>
         <textarea id="address" name="address" class="form-control"></textarea>
         <div class="row g-2 mt-2">
-          <div class="col-4"><input type="text" name="area" placeholder="Area" class="form-control" /></div>
+          <div class="col-4"><input type="text" name="district" placeholder="District" class="form-control" /></div>
           <div class="col-4"><input type="text" name="state" placeholder="State" class="form-control" /></div>
           <div class="col-4"><input type="text" name="pincode" placeholder="Pincode" class="form-control" /></div>
         </div>
@@ -78,21 +81,19 @@
       </div>
 
       <div class="form-section">
-        <label for="popupProductName" class="form-label">Product Name</label>
-        <input type="text" id="popupProductName" name="product_name" class="form-control" required value="Fusiontec" readonly />
+          <label for="popupProductName" class="form-label">Product Name</label>
+          <input type="text" id="popupProductName" name="product_name" class="form-control" required value="{{ fusiontec_name }}" readonly />
       </div>
 
-    <div class="form-section" id="dynamicDropdownContainer">
-        <label for="productTypeDetailSelector" class="form-label">Product Type Details</label>
-        <select name="product_type_detail" id="productTypeDetailSelector" class="form-select" required>
-            <option value="">Select Product</option>
-            <option value="cloud_billing">Cloud Based Billing Software</option>
-            <option value="e_invoicing">E Invoicing Software</option>
-            <option value="integra">Integra</option>
-            <option value="custom_development">Custom Development</option>
-        </select>
-        </div>
-
+      <div class="form-section" id="dynamicDropdownContainer">
+          <label for="productTypeDetailSelector" class="form-label">Product Type Details</label>
+          <select name="product_type_detail" id="productTypeDetailSelector" class="form-select" required>
+              <option value="">Select Product</option>
+              {% for product in product_types %}
+                  <option value="{{ product.fusiontec_product }}">{{ product.fusiontec_product }}</option>
+              {% endfor %}
+          </select>
+      </div>
 
       <!-- Generate PI Button -->
       <button
@@ -103,7 +104,6 @@
         Generate PI
       </button>
 
-      <button class="btn btn-primary w-100 mt-3">CONTACT-US</button>
     </form>
   </div>
 </div>
@@ -123,6 +123,7 @@
         </table>
       </div>
       <div class="modal-footer">
+        <button class="btn btn-primary">CONTACT-US</button>
         <button type="button" id="downloadPdfBtn" class="btn btn-success">Download PDF</button>
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
       </div>
@@ -179,6 +180,23 @@
     const form = document.getElementById('priceListForm');
     const formData = new FormData(form);
 
+    // Save to DB
+    fetch("{% url 'fusiontec_price_list_form' %}", {
+      method: "POST",
+      body: formData,
+      headers: {
+        'X-CSRFToken': form.querySelector('[name=csrfmiddlewaretoken]').value
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        console.log("Saved to DB");
+      } else {
+        console.error("Save failed", data.error);
+      }
+    });
+
     // Clear previous table rows
     piPreviewTableBody.innerHTML = '';
 
@@ -199,7 +217,7 @@
       addRow('GST Number', formData.get('gst_number'));
     } else {
       addRow('Address', formData.get('address'));
-      addRow('Area', formData.get('area'));
+      addRow('District', formData.get('district'));
       addRow('State', formData.get('state'));
       addRow('Pincode', formData.get('pincode'));
     }
@@ -258,7 +276,7 @@
       addPdfRow('GST Number', formData.get('gst_number'));
     } else {
       addPdfRow('Address', formData.get('address'));
-      addPdfRow('Area', formData.get('area'));
+      addPdfRow('District', formData.get('district'));
       addPdfRow('State', formData.get('state'));
       addPdfRow('Pincode', formData.get('pincode'));
     }
@@ -274,5 +292,5 @@
 
 
 </script>
-</body>
-</html>
+
+{% endblock %}

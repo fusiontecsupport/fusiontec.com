@@ -23,6 +23,10 @@
     max-height: 70px;
     margin-right: 8px;
 }
+#enquiryForm {
+  transition: transform 0.5s ease;
+}
+
 
 
 /* for product section of responsive */

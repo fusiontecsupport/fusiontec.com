@@ -17,59 +17,92 @@ class ContactSubmission(models.Model):
 # -----------------------------------------------------------
 # Tally full section database models
 
+from django.db import models
+
 class Tally_1(models.Model):
     tally_name = models.CharField(max_length=255)
     tally_description = models.TextField(blank=True, null=True)
-    tally_image = models.ImageField(upload_to='products/')
+    tally_image = models.ImageField(upload_to='products/', blank=True, null=True)
     tally_link = models.URLField(blank=True, null=True)
 
     def __str__(self):
         return self.tally_name
 
+
 class Tally_Product(models.Model):
-    tally_1 = models.ForeignKey(Tally_1, on_delete=models.CASCADE, related_name='types')
-    type_name = models.CharField(max_length=255, null=True)
-    basic_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True)
-    cgst = models.DecimalField(max_digits=10, decimal_places=2, help_text="CGST @ 9%", default=0)
-    sgst = models.DecimalField(max_digits=10, decimal_places=2, help_text="SGST @ 9%", default=0)
+    tally_1 = models.ForeignKey(Tally_1, on_delete=models.CASCADE, related_name='products')
+    type_name = models.CharField(max_length=255, null=True, blank=True)
+    basic_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    cgst = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    sgst = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     total_price = models.DecimalField(max_digits=10, decimal_places=2, editable=False, default=0)
 
     def save(self, *args, **kwargs):
-        self.total_price = self.basic_amount + self.sgst + self.cgst
+        basic = self.basic_amount or 0
+        self.total_price = basic + self.cgst + self.sgst
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.product.name} - {self.type_name}"
+        return f"{self.tally_1.tally_name} - {self.type_name}"
+
 
 class Tally_Software_Service(models.Model):
-    tally_1 = models.ForeignKey(Tally_1, on_delete=models.CASCADE)
-    type_name = models.CharField(max_length=255, null=True)
-    basic_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True)
-    cgst = models.DecimalField(max_digits=10, decimal_places=2, help_text="CGST @ 9%", default=0)
-    sgst = models.DecimalField(max_digits=10, decimal_places=2, help_text="SGST @ 9%", default=0)
+    tally_1 = models.ForeignKey(Tally_1, on_delete=models.CASCADE, related_name='services')
+    type_name = models.CharField(max_length=255, null=True, blank=True)
+    basic_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    cgst = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    sgst = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     total_price = models.DecimalField(max_digits=10, decimal_places=2, editable=False, default=0)
 
     def save(self, *args, **kwargs):
-        self.total_price = self.basic_amount + self.sgst + self.cgst
+        basic = self.basic_amount or 0
+        self.total_price = basic + self.cgst + self.sgst
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.product.name} - {self.type_name}"
+        return f"{self.tally_1.tally_name} - {self.type_name}"
+
 
 class Tally_Upgrade(models.Model):
-    tally_1 = models.ForeignKey(Tally_1, on_delete=models.CASCADE)
-    type_name = models.CharField(max_length=255, null=True)
-    basic_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True)
-    cgst = models.DecimalField(max_digits=10, decimal_places=2, help_text="CGST @ 9%", default=0)
-    sgst = models.DecimalField(max_digits=10, decimal_places=2, help_text="SGST @ 9%", default=0)
+    tally_1 = models.ForeignKey(Tally_1, on_delete=models.CASCADE, related_name='upgrades')
+    type_name = models.CharField(max_length=255, null=True, blank=True)
+    basic_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    cgst = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    sgst = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     total_price = models.DecimalField(max_digits=10, decimal_places=2, editable=False, default=0)
 
     def save(self, *args, **kwargs):
-        self.total_price = self.basic_amount + self.sgst + self.cgst
+        basic = self.basic_amount or 0
+        self.total_price = basic + self.cgst + self.sgst
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.product.name} - {self.type_name}"
+        return f"{self.tally_1.tally_name} - {self.type_name}"
+
+from django.db import models
+
+class TallyPriceListSubmission(models.Model):
+    customer_name = models.CharField(max_length=200)
+    company_name = models.CharField(max_length=200, blank=True, null=True)
+    has_gst = models.BooleanField(default=True)
+    gst_number = models.CharField(max_length=50, blank=True, null=True)
+    address = models.TextField(blank=True, null=True)
+    area = models.CharField(max_length=100, blank=True, null=True)
+    state = models.CharField(max_length=100, blank=True, null=True)
+    pincode = models.CharField(max_length=20, blank=True, null=True)
+    mobile = models.CharField(max_length=20)
+    email = models.EmailField(blank=True, null=True)
+    product_name = models.CharField(max_length=100)
+    product_type = models.CharField(max_length=50)
+    product_type_detail = models.CharField(max_length=100, blank=True, null=True)
+    basic_amount = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    cgst = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    sgst = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    total_price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"PI - {self.customer_name} - {self.product_name} ({self.created_at.strftime('%Y-%m-%d')})"
 
 # -----------------------------------------------------------
 # E-mudhra section database models
@@ -88,7 +121,26 @@ class Emudhra_product(models.Model):
     emudhra_rate = models.DecimalField(max_digits=10, decimal_places=2, null=True)
 
     def __str__(self):
-        return f"{self.class_product} - {self.rate}"
+        return f"{self.class_product} - {self.emudhra_rate}"
+    
+class EmudhraPriceListSubmission(models.Model):
+    customer_name = models.CharField(max_length=255)
+    company_name = models.CharField(max_length=255, blank=True, null=True)
+    has_gst = models.CharField(max_length=3, choices=[('yes', 'Yes'), ('no', 'No')])
+    gst_number = models.CharField(max_length=50, blank=True, null=True)
+    address = models.TextField(blank=True, null=True)
+    district = models.CharField(max_length=100, blank=True, null=True)
+    state = models.CharField(max_length=100, blank=True, null=True)
+    pincode = models.CharField(max_length=20, blank=True, null=True)
+    mobile = models.CharField(max_length=20)
+    email = models.EmailField(blank=True, null=True)
+    product_name = models.CharField(max_length=255)
+    product_type_detail = models.CharField(max_length=255)
+    basic_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"PI Submission: {self.customer_name} - {self.product_name}"
     
 # -----------------------------------------------------------
 # Fusiontec section database models
@@ -103,11 +155,29 @@ class Fusiontec_3(models.Model):
         return self.fusiontec_name
 
 class Fusiontec_product(models.Model):
-    fusiontec_3 = models.ForeignKey(Fusiontec_3, on_delete=models.CASCADE)  # ForeignKey to Fusiontec_3
+    fusiontec_3 = models.ForeignKey(Fusiontec_3, on_delete=models.CASCADE)  
     fusiontec_product = models.CharField(max_length=255, null=True)
 
     def __str__(self):
         return self.fusiontec_product
+    
+class FusiontecPriceListSubmission(models.Model):
+    customer_name = models.CharField(max_length=100)
+    company_name = models.CharField(max_length=100, blank=True, null=True)
+    has_gst = models.CharField(max_length=10)
+    gst_number = models.CharField(max_length=50, blank=True, null=True)
+    address = models.TextField(blank=True, null=True)
+    district = models.CharField(max_length=100, blank=True, null=True)
+    state = models.CharField(max_length=100, blank=True, null=True)
+    pincode = models.CharField(max_length=10, blank=True, null=True)
+    mobile = models.CharField(max_length=15)
+    email = models.EmailField(blank=True, null=True)
+    product_name = models.CharField(max_length=100)
+    product_type_detail = models.CharField(max_length=100)
+    submitted_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.customer_name
 
 # -----------------------------------------------------------
 # biz section database models
@@ -115,23 +185,39 @@ class Fusiontec_product(models.Model):
 class Biz_4(models.Model):
     biz_name = models.CharField(max_length=255)
     biz_description = models.TextField(blank=True, null=True)
-    biz_image = models.ImageField(upload_to='products/')
+    biz_image = models.ImageField(upload_to='products/',blank=True, null=True)
     biz_link = models.URLField(blank=True, null=True)
 
     def __str__(self):
         return self.biz_name
     
 class biz_product(models.Model):
-    biz_4 = models.ForeignKey(Biz_4, on_delete=models.CASCADE)  
+    biz_4 = models.ForeignKey(Biz_4, on_delete=models.CASCADE)
+    old_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    billing_cycle = models.CharField( max_length=255,  blank=True,  null=True,  default="Billed for 1 Year | Per Device")
+    new_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)  
     team_name = models.CharField(max_length=255, default="For Sales Team") 
-    old_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)  # e.g., 3600
-    new_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)  # e.g., 3300
-    billing_cycle = models.CharField(
-        max_length=255, 
-        blank=True, 
-        null=True, 
-        default="Billed for 1 Year | Per Device"
-    )
 
     def __str__(self):
         return f"{self.team_name} ({self.new_price})"
+
+class BizPriceListSubmission(models.Model):
+    customer_name = models.CharField(max_length=255)
+    company_name = models.CharField(max_length=255, blank=True, null=True)
+    has_gst = models.CharField(max_length=3, choices=[('yes', 'Yes'), ('no', 'No')])
+    gst_number = models.CharField(max_length=20, blank=True, null=True)
+    address = models.TextField(blank=True, null=True)
+    district = models.CharField(max_length=100, blank=True, null=True)
+    state = models.CharField(max_length=100, blank=True, null=True)
+    pincode = models.CharField(max_length=20, blank=True, null=True)
+    mobile = models.CharField(max_length=20)
+    email = models.EmailField(blank=True, null=True)
+    product_name = models.CharField(max_length=255)
+    business_plan_id = models.IntegerField()  # store the ID of selected business plan
+    business_plan_name = models.CharField(max_length=255)
+    original_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    total_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"PI for {self.customer_name} - {self.product_name}"

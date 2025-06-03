@@ -71,7 +71,7 @@
 <div id="enquiryForm" class="floating-form">
   <div class="d-flex justify-content-between align-items-center mb-2">
     <strong>Enquiry Form</strong>
-    <button id="closeEnquiry" class="close-btn" aria-label="Close enquiry form">&times;</button>
+    <button id="closeEnquiry" class="close-btn" aria-label="Close enquiry form"style="font-size: 1.5rem;">&times;</button>
   </div>
   <form method="POST" enctype="multipart/form-data" class="php-email-forms flex-fill d-flex flex-column justify-content-between">
     {% csrf_token %}
@@ -125,8 +125,8 @@
     position: fixed;
     bottom: 20px;
     left: 20px;
-    width: 180px; /* your preferred width */
-    max-width: 220px;
+    width: 260px; /* your preferred width */
+    max-width: 280px;
     background: #fff;
     border: 1px solid #ddd;
     border-radius: 10px;
@@ -235,38 +235,8 @@
   }
 </style>
 
-<!-- Script -->
-<script>
-  document.addEventListener("DOMContentLoaded", function () {
-    const form = document.getElementById('enquiryForm');
-    const icon = document.getElementById('enquiryIcon');
-    const closeBtn = document.getElementById('closeEnquiry');
 
-    function showForm() {
-      form.classList.remove('hide');
-      icon.style.display = 'none';
-    }
 
-    function hideForm() {
-      form.classList.add('hide');
-      icon.style.display = 'flex';
-    }
-
-    closeBtn.onclick = hideForm;
-    icon.onclick = showForm;
-
-    icon.addEventListener('keydown', function(event) {
-      if (event.key === 'Enter' || event.key === ' ') {
-        event.preventDefault();
-        icon.click();
-      }
-    });
-
-    if (window.innerWidth <= 768) {
-      hideForm();
-    }
-  });
-</script>
 
 
 
