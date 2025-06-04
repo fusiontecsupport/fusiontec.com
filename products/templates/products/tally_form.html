@@ -51,7 +51,7 @@
 
       <!-- Customer Info -->
       <div class="form-section">
-        <label for="customerName" class="form-label">Customer Name</label>
+        <label for="customerName" class="form-label">Customer Name <span style="color:red">*</span></label>
         <input type="text" id="customerName" name="customer_name" class="form-control" maxlength="50" required />
         <div class="error-message" id="error-customerName"></div>
       </div>
@@ -73,13 +73,13 @@
       </div>
 
       <div class="form-section" id="gstNumberField">
-        <label for="gstNumber" class="form-label">GST Number</label>
+        <label for="gstNumber" class="form-label">GST Number <span style="color:red">*</span></label>
         <input type="text" id="gstNumber" name="gst_number" class="form-control"  maxlength="15"/>
         <div class="error-message" id="error-gstNumber"></div>
       </div>
 
       <div class="form-section" id="nonGstFields" style="display: none;">
-        <label for="address" class="form-label">Address</label>
+        <label for="address" class="form-label">Address <span style="color:red">*</span></label>
         <textarea id="address" name="address" class="form-control"></textarea>
         <div class="error-message" id="error-address"></div>
 
@@ -101,13 +101,13 @@
 
       <!-- Contact Info -->
       <div class="form-section">
-        <label for="mobile" class="form-label">Mobile Number</label>
+        <label for="mobile" class="form-label">Mobile Number <span style="color:red">*</span></label>
         <input type="text" id="mobile" name="mobile" class="form-control" required />
         <div class="error-message" id="error-mobile"></div>
       </div>
 
       <div class="form-section">
-        <label for="email" class="form-label">Email ID</label>
+        <label for="email" class="form-label">Email ID <span style="color:red">*</span></label>
         <input type="email" id="email" name="email" class="form-control" />
         <div class="error-message" id="error-email"></div>
       </div>
@@ -120,7 +120,7 @@
       </div>
 
       <div class="form-section">
-        <label for="productTypeSelector" class="form-label">Product Type</label>
+        <label for="productTypeSelector" class="form-label">Product Type <span style="color:red">*</span></label>
         <select name="product_type" id="productTypeSelector" class="form-select" required>
           <option value="">Select</option>
           <option value="product">Product</option>
@@ -131,14 +131,14 @@
       </div>
 
       <div class="form-section" id="dynamicDropdownContainer" style="display: none;">
-        <label for="productTypeDetailSelector" class="form-label">Product Type Details</label>
+        <label for="productTypeDetailSelector" class="form-label">Product Type Details <span style="color:red">*</span></label>
         <select name="product_type_detail" id="productTypeDetailSelector" class="form-select" required></select>
         <div class="error-message" id="error-productTypeDetailSelector"></div>
       </div>
 
       <!-- Price Breakdown -->
       <div class="form-section bg-light rounded p-3" id="productDetailsContainer" style="display: none;">
-        <h6 class="text-secondary">Product Details</h6>
+        <h6 class="text-secondary">Product Details </h6>
         <p>Basic Amount: <strong><span id="basicAmount">-</span></strong></p>
         <p>CGST (9%): <strong><span id="cgst">-</span></strong></p>
         <p>SGST (9%): <strong><span id="sgst">-</span></strong></p>
