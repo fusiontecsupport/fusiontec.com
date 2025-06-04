@@ -26,6 +26,10 @@
   .form-section h6 {
     margin-bottom: 0.75rem;
   }
+  .error-msg {
+    color: red;
+    font-size: 0.875rem;
+  }
 </style>
 </head>
 <body>
@@ -38,12 +42,12 @@
       {% csrf_token %}
       <div class="form-section">
         <label for="customerName" class="form-label">Customer Name</label>
-        <input type="text" id="customerName" name="customer_name" class="form-control" required />
+        <input type="text" id="customerName" name="customer_name" class="form-control" maxlength="50" required />
       </div>
 
       <div class="form-section">
         <label for="companyName" class="form-label">Company Name</label>
-        <input type="text" id="companyName" name="company_name" class="form-control" />
+        <input type="text" id="companyName" name="company_name" class="form-control" maxlength="50"/>
       </div>
 
       <div class="form-section">
@@ -56,7 +60,7 @@
 
       <div class="form-section" id="gstNumberField">
         <label for="gstNumber" class="form-label">GST Number</label>
-        <input type="text" id="gstNumber" name="gst_number" class="form-control" />
+        <input type="text" id="gstNumber" name="gst_number" class="form-control" maxlength="15"/>
       </div>
 
       <div class="form-section" id="nonGstFields" style="display: none;">
@@ -71,8 +75,14 @@
 
       <div class="form-section">
         <label for="mobile" class="form-label">Mobile Number</label>
-        <input type="text" id="mobile" name="mobile" class="form-control" required />
+        <input  type="tel"  id="mobile"  name="mobile"  class="form-control"  maxlength="10"  pattern="[0-9]*" inputmode="numeric" required />
       </div>
+      <script>
+        const mobileInput = document.getElementById('mobile');
+        mobileInput.addEventListener('input', () => {
+          mobileInput.value = mobileInput.value.replace(/\D/g, '').slice(0,10);
+        });
+      </script>
 
       <div class="form-section">
         <label for="email" class="form-label">Email ID</label>
@@ -106,9 +116,7 @@
       <input type="hidden" id="originalPriceInput" name="original_price" />
       <input type="hidden" id="totalPriceInput" name="total_price" />
 
-      <button type="button" id="generatePiBtn" class="btn btn-success w-100 mt-3 mb-2">
-        Generate PI Preview
-      </button>
+      <button type="button" id="generatePiBtn" class="btn btn-outline-primary w-100 mt-3 mb-2">Generate PI</button>
 
     </form>
   </div>
@@ -136,6 +144,110 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const form = document.getElementById("priceListForm");
+  const generateBtn = document.getElementById("generatePiBtn");
+
+  const requiredFields = [
+    { id: "customerName", name: "Customer Name" },
+    { id: "mobile", name: "Mobile Number" },
+    { id: "popupProductName", name: "Product Name" },
+    { id: "businessPlanSelector", name: "Business Plan" }
+  ];
+
+  const createError = (el, message) => {
+    removeError(el);
+    const error = document.createElement("div");
+    error.className = "text-danger mt-1 small";
+    error.textContent = message;
+    el.parentNode.appendChild(error);
+  };
+
+  const removeError = (el) => {
+    const error = el.parentNode.querySelector(".text-danger");
+    if (error) error.remove();
+  };
+
+  const validateField = (el, name) => {
+    const value = el.value.trim();
+    if (!value) {
+      createError(el, `${name} is required`);
+      return false;
+    } else {
+      removeError(el);
+      return true;
+    }
+  };
+
+  const validateForm = () => {
+    let isValid = true;
+    requiredFields.forEach(({ id, name }) => {
+      const el = document.getElementById(id);
+      if (!validateField(el, name)) isValid = false;
+    });
+
+    // GST conditional validation
+    const gstSelector = document.getElementById("gstSelector");
+    if (gstSelector.value === "yes") {
+      const gstNumber = document.getElementById("gstNumber");
+      if (!validateField(gstNumber, "GST Number")) isValid = false;
+    } else {
+      ["address", "district", "state", "pincode"].forEach((id) => {
+        const el = document.getElementsByName(id)[0];
+        if (!validateField(el, id.charAt(0).toUpperCase() + id.slice(1))) isValid = false;
+      });
+    }
+
+    generateBtn.disabled = !isValid;
+    return isValid;
+  };
+
+  // Attach input listeners for live validation
+  requiredFields.forEach(({ id, name }) => {
+    const el = document.getElementById(id);
+    el.addEventListener("input", () => {
+      validateField(el, name);
+      validateForm();
+    });
+  });
+
+  // GST conditional field live validation
+  document.getElementById("gstSelector").addEventListener("change", () => {
+    validateForm();
+  });
+
+  ["gstNumber", "address"].forEach((id) => {
+    const el = document.getElementById(id) || document.getElementsByName(id)[0];
+    if (el) {
+      el.addEventListener("input", () => {
+        validateForm();
+      });
+    }
+  });
+
+  ["district", "state", "pincode"].forEach((id) => {
+    const el = document.getElementsByName(id)[0];
+    if (el) {
+      el.addEventListener("input", () => {
+        validateForm();
+      });
+    }
+  });
+
+  // Initial check
+  validateForm();
+
+  // Prevent click if not valid
+  generateBtn.addEventListener("click", (e) => {
+    if (!validateForm()) {
+      e.preventDefault();
+      return;
+    }
+  });
+});
+</script>
+
 
 
 <script>
@@ -271,7 +383,6 @@
   });
 
 
-  //code for downloading the PI as PDF
   downloadPiBtn.addEventListener('click', () => {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
@@ -284,6 +395,7 @@
   const cellPadding = 3;
   const labelColWidth = 60;
   const valueColWidth = pageWidth - marginLeft * 2 - labelColWidth;
+  const defaultRowHeight = 10;
 
   // Header
   doc.setFontSize(16);
@@ -300,27 +412,32 @@
 
   rows.forEach((row) => {
     const cols = row.querySelectorAll('th, td');
+    if (cols.length < 2) return; // skip incomplete rows
+
     const label = cols[0].textContent.trim();
     const value = cols[1].textContent.trim();
 
-    const rowHeight = 10;
+    // Wrap the value text to fit inside valueColWidth with some padding
+    const wrappedValue = doc.splitTextToSize(value, valueColWidth - cellPadding * 2);
 
-    // Draw label cell border
+    // Calculate row height based on wrapped lines (approx 7 units per line)
+    const rowHeight = Math.max(defaultRowHeight, wrappedValue.length * 7);
+
+    // Draw borders
     doc.rect(marginLeft, y, labelColWidth, rowHeight);
-    // Draw value cell border
     doc.rect(marginLeft + labelColWidth, y, valueColWidth, rowHeight);
 
-    // Add label text (bold)
+    // Label text (bold)
     doc.setFont(undefined, 'bold');
     doc.text(label, marginLeft + cellPadding, y + 7);
 
-    // Add value text (normal)
+    // Value text (normal), multiline support
     doc.setFont(undefined, 'normal');
-    doc.text(value, marginLeft + labelColWidth + cellPadding, y + 7);
+    doc.text(wrappedValue, marginLeft + labelColWidth + cellPadding, y + 7);
 
     y += rowHeight;
 
-    // Add page break if near bottom
+    // Page break if near bottom of page
     if (y > 280) {
       doc.addPage();
       y = 20;

@@ -39,12 +39,12 @@
       {% csrf_token %}
       <div class="form-section">
         <label for="customerName" class="form-label">Customer Name</label>
-        <input type="text" id="customerName" name="customer_name" class="form-control" required />
+        <input type="text" id="customerName" name="customer_name" class="form-control" maxlength="50" required />
       </div>
 
       <div class="form-section">
         <label for="companyName" class="form-label">Company Name</label>
-        <input type="text" id="companyName" name="company_name" class="form-control" />
+        <input type="text" id="companyName" name="company_name" class="form-control" maxlength="50"/>
       </div>
 
       <div class="form-section">
@@ -57,7 +57,7 @@
 
       <div class="form-section" id="gstNumberField">
         <label for="gstNumber" class="form-label">GST Number</label>
-        <input type="text" id="gstNumber" name="gst_number" class="form-control" />
+        <input type="text" id="gstNumber" name="gst_number" class="form-control" maxlength="15"/>
       </div>
 
       <div class="form-section" id="nonGstFields" style="display:none;">
@@ -96,15 +96,9 @@
       </div>
 
       <!-- Generate PI Button -->
-      <button
-        type="button"
-        id="generatePiBtn"
-        class="btn btn-outline-primary w-100 mb-3"
-        style="font-weight: 600;">
-        Generate PI
-      </button>
-
+      <button type="button" id="generatePiBtn" class="btn btn-outline-primary w-100 mb-3" style="font-weight: 600;">Generate PI</button>
     </form>
+
   </div>
 </div>
 <!-- PI Preview Modal with styled table -->
@@ -135,49 +129,179 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-  // GST field toggle
+document.addEventListener('DOMContentLoaded', () => {
+  // Elements
+  const form = document.getElementById('priceListForm');
+  const generatePiBtn = document.getElementById('generatePiBtn');
+
+  // Validation config: field name => { validator fn, error message }
+  const validations = {
+    customer_name: {
+      validate: val => val.trim().length > 0,
+      message: 'Customer Name is required'
+    },
+    has_gst: {
+      validate: val => val === 'yes' || val === 'no',
+      message: 'Please select GST option'
+    },
+    gst_number: {
+      validate: val => val.trim().length > 0,
+      message: 'GST Number is required',
+      dependsOn: () => form.querySelector('[name=has_gst]').value === 'yes'
+    },
+    address: {
+      validate: val => val.trim().length > 0,
+      message: 'Address is required',
+      dependsOn: () => form.querySelector('[name=has_gst]').value === 'no'
+    },
+    district: {
+      validate: val => val.trim().length > 0,
+      message: 'District is required',
+      dependsOn: () => form.querySelector('[name=has_gst]').value === 'no'
+    },
+    state: {
+      validate: val => val.trim().length > 0,
+      message: 'State is required',
+      dependsOn: () => form.querySelector('[name=has_gst]').value === 'no'
+    },
+    pincode: {
+      validate: val => /^[0-9]{6}$/.test(val.trim()),
+      message: 'Pincode must be 6 digits',
+      dependsOn: () => form.querySelector('[name=has_gst]').value === 'no'
+    },
+    mobile: {
+      validate: val => /^[6-9][0-9]{9}$/.test(val.trim()),
+      message: 'Mobile must be 10 digits starting with 6-9'
+    },
+    email: {
+      validate: val => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val.trim()),
+      message: 'Invalid email address'
+    },
+    product_name: {
+      validate: val => val.trim().length > 0,
+      message: 'Product Name is required'
+    },
+    product_type_detail: {
+      validate: val => val.trim().length > 0,
+      message: 'Product Type Detail is required'
+    }
+  };
+
+  // Utility: show or clear error below an input
+  function showError(inputEl, message) {
+    let errorEl = inputEl.nextElementSibling;
+    if (!errorEl || !errorEl.classList.contains('error-message')) {
+      errorEl = document.createElement('div');
+      errorEl.classList.add('error-message');
+      errorEl.style.color = 'red';
+      errorEl.style.fontSize = '0.85em';
+      inputEl.parentNode.insertBefore(errorEl, inputEl.nextSibling);
+    }
+    errorEl.textContent = message;
+  }
+
+  function clearError(inputEl) {
+    let errorEl = inputEl.nextElementSibling;
+    if (errorEl && errorEl.classList.contains('error-message')) {
+      errorEl.textContent = '';
+    }
+  }
+
+  // Validate single field, return true if valid
+  function validateField(name) {
+    const inputEl = form.querySelector(`[name=${name}]`);
+    if (!inputEl) return true; // no field? ignore
+
+    const config = validations[name];
+    if (!config) return true;
+
+    if (config.dependsOn && !config.dependsOn()) {
+      clearError(inputEl);
+      return true; // skip validation if dependsOn false
+    }
+
+    const value = inputEl.value || '';
+    if (!config.validate(value)) {
+      showError(inputEl, config.message);
+      return false;
+    } else {
+      clearError(inputEl);
+      return true;
+    }
+  }
+
+  // Validate all fields, return true if all valid
+  function validateForm() {
+    let allValid = true;
+    for (const name in validations) {
+      if (!validateField(name)) allValid = false;
+    }
+    return allValid;
+  }
+
+  // On any input change, validate that field and whole form
+  form.addEventListener('input', e => {
+    const name = e.target.name;
+    if (!name) return;
+
+    validateField(name);
+
+    // Enable/disable generate PI button
+    generatePiBtn.disabled = !validateForm();
+  });
+
+  // Also validate on page load to disable button if needed
+  generatePiBtn.disabled = !validateForm();
+
+  // The rest of your existing logic:
+  // GST toggle
   const gstSelector = document.getElementById('gstSelector');
   const gstNumberField = document.getElementById('gstNumberField');
   const nonGstFields = document.getElementById('nonGstFields');
 
-  gstSelector.addEventListener('change', (e) => {
-    if (e.target.value === 'yes') {
+  gstSelector.addEventListener('change', () => {
+    if (gstSelector.value === 'yes') {
       gstNumberField.style.display = 'block';
       nonGstFields.style.display = 'none';
     } else {
       gstNumberField.style.display = 'none';
       nonGstFields.style.display = 'block';
     }
+    // re-validate after toggle because fields show/hide
+    validateForm();
+    generatePiBtn.disabled = !validateForm();
   });
 
   // Product details display
   const dropdown = document.getElementById('productTypeDetailSelector');
   const detailsContainer = document.getElementById('productDetailsContainer');
   const basicAmountEl = document.getElementById('basicAmount');
-  const productNameInput = document.getElementById('popupProductName');
 
-  dropdown.addEventListener('change', (e) => {
-    const option = e.target.selectedOptions[0];
+  dropdown.addEventListener('change', () => {
+    const option = dropdown.selectedOptions[0];
     const basic = parseFloat(option.dataset.basic || 0);
-
     if (basic > 0) {
       basicAmountEl.textContent = basic.toFixed(2);
       detailsContainer.style.display = 'block';
-      // Removed productNameInput update to keep default "E-Mudhra"
     } else {
       detailsContainer.style.display = 'none';
+      basicAmountEl.textContent = '';
     }
   });
 
-    const { jsPDF } = window.jspdf;
-
-  const piPreviewModal = new bootstrap.Modal(document.getElementById('piPreviewModal'));
+  // PI Preview and PDF generation
+  const piPreviewModalEl = document.getElementById('piPreviewModal');
   const piPreviewTableBody = document.getElementById('piPreviewTableBody');
-  const generatePiBtn = document.getElementById('generatePiBtn');
-  const downloadPdfBtn = document.getElementById('downloadPdfBtn');
+  const { jsPDF } = window.jspdf;
+  const piPreviewModal = new bootstrap.Modal(piPreviewModalEl);
 
-  generatePiBtn.addEventListener('click', () => {
-    const form = document.getElementById('priceListForm');
+  generatePiBtn.addEventListener('click', e => {
+    e.preventDefault();
+    if (!validateForm()) {
+      alert('Please fix errors before generating Proforma Invoice.');
+      return;
+    }
+
     const formData = new FormData(form);
 
     // Save to DB
@@ -187,20 +311,14 @@
       headers: {
         'X-CSRFToken': form.querySelector('[name=csrfmiddlewaretoken]').value
       }
-    })
-    .then(response => response.json())
-    .then(data => {
-      if (data.success) {
-        console.log("Saved to DB");
-      } else {
-        console.error("Save failed", data.error);
-      }
-    });
+    }).then(res => res.json())
+      .then(data => {
+        if (!data.success) alert('Save failed: ' + (data.error || 'Unknown'));
+      }).catch(() => alert('Network error during save.'));
 
-    // Clear previous table rows
+    // Prepare preview table
     piPreviewTableBody.innerHTML = '';
 
-    // Helper function to add table row
     function addRow(label, value) {
       const tr = document.createElement('tr');
       tr.innerHTML = `<th style="width:40%">${label}</th><td>${value || 'N/A'}</td>`;
@@ -209,8 +327,7 @@
 
     addRow('Customer Name', formData.get('customer_name'));
     addRow('Company Name', formData.get('company_name'));
-
-    const hasGst = formData.get('has_gst');
+    const hasGst = formData.get('has_gst') || '';
     addRow('Has GST', hasGst.toUpperCase());
 
     if (hasGst === 'yes') {
@@ -224,30 +341,29 @@
 
     addRow('Mobile', formData.get('mobile'));
     addRow('Email', formData.get('email'));
-
     addRow('Product Name', formData.get('product_name'));
     addRow('Product Type Detail', formData.get('product_type_detail'));
 
     piPreviewModal.show();
   });
 
-  downloadPdfBtn.addEventListener('click', () => {
-    const form = document.getElementById('priceListForm');
+  // PDF Download
+  const downloadPdfBtn = document.getElementById('downloadPdfBtn');
+  downloadPdfBtn.addEventListener('click', e => {
+    e.preventDefault();
     const formData = new FormData(form);
 
     const doc = new jsPDF();
     doc.setFontSize(18);
     doc.text('Proforma Invoice (PI)', 14, 22);
-
     doc.setFontSize(12);
-    const startY = 30;
-    let y = startY;
 
+    let y = 30;
     const leftColX = 14;
     const rightColX = 90;
     const rowHeight = 10;
+    const pageHeightLimit = 270;
 
-    // Draw table headers
     doc.setFillColor(220, 220, 220);
     doc.rect(leftColX - 2, y - 8, 180, rowHeight, 'F');
     doc.setTextColor(0, 0, 0);
@@ -255,12 +371,11 @@
     doc.text('Value', rightColX, y);
     y += rowHeight;
 
-    // Helper to add row in PDF
     function addPdfRow(label, value) {
       doc.text(label, leftColX, y);
       doc.text(value || 'N/A', rightColX, y);
       y += rowHeight;
-      if (y > 270) { // page break
+      if (y > pageHeightLimit) {
         doc.addPage();
         y = 20;
       }
@@ -268,11 +383,10 @@
 
     addPdfRow('Customer Name', formData.get('customer_name'));
     addPdfRow('Company Name', formData.get('company_name'));
+    const hasGstVal = formData.get('has_gst') || '';
+    addPdfRow('Has GST', hasGstVal.toUpperCase());
 
-    const hasGst = formData.get('has_gst');
-    addPdfRow('Has GST', hasGst.toUpperCase());
-
-    if (hasGst === 'yes') {
+    if (hasGstVal === 'yes') {
       addPdfRow('GST Number', formData.get('gst_number'));
     } else {
       addPdfRow('Address', formData.get('address'));
@@ -283,14 +397,18 @@
 
     addPdfRow('Mobile', formData.get('mobile'));
     addPdfRow('Email', formData.get('email'));
-
     addPdfRow('Product Name', formData.get('product_name'));
     addPdfRow('Product Type Detail', formData.get('product_type_detail'));
 
     doc.save('fusiontec_PI.pdf');
   });
-
-
+});
 </script>
+<style>
+  /* Simple inline error styling */
+  .error-message {
+    margin-top: 2px;
+  }
+</style>
 
 {% endblock %}

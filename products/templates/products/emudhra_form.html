@@ -45,6 +45,11 @@
     margin-bottom: 12px;
     caption-side: top;
   }
+  .error-message {
+  color: red;
+  font-size: 0.875em;
+  margin-top: 0.25rem;
+}
 </style>
 </head>
 <body>
@@ -57,12 +62,12 @@
       {% csrf_token %}
       <div class="form-section">
         <label for="customerName" class="form-label">Customer Name</label>
-        <input type="text" id="customerName" name="customer_name" class="form-control" required />
+        <input type="text" id="customerName" name="customer_name" class="form-control" max-length="50" required />
       </div>
 
       <div class="form-section">
         <label for="companyName" class="form-label">Company Name</label>
-        <input type="text" id="companyName" name="company_name" class="form-control" />
+        <input type="text" id="companyName" name="company_name" class="form-control" max-length="50"/>
       </div>
 
       <div class="form-section">
@@ -75,7 +80,7 @@
 
       <div class="form-section" id="gstNumberField">
         <label for="gstNumber" class="form-label">GST Number</label>
-        <input type="text" id="gstNumber" name="gst_number" class="form-control" />
+        <input type="text" id="gstNumber" name="gst_number" class="form-control" maxlength="15"/>
       </div>
 
       <div class="form-section" id="nonGstFields" style="display:none;">
@@ -122,15 +127,7 @@
       </div>
 
       <!-- Generate PI Button -->
-      <button
-        type="button"
-        id="generatePiBtn"
-        class="btn btn-outline-primary w-100 mb-3"
-        style="font-weight: 600;">
-        Generate PI
-      </button>
-      
-      {% comment %} <button type="submit" class="btn btn-primary w-100 mt-3">PAY-ONLINE</button> {% endcomment %}
+      <button type="button" id="generatePiBtn" class="btn btn-outline-primary w-100 mb-3" style="font-weight: 600;">Generate PI</button>
     </form>
   </div>
 </div>
@@ -177,7 +174,6 @@ gstSelector.addEventListener('change', (e) => {
   }
 });
 
-// Product details display
 document.addEventListener('DOMContentLoaded', function () {
   const productSelect = document.getElementById('productTypeDetailSelector');
   const amountContainer = document.getElementById('productDetailsContainer');
@@ -195,11 +191,135 @@ document.addEventListener('DOMContentLoaded', function () {
         amountContainer.style.display = 'none';
         basicAmount.textContent = '';
       }
+      validateForm();
     });
   }
 });
 
-// Generate PI logic with AJAX save
+// Validation helpers
+function createErrorMessage(inputEl, msg) {
+  let errorEl = inputEl.nextElementSibling;
+  if (!errorEl || !errorEl.classList.contains('error-message')) {
+    errorEl = document.createElement('div');
+    errorEl.className = 'error-message text-danger small mt-1';
+    inputEl.parentNode.insertBefore(errorEl, inputEl.nextSibling);
+  }
+  errorEl.textContent = msg;
+}
+
+function clearErrorMessage(inputEl) {
+  let errorEl = inputEl.nextElementSibling;
+  if (errorEl && errorEl.classList.contains('error-message')) {
+    errorEl.textContent = '';
+  }
+}
+
+function validateInput(inputEl) {
+  const id = inputEl.id;
+  const value = inputEl.value.trim();
+  let valid = true;
+  let error = '';
+
+  if (inputEl.hasAttribute('required') && value === '') {
+    valid = false;
+    error = 'This field is required';
+  } else {
+    if (id === 'mobile') {
+      // Validate mobile number (10 digits)
+      if (value && !/^\d{10}$/.test(value)) {
+        valid = false;
+        error = 'Enter a valid 10-digit mobile number';
+      }
+    } else if (id === 'email') {
+      if (value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+        valid = false;
+        error = 'Enter a valid email address';
+      }
+    } else if (id === 'gstNumber') {
+      if (gstSelector.value === 'yes' && value === '') {
+        valid = false;
+        error = 'GST Number is required';
+      }
+      // Optional: Add more GST format validation if needed
+    } else if (id === 'productTypeDetailSelector') {
+      if (value === '') {
+        valid = false;
+        error = 'Please select a product';
+      }
+    }
+  }
+
+  if (!valid) {
+    createErrorMessage(inputEl, error);
+  } else {
+    clearErrorMessage(inputEl);
+  }
+  return valid;
+}
+
+function validateForm() {
+  const form = document.getElementById('priceListForm');
+  const generatePiBtn = document.getElementById('generatePiBtn');
+
+  // Validate required fields and conditions
+  const customerName = document.getElementById('customerName');
+  const mobile = document.getElementById('mobile');
+  const email = document.getElementById('email');
+  const gstNumber = document.getElementById('gstNumber');
+  const productType = document.getElementById('productTypeDetailSelector');
+
+  let isValid = true;
+
+  // Validate required inputs
+  [customerName, mobile, productType].forEach(input => {
+    if (!validateInput(input)) isValid = false;
+  });
+
+  // Validate GST if applicable
+  if (gstSelector.value === 'yes') {
+    if (!validateInput(gstNumber)) isValid = false;
+  } else {
+    // Optional: validate address fields if you want (not required by default)
+  }
+
+  // Validate optional email if filled
+  if (email.value.trim() !== '') {
+    if (!validateInput(email)) isValid = false;
+  }
+
+  generatePiBtn.disabled = !isValid;
+}
+
+// Attach input event listeners for live validation
+document.addEventListener('DOMContentLoaded', () => {
+  const formElements = [
+    'customerName',
+    'mobile',
+    'email',
+    'gstNumber',
+    'productTypeDetailSelector',
+  ];
+
+  formElements.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.addEventListener('input', validateForm);
+      if(el.tagName === 'SELECT'){
+        el.addEventListener('change', validateForm);
+      }
+    }
+  });
+
+  // Also validate on GST toggle change
+  gstSelector.addEventListener('change', () => {
+    validateForm();
+  });
+
+  // Initial validation run on page load
+  validateForm();
+});
+
+// Generate PI logic with AJAX save (unchanged, but button disabled if form invalid)
 document.addEventListener('DOMContentLoaded', () => {
   const generatePiBtn = document.getElementById('generatePiBtn');
   const piPreviewModalEl = document.getElementById('piPreviewModal');
@@ -208,7 +328,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const downloadPdfBtn = document.getElementById('downloadPdfBtn');
 
   generatePiBtn.addEventListener('click', () => {
-    console.log("Generate PI button clicked");
+    // Prevent click if disabled (extra safety)
+    if (generatePiBtn.disabled) return;
 
     // Gather form data
     const customerName = document.getElementById('customerName')?.value.trim() || '';
@@ -227,7 +348,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const productType = productTypeSelect ? productTypeSelect.text : '';
     const basicAmountValue = productTypeSelect ? parseFloat(productTypeSelect.dataset.basic || 0).toFixed(2) : '0.00';
 
-    // Create FormData for POST
     const formData = new FormData();
     formData.append('customer_name', customerName);
     formData.append('company_name', companyName);
@@ -243,7 +363,6 @@ document.addEventListener('DOMContentLoaded', () => {
     formData.append('product_type_detail', productType);
     formData.append('basic_amount', basicAmountValue);
 
-    // Send form data using fetch (form-encoded POST)
     fetch('/save-price-list/', {
       method: 'POST',
       body: formData,
@@ -268,55 +387,42 @@ document.addEventListener('DOMContentLoaded', () => {
                 ${gstInfoHtml}
                 <tr><th>Mobile Number</th><td>${mobile}</td></tr>
                 <tr><th>Email ID</th><td>${email || 'N/A'}</td></tr>
-                <tr><th>Product</th><td>${productName}</td></tr>
-                <tr><th>Product Type Details</th><td>${productType}</td></tr>
-                <tr><th>Basic Amount</th><td>₹${basicAmountValue}</td></tr>
+                <tr><th>Product Name</th><td>${productName}</td></tr>
+                <tr><th>Product Type</th><td>${productType}</td></tr>
+                <tr><th>Basic Amount</th><td>${basicAmountValue}</td></tr>
               </tbody>
             </table>
-            <p class="mt-3">Thank you for your business!</p>
           `;
+
           piPreviewContent.innerHTML = piTableHtml;
           piPreviewModal.show();
         } else {
-          alert('Error saving data. Please try again.');
+          alert('Error: ' + (response.message || 'Could not save data'));
         }
       })
-      .catch(() => alert('Network error. Please try again.'));
+      .catch((error) => {
+        console.error('Error:', error);
+        alert('Network or server error occurred.');
+      });
   });
 
-  // Download PDF using jsPDF
   downloadPdfBtn.addEventListener('click', () => {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-
-    const table = piPreviewContent.querySelector('table');
-    if (!table) return;
-
-    let y = 10;
-    doc.setFontSize(16);
-    doc.text('Proforma Invoice (PI)', 10, y);
-    y += 10;
-
-    doc.setFontSize(12);
-    const rows = table.querySelectorAll('tbody tr');
-    rows.forEach(row => {
-      const th = row.querySelector('th')?.textContent.trim();
-      const td = row.querySelector('td')?.textContent.trim();
-      doc.text(`${th}: ${td}`, 10, y);
-      y += 10;
-    });
-
-    doc.save('emudhra_PI.pdf');
+    // Use html2pdf or similar here to convert #piPreviewContent to PDF and download
+    // Example using html2pdf.js if included:
+    if (typeof html2pdf === 'function') {
+      html2pdf()
+        .from(piPreviewContent)
+        .set({
+          margin: 1,
+          filename: 'ProformaInvoice.pdf',
+          html2canvas: { scale: 2 },
+          jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
+        })
+        .save();
+    } else {
+      alert('PDF download library not loaded.');
+    }
   });
-
-  // Optional: prevent default form submit
-  const form = document.getElementById('priceListForm');
-  if (form) {
-    form.addEventListener('submit', (e) => {
-      e.preventDefault();
-      alert('Payment integration not implemented yet.');
-    });
-  }
 });
 
 
