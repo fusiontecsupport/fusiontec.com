@@ -41,7 +41,7 @@
     <form id="priceListForm" method="POST" action="{% url 'biz_form' %}">
       {% csrf_token %}
       <div class="form-section">
-        <label for="customerName" class="form-label">Customer Name</label>
+        <label for="customerName" class="form-label">Customer Name <span style="color:red">*</span></label>
         <input type="text" id="customerName" name="customer_name" class="form-control" maxlength="50" required />
       </div>
 
@@ -51,7 +51,7 @@
       </div>
 
       <div class="form-section">
-        <label for="gstSelector" class="form-label">GST Number</label>
+        <label for="gstSelector" class="form-label">GST Number?</label>
         <select id="gstSelector" name="has_gst" class="form-select">
           <option value="yes">Yes</option>
           <option value="no">No</option>
@@ -59,12 +59,12 @@
       </div>
 
       <div class="form-section" id="gstNumberField">
-        <label for="gstNumber" class="form-label">GST Number</label>
+        <label for="gstNumber" class="form-label">GST Number <span style="color:red">*</span></label>
         <input type="text" id="gstNumber" name="gst_number" class="form-control" maxlength="15"/>
       </div>
 
       <div class="form-section" id="nonGstFields" style="display: none;">
-        <label for="address" class="form-label">Address</label>
+        <label for="address" class="form-label">Address <span style="color:red">*</span></label>
         <textarea id="address" name="address" class="form-control"></textarea>
         <div class="row g-2 mt-2">
           <div class="col-4"><input type="text" name="district" placeholder="District" class="form-control" /></div>
@@ -74,7 +74,7 @@
       </div>
 
       <div class="form-section">
-        <label for="mobile" class="form-label">Mobile Number</label>
+        <label for="mobile" class="form-label">Mobile Number <span style="color:red">*</span></label>
         <input  type="tel"  id="mobile"  name="mobile"  class="form-control"  maxlength="10"  pattern="[0-9]*" inputmode="numeric" required />
       </div>
       <script>
@@ -85,7 +85,7 @@
       </script>
 
       <div class="form-section">
-        <label for="email" class="form-label">Email ID</label>
+        <label for="email" class="form-label">Email ID <span style="color:red">*</span></label>
         <input type="email" id="email" name="email" class="form-control" />
       </div>
 
@@ -96,7 +96,7 @@
 
       <!-- Business Plans Dropdown -->
       <div class="form-section" id="businessPlansContainer">
-        <label for="businessPlanSelector" class="form-label">Business Plans</label>
+        <label for="businessPlanSelector" class="form-label">Business Plans <span style="color:red">*</span></label>
         <select name="business_plan" id="businessPlanSelector" class="form-select" required>
           <option value="">Select Business Plan</option>
           {% for plan in bizz_products %}
