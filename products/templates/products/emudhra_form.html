@@ -156,6 +156,8 @@
 
 <!-- jsPDF library -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
 
 
 <script>
@@ -406,24 +408,111 @@ document.addEventListener('DOMContentLoaded', () => {
       });
   });
 
-  downloadPdfBtn.addEventListener('click', () => {
-    // Use html2pdf or similar here to convert #piPreviewContent to PDF and download
-    // Example using html2pdf.js if included:
-    if (typeof html2pdf === 'function') {
-      html2pdf()
-        .from(piPreviewContent)
-        .set({
-          margin: 1,
-          filename: 'ProformaInvoice.pdf',
-          html2canvas: { scale: 2 },
-          jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
-        })
-        .save();
-    } else {
-      alert('PDF download library not loaded.');
+    downloadPdfBtn.addEventListener('click', () => {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+
+  const table = piPreviewContent.querySelector('table');
+  if (!table) return;
+
+  const marginLeft = 10;
+  let y = 10;
+  const rowHeight = 8;
+  const colWidths = []; // will calculate based on content
+
+  // Get headers from <thead> or first row of <tbody>
+  let headers = [];
+  const thead = table.querySelector('thead');
+  if (thead) {
+    thead.querySelectorAll('th').forEach(th => headers.push(th.textContent.trim()));
+  } else {
+    table.querySelectorAll('tbody tr:first-child th, tbody tr:first-child td').forEach(cell => {
+      headers.push(cell.textContent.trim());
+    });
+  }
+
+  // Get all rows (skip first if used as header)
+  const rows = [];
+  table.querySelectorAll('tbody tr').forEach((tr, idx) => {
+    if (!thead && idx === 0) return; // skip first row if no thead and used as header
+    const row = [];
+    tr.querySelectorAll('th, td').forEach(cell => {
+      row.push(cell.textContent.trim());
+    });
+    rows.push(row);
+  });
+
+  // Calculate approximate column widths (max width of header or cells)
+  const docFontSize = 10;
+  doc.setFontSize(docFontSize);
+  const padding = 4;
+
+  const allRows = [headers, ...rows];
+  const colsCount = headers.length;
+
+  for (let col = 0; col < colsCount; col++) {
+    let maxWidth = 0;
+    allRows.forEach(row => {
+      if (row[col]) {
+        const cellWidth = doc.getTextWidth(row[col]) + padding * 2;
+        if (cellWidth > maxWidth) maxWidth = cellWidth;
+      }
+    });
+    colWidths.push(maxWidth);
+  }
+
+  // Draw title
+  doc.setFontSize(16);
+  doc.text('Proforma Invoice (PI)', marginLeft, y);
+  y += 10;
+
+  // Draw table headers background
+  doc.setFillColor(200, 200, 200);
+  let x = marginLeft;
+  for (let i = 0; i < colsCount; i++) {
+    doc.rect(x, y, colWidths[i], rowHeight, 'F'); // filled rect
+    x += colWidths[i];
+  }
+
+  // Draw headers text
+  doc.setTextColor(0, 0, 0);
+  doc.setFontSize(docFontSize);
+  x = marginLeft;
+  headers.forEach((header, i) => {
+    doc.text(header, x + padding, y + rowHeight - 3);
+    x += colWidths[i];
+  });
+
+  // Draw header bottom line
+  doc.line(marginLeft, y + rowHeight, marginLeft + colWidths.reduce((a, b) => a + b, 0), y + rowHeight);
+
+  y += rowHeight;
+
+  // Draw rows
+  rows.forEach(row => {
+    x = marginLeft;
+    for (let i = 0; i < colsCount; i++) {
+      const text = row[i] || '';
+      doc.text(text, x + padding, y + rowHeight - 3);
+      // Draw cell border
+      doc.rect(x, y, colWidths[i], rowHeight);
+      x += colWidths[i];
+    }
+    y += rowHeight;
+  });
+
+  doc.save('emudhra_PI.pdf');
+});
+
+    // Optional: prevent default form submit
+    const form = document.getElementById('priceListForm');
+    if (form) {
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        alert('Payment integration not implemented yet.');
+      });
     }
   });
-});
 
 
 
