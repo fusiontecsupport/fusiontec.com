@@ -235,6 +235,77 @@
   }
 </style>
 
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const form = document.getElementById('enquiryForm');
+  const icon = document.getElementById('enquiryIcon');
+  const closeBtn = document.getElementById('closeEnquiry');
+
+  // Helper: check if form is visible
+  function isFormVisible() {
+    return !form.classList.contains('hide');
+  }
+
+  // Show the form, hide the icon
+  function showForm() {
+    if (!isFormVisible()) {
+      form.classList.remove('hide');
+      icon.style.display = 'none';
+    }
+  }
+
+  // Hide the form, show the icon
+  function hideForm() {
+    if (isFormVisible()) {
+      form.classList.add('hide');
+      icon.style.display = 'flex';
+    }
+  }
+
+  // On load: show form for 3s, then hide
+  form.classList.remove('hide');
+  icon.style.display = 'none';
+  setTimeout(() => {
+    hideForm();
+  }, 3000);
+
+  // On hover or click icon, show form (but only once)
+  icon.addEventListener('mouseenter', () => {
+    showForm();
+  });
+
+  icon.addEventListener('click', () => {
+    showForm();
+  });
+
+  // Close button hides form and shows icon
+  closeBtn.addEventListener('click', () => {
+    hideForm();
+  });
+
+  // Keyboard access for icon
+  icon.addEventListener('keydown', function (event) {
+    if ((event.key === 'Enter' || event.key === ' ') && !isFormVisible()) {
+      event.preventDefault();
+      showForm();
+    }
+  });
+});
+</script>
+
+
+
+<style>
+  .floating-form {
+    transition: transform 0.4s ease;
+    transform: translateX(0);
+  }
+  .floating-form.hide {
+    transform: translateX(-120%);
+  }
+</style>
+
+
 
 
 
