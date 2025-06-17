@@ -336,15 +336,22 @@ def save_pi_data(request):
 
     return JsonResponse({'status': 'error', 'message': 'Invalid request'}, status=400)
   
-  
+
 # API for the dropdown form for State and district
 import json, os
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.conf import settings
 
-# Load JSON on startup
-with open(os.path.join('data', 'states_districts.json'), 'r', encoding='utf-8') as f:
-    INDIA_DATA = json.load(f)["states"]
+# Load JSON on startup using absolute path
+json_file_path = os.path.join(settings.BASE_DIR, 'data', 'states_districts.json')
+
+try:
+    with open(json_file_path, 'r', encoding='utf-8') as f:
+        INDIA_DATA = json.load(f)["states"]
+except FileNotFoundError:
+    INDIA_DATA = []  # Fallback to empty list to prevent crash
+    print(f"[ERROR] JSON file not found at: {json_file_path}")
 
 @csrf_exempt
 def get_states(request):
@@ -361,6 +368,7 @@ def get_districts(request, state):
         districts = []
 
     return JsonResponse({"districts": districts})
+
 
 
 
