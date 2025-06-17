@@ -67,9 +67,22 @@
         <label for="address" class="form-label">Address <span style="color:red">*</span></label>
         <textarea id="address" name="address" class="form-control"></textarea>
         <div class="row g-2 mt-2">
-          <div class="col-4"><input type="text" name="district" placeholder="District" class="form-control" /></div>
+          <div class="col-12 col-md-4">
+            <select id="state" name="state" class="form-select" required>
+              <option value="">Select State</option>
+            </select>
+          </div>
+          <div class="col-12 col-md-4">
+            <select id="district" name="district" class="form-select" required>
+              <option value="">Select District</option>
+            </select>
+          </div>
+          <div class="col-12 col-md-4">
+            <input type="text" name="pincode" placeholder="Pincode" class="form-control" />
+          </div>
+          <!--<div class="col-4"><input type="text" name="district" placeholder="District" class="form-control" /></div>
           <div class="col-4"><input type="text" name="state" placeholder="State" class="form-control" /></div>
-          <div class="col-4"><input type="text" name="pincode" placeholder="Pincode" class="form-control" /></div>
+          <div class="col-4"><input type="text" name="pincode" placeholder="Pincode" class="form-control" /></div>-->
         </div>
       </div>
 
@@ -86,7 +99,7 @@
 
       <div class="form-section">
         <label for="email" class="form-label">Email ID <span style="color:red">*</span></label>
-        <input type="email" id="email" name="email" class="form-control" />
+        <input type="email" id="email" name="email" class="form-control" required/>
       </div>
 
        <div class="form-section">
@@ -144,6 +157,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
 <script>
 document.addEventListener("DOMContentLoaded", function () {
   const form = document.getElementById("priceListForm");
@@ -155,6 +169,15 @@ document.addEventListener("DOMContentLoaded", function () {
     { id: "popupProductName", name: "Product Name" },
     { id: "businessPlanSelector", name: "Business Plan" }
   ];
+
+  const extraFields = [
+    { id: "address", name: "Address" },
+    { id: "district", name: "District" },
+    { id: "state", name: "State" },
+    { id: "pincode", name: "Pincode" }
+  ];
+
+  const touchedFields = new Set();
 
   const createError = (el, message) => {
     removeError(el);
@@ -171,31 +194,40 @@ document.addEventListener("DOMContentLoaded", function () {
 
   const validateField = (el, name) => {
     const value = el.value.trim();
-    if (!value) {
-      createError(el, `${name} is required`);
-      return false;
+    let isValid = !!value;
+
+    // Specific validation for mobile number
+    if (el.id === "mobile") {
+      isValid = /^[6-9][0-9]{9}$/.test(value);
+    }
+
+    if (!isValid) {
+      if (touchedFields.has(el)) createError(el, `${name} is required or invalid`);
+      else removeError(el);
     } else {
       removeError(el);
-      return true;
     }
+
+    return isValid;
   };
 
   const validateForm = () => {
     let isValid = true;
+
     requiredFields.forEach(({ id, name }) => {
       const el = document.getElementById(id);
       if (!validateField(el, name)) isValid = false;
     });
 
-    // GST conditional validation
     const gstSelector = document.getElementById("gstSelector");
+
     if (gstSelector.value === "yes") {
       const gstNumber = document.getElementById("gstNumber");
       if (!validateField(gstNumber, "GST Number")) isValid = false;
     } else {
-      ["address", "district", "state", "pincode"].forEach((id) => {
-        const el = document.getElementsByName(id)[0];
-        if (!validateField(el, id.charAt(0).toUpperCase() + id.slice(1))) isValid = false;
+      extraFields.forEach(({ id, name }) => {
+        const el = document.getElementById(id) || document.getElementsByName(id)[0];
+        if (!validateField(el, name)) isValid = false;
       });
     }
 
@@ -203,50 +235,44 @@ document.addEventListener("DOMContentLoaded", function () {
     return isValid;
   };
 
-  // Attach input listeners for live validation
-  requiredFields.forEach(({ id, name }) => {
-    const el = document.getElementById(id);
-    el.addEventListener("input", () => {
-      validateField(el, name);
-      validateForm();
-    });
+  // Attach live validation
+  const allFields = [...requiredFields, ...extraFields, { id: "gstNumber", name: "GST Number" }];
+
+  allFields.forEach(({ id, name }) => {
+    const el = document.getElementById(id) || document.getElementsByName(id)[0];
+    if (el) {
+      el.addEventListener("input", () => {
+        touchedFields.add(el);
+        validateField(el, name);
+        validateForm(); // <-- Live check after input
+      });
+    }
   });
 
-  // GST conditional field live validation
+  // GST selector triggers re-validation
   document.getElementById("gstSelector").addEventListener("change", () => {
     validateForm();
   });
 
-  ["gstNumber", "address"].forEach((id) => {
-    const el = document.getElementById(id) || document.getElementsByName(id)[0];
-    if (el) {
-      el.addEventListener("input", () => {
-        validateForm();
-      });
-    }
-  });
+  // Disable on load
+  generateBtn.disabled = true;
 
-  ["district", "state", "pincode"].forEach((id) => {
-    const el = document.getElementsByName(id)[0];
-    if (el) {
-      el.addEventListener("input", () => {
-        validateForm();
-      });
-    }
-  });
-
-  // Initial check
-  validateForm();
-
-  // Prevent click if not valid
+  // On button click: show all errors
   generateBtn.addEventListener("click", (e) => {
+    allFields.forEach(({ id }) => {
+      const el = document.getElementById(id) || document.getElementsByName(id)[0];
+      if (el) touchedFields.add(el);
+    });
+
     if (!validateForm()) {
       e.preventDefault();
-      return;
     }
   });
 });
 </script>
+
+
+
 
 
 
@@ -448,6 +474,58 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 </script>
+
+<script>
+  // for API dropdown
+document.addEventListener("DOMContentLoaded", () => {
+  const stateSelect = document.getElementById("state");
+  const districtSelect = document.getElementById("district");
+
+  if (!stateSelect || !districtSelect) {
+    console.error("State or district dropdown not found in the DOM");
+    return;
+  }
+
+  // Load states
+  fetch("/api/states/")
+    .then(res => res.json())
+    .then(data => {
+      if (!data.states || !Array.isArray(data.states)) {
+        throw new Error("Invalid states data format");
+      }
+      stateSelect.innerHTML = `<option value="">Select State</option>` +
+        data.states.map(s => `<option value="${s}">${s}</option>`).join('');
+    })
+    .catch(err => {
+      console.error("Error loading states:", err);
+      alert("Failed to load states. Please try again later.");
+    });
+
+  // On state change: load districts
+  stateSelect.addEventListener("change", () => {
+    const state = stateSelect.value;
+    if (!state) return;
+
+    districtSelect.innerHTML = `<option>Loading...</option>`;
+
+    fetch(`/api/districts/${encodeURIComponent(state)}/`)
+      .then(res => res.json())
+      .then(data => {
+        if (!data.districts || !Array.isArray(data.districts)) {
+          throw new Error("Invalid districts data format");
+        }
+        districtSelect.innerHTML = `<option value="">Select District</option>` +
+          data.districts.map(d => `<option value="${d}">${d}</option>`).join('');
+      })
+      .catch(err => {
+        console.error("Error loading districts:", err);
+        districtSelect.innerHTML = `<option value="">Failed to load districts</option>`;
+        alert("Failed to load districts. Please try again.");
+      });
+  });
+});
+</script>
+
 
 
 

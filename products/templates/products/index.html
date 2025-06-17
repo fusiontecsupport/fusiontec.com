@@ -58,7 +58,7 @@
 
               <!-- Left -->
               <div class="product-image d-flex flex-column justify-content-center align-items-center p-3">
-                <a href="{{ product.tally_link|default:'#' }}">
+                <a href="{{ product.tally_link|default:'#' }}" target="_blank" rel="noopener noreferrer">
                   <img class="img-fluid mb-2" src="{{ product.tally_image.url }}" alt="{{ product.tally_name }}" />
                 </a>
               </div>
@@ -104,7 +104,7 @@
 
               <!-- Left -->
               <div class="product-image d-flex flex-column justify-content-center align-items-center p-3">
-                <a href="{{ product.emudhra_link|default:'#' }}">
+                <a href="{{ product.emudhra_link|default:'#' }}"target="_blank" rel="noopener noreferrer">
                   <img class="img-fluid mb-2" src="{{ product.emudhra_image.url }}" alt="{{ product.emudhra_name }}" />
                 </a>
               </div>
@@ -148,7 +148,7 @@
 
               <!-- Left -->
               <div class="product-image d-flex flex-column justify-content-center align-items-center p-3">
-                <a href="{{ product.fusiontec_link|default:'#' }}">
+                <a href="{{ product.fusiontec_link|default:'#' }}"target="_blank" rel="noopener noreferrer">
                   <img class="img-fluid mb-2" src="{{ product.fusiontec_image.url }}" alt="{{ product.fusiontec_name }}" />
                 </a>
               </div>
@@ -192,7 +192,7 @@
 
               <!-- Left -->
               <div class="product-image d-flex flex-column justify-content-center align-items-center p-3">
-                <a href="{{ product.biz_link|default:'#' }}">
+                <a href="{{ product.biz_link|default:'#' }}"target="_blank" rel="noopener noreferrer">
                   <img class="img-fluid mb-2" src="{{ product.biz_image.url }}" alt="{{ product.biz_name }}" />
                 </a>
               </div>
@@ -288,6 +288,69 @@
 </section>
 
 
+<script>
+  // code for opening floating form using send enquiry button 
+document.addEventListener("DOMContentLoaded", function () {
+  const form = document.getElementById('enquiryForm');
+  const icon = document.getElementById('enquiryIcon');
+  const closeBtn = document.getElementById('closeEnquiry');
+
+  // All buttons that open the form
+  const sendButtons = [
+    document.getElementById('sendEnquiryBtn'),
+    document.getElementById('sendEnquiryBtn2'),
+    document.getElementById('sendEnquiryBtn3'),
+    document.getElementById('sendEnquiryBtn4')
+  ];
+
+  // Show the form and hide the icon
+  function showForm() {
+    form.classList.remove('hide');
+    icon.style.display = 'none';
+  }
+
+  // Hide the form and show the icon
+  function hideForm() {
+    form.classList.add('hide');
+    icon.style.display = 'flex';
+  }
+
+  // Close button
+  if (closeBtn) {
+    closeBtn.addEventListener('click', hideForm);
+  }
+
+  // Icon interactions
+  if (icon) {
+    icon.addEventListener('click', showForm);
+
+    icon.addEventListener('keydown', function (event) {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        showForm();
+      }
+    });
+  }
+
+  // Attach showForm to all send buttons
+  sendButtons.forEach(btn => {
+    if (btn) {
+      btn.addEventListener('click', function (e) {
+        e.preventDefault();
+        showForm();
+        setTimeout(() => {
+          form.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 100); // small delay to allow form to become visible
+      });
+    }
+  });
+
+  // Initial state on small screens
+  if (window.innerWidth <= 768) {
+    hideForm();
+  }
+});
+</script>
 
 
 </main>

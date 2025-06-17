@@ -21,7 +21,8 @@ urlpatterns = [
     path('save-pi/', views.save_pi_data, name='save_pi_data'),   #for fusiontec form
     # path('fetch-tally-details/', views.fetch_tally_details, name='fetch_tally_details'),        #for tally form
 
-
+    path('api/states/', views.get_states, name='get_states'),
+    path('api/districts/<str:state>/', views.get_districts, name='get_districts'),
 ]
 
 # Serve static and media files

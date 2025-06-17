@@ -164,8 +164,8 @@ def save_tally_form(request):
             has_gst=(data.get('has_gst') == 'yes'),
             gst_number=data.get('gst_number'),
             address=data.get('address'),
-            area=data.get('area'),
             state=data.get('state'),
+            district=data.get('district'),
             pincode=data.get('pincode'),
             mobile=data.get('mobile'),
             email=data.get('email'),
@@ -211,8 +211,8 @@ def save_price_list_submission(request):
             has_gst = data.get('has_gst'),
             gst_number = data.get('gst_number'),
             address = data.get('address'),
-            district = data.get('district'),
             state = data.get('state'),
+            district = data.get('district'),
             pincode = data.get('pincode'),
             mobile = data.get('mobile'),
             email = data.get('email'),
@@ -251,8 +251,8 @@ def fusiontec_price_list_form(request):
             has_gst=data.get('has_gst'),
             gst_number=data.get('gst_number'),
             address=data.get('address'),
-            district=data.get('district'),
             state=data.get('state'),
+            district=data.get('district'),
             pincode=data.get('pincode'),
             mobile=data.get('mobile'),
             email=data.get('email'),
@@ -291,8 +291,8 @@ def save_pi_data(request):
         has_gst = data.get('has_gst', 'no')
         gst_number = data.get('gst_number', '')
         address = data.get('address', '')
-        district = data.get('district', '')
         state = data.get('state', '')
+        district = data.get('district', '')
         pincode = data.get('pincode', '')
         mobile = data.get('mobile', '')
         email = data.get('email', '')
@@ -319,8 +319,8 @@ def save_pi_data(request):
         has_gst=data.get('has_gst'),
         gst_number=data.get('gst_number'),
         address=data.get('address'),
-        district=data.get('district'),
         state=data.get('state'),
+        district=data.get('district'),
         pincode=data.get('pincode'),
         mobile=data.get('mobile'),
         email=data.get('email'),
@@ -336,3 +336,32 @@ def save_pi_data(request):
 
     return JsonResponse({'status': 'error', 'message': 'Invalid request'}, status=400)
   
+  
+# API for the dropdown form for State and district
+import json, os
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+
+# Load JSON on startup
+with open(os.path.join('data', 'states_districts.json'), 'r', encoding='utf-8') as f:
+    INDIA_DATA = json.load(f)["states"]
+
+@csrf_exempt
+def get_states(request):
+    state_names = sorted(state["state"] for state in INDIA_DATA if "state" in state)
+    return JsonResponse({"states": state_names})
+
+@csrf_exempt
+def get_districts(request, state):
+    # Case-insensitive state match
+    matched = next((s for s in INDIA_DATA if s["state"].lower() == state.lower()), None)
+    if matched and "districts" in matched:
+        districts = sorted(matched["districts"])
+    else:
+        districts = []
+
+    return JsonResponse({"districts": districts})
+
+
+
+

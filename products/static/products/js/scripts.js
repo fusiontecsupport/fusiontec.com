@@ -1,44 +1,56 @@
+
 // document.addEventListener("DOMContentLoaded", function () {
 //   const form = document.getElementById('enquiryForm');
 //   const icon = document.getElementById('enquiryIcon');
 //   const closeBtn = document.getElementById('closeEnquiry');
-//   const sendBtn = document.getElementById('sendEnquiryBtn');
-//   const sendBtn2 = document.getElementById('sendEnquiryBtn2');
-//   const sendBtn3 = document.getElementById('sendEnquiryBtn3');
-//   const sendBtn4 = document.getElementById('sendEnquiryBtn4');
+
+//   const sendButtons = [
+//     document.getElementById('sendEnquiryBtn'),
+//     document.getElementById('sendEnquiryBtn2'),
+//     document.getElementById('sendEnquiryBtn3'),
+//     document.getElementById('sendEnquiryBtn4')
+//   ];
 
 //   function showForm() {
 //     form.style.transform = 'translateX(0)';
+//     form.style.display = 'block'; // ensure visible
 //     icon.style.display = 'none';
 //   }
 
 //   function hideForm() {
 //     form.style.transform = 'translateX(-120%)';
+//     setTimeout(() => {
+//       form.style.display = 'none'; // hide it after animation
+//     }, 300); // match transition duration if any
 //     icon.style.display = 'flex';
 //   }
 
-//   closeBtn.onclick = hideForm;
-//   icon.onclick = showForm;
+//   if (closeBtn) {
+//     closeBtn.addEventListener('click', hideForm);
+//   }
 
-//   const sendButtons = [sendBtn, sendBtn2, sendBtn3, sendBtn4];
+//   if (icon) {
+//     icon.addEventListener('click', showForm);
+
+//     icon.addEventListener('keydown', function (event) {
+//       if (event.key === 'Enter' || event.key === ' ') {
+//         event.preventDefault();
+//         showForm();
+//       }
+//     });
+//   }
+
 //   sendButtons.forEach(btn => {
 //     if (btn) {
-//       btn.onclick = function (e) {
+//       btn.addEventListener('click', function (e) {
 //         e.preventDefault();
 //         showForm();
 //         form.scrollIntoView({ behavior: 'smooth' });
-//       };
+//       });
 //     }
 //   });
 
-//   icon.addEventListener('keydown', function (event) {
-//     if (event.key === 'Enter' || event.key === ' ') {
-//       event.preventDefault();
-//       icon.click();
-//     }
-//   });
-
-//   // Automatically hide form on small screens initially
+//   // Initial state for small screens
 //   if (window.innerWidth <= 768) {
 //     hideForm();
 //   }

@@ -63,16 +63,26 @@
       <div class="form-section" id="nonGstFields" style="display:none;">
         <label for="address" class="form-label">Address <span style="color:red">*</span></label>
         <textarea id="address" name="address" class="form-control"></textarea>
-        <div class="row g-2 mt-2">
-          <div class="col-4"><input type="text" name="district" placeholder="District" class="form-control" /></div>
-          <div class="col-4"><input type="text" name="state" placeholder="State" class="form-control" /></div>
-          <div class="col-4"><input type="text" name="pincode" placeholder="Pincode" class="form-control" /></div>
+          <div class="row g-2 mt-2">
+          <div class="col-12 col-md-4">
+            <select id="state" name="state" class="form-select" required>
+              <option value="">Select State</option>
+            </select>
+          </div>
+          <div class="col-12 col-md-4">
+            <select id="district" name="district" class="form-select" required>
+              <option value="">Select District</option>
+            </select>
+          </div>
+          <div class="col-12 col-md-4">
+            <input type="text" name="pincode" placeholder="Pincode" class="form-control" />
+          </div>
         </div>
       </div>
 
       <div class="form-section">
         <label for="mobile" class="form-label">Mobile Number <span style="color:red">*</span></label>
-        <input type="text" id="mobile" name="mobile" class="form-control" required />
+        <input  type="text"  id="mobile"  name="mobile"  class="form-control"  inputmode="numeric"  pattern="[6-9][0-9]{9}"  maxlength="10"  required />
       </div>
 
       <div class="form-section">
@@ -126,15 +136,13 @@
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-  // Elements
   const form = document.getElementById('priceListForm');
   const generatePiBtn = document.getElementById('generatePiBtn');
 
-  // Validation config: field name => { validator fn, error message }
   const validations = {
     customer_name: {
       validate: val => val.trim().length > 0,
@@ -187,7 +195,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  // Utility: show or clear error below an input
   function showError(inputEl, message) {
     let errorEl = inputEl.nextElementSibling;
     if (!errorEl || !errorEl.classList.contains('error-message')) {
@@ -195,29 +202,31 @@ document.addEventListener('DOMContentLoaded', () => {
       errorEl.classList.add('error-message');
       errorEl.style.color = 'red';
       errorEl.style.fontSize = '0.85em';
+      errorEl.style.display = 'none'; // hidden by default
       inputEl.parentNode.insertBefore(errorEl, inputEl.nextSibling);
     }
     errorEl.textContent = message;
+    errorEl.style.display = 'block';
   }
 
   function clearError(inputEl) {
     let errorEl = inputEl.nextElementSibling;
     if (errorEl && errorEl.classList.contains('error-message')) {
       errorEl.textContent = '';
+      errorEl.style.display = 'none';
     }
   }
 
-  // Validate single field, return true if valid
   function validateField(name) {
     const inputEl = form.querySelector(`[name=${name}]`);
-    if (!inputEl) return true; // no field? ignore
+    if (!inputEl) return true;
 
     const config = validations[name];
     if (!config) return true;
 
     if (config.dependsOn && !config.dependsOn()) {
       clearError(inputEl);
-      return true; // skip validation if dependsOn false
+      return true;
     }
 
     const value = inputEl.value || '';
@@ -230,7 +239,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Validate all fields, return true if all valid
   function validateForm() {
     let allValid = true;
     for (const name in validations) {
@@ -239,22 +247,41 @@ document.addEventListener('DOMContentLoaded', () => {
     return allValid;
   }
 
-  // On any input change, validate that field and whole form
+  // Only show error messages when input changes
   form.addEventListener('input', e => {
     const name = e.target.name;
     if (!name) return;
-
     validateField(name);
-
-    // Enable/disable generate PI button
     generatePiBtn.disabled = !validateForm();
   });
 
-  // Also validate on page load to disable button if needed
-  generatePiBtn.disabled = !validateForm();
+  // Disable submit on load, do not show any errors
+  generatePiBtn.disabled = true;
 
-  // The rest of your existing logic:
-  // GST toggle
+  // Expose validation functions to global scope for reuse in other scripts
+  window.validateForm = validateForm;
+});
+
+//mobile validation;
+document.addEventListener('DOMContentLoaded', () => {
+          const mobileInput = document.getElementById('mobile');
+
+          // Allow only numeric input and limit to 10 digits
+          mobileInput.addEventListener('input', (e) => {
+            let cleaned = e.target.value.replace(/\D/g, '');
+            if (cleaned.length > 10) {
+              cleaned = cleaned.slice(0, 10);
+            }
+            e.target.value = cleaned;
+          });
+        });
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.getElementById('priceListForm');
+  const generatePiBtn = document.getElementById('generatePiBtn');
+
   const gstSelector = document.getElementById('gstSelector');
   const gstNumberField = document.getElementById('gstNumberField');
   const nonGstFields = document.getElementById('nonGstFields');
@@ -267,12 +294,13 @@ document.addEventListener('DOMContentLoaded', () => {
       gstNumberField.style.display = 'none';
       nonGstFields.style.display = 'block';
     }
-    // re-validate after toggle because fields show/hide
-    validateForm();
-    generatePiBtn.disabled = !validateForm();
+
+    // Run validation again since visible fields changed
+    if (typeof window.validateForm === 'function') {
+      generatePiBtn.disabled = !window.validateForm();
+    }
   });
 
-  // Product details display
   const dropdown = document.getElementById('productTypeDetailSelector');
   const detailsContainer = document.getElementById('productDetailsContainer');
   const basicAmountEl = document.getElementById('basicAmount');
@@ -289,7 +317,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // PI Preview and PDF generation
   const piPreviewModalEl = document.getElementById('piPreviewModal');
   const piPreviewTableBody = document.getElementById('piPreviewTableBody');
   const { jsPDF } = window.jspdf;
@@ -297,14 +324,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   generatePiBtn.addEventListener('click', e => {
     e.preventDefault();
-    if (!validateForm()) {
+    if (!window.validateForm || !window.validateForm()) {
       alert('Please fix errors before generating Proforma Invoice');
       return;
     }
 
     const formData = new FormData(form);
 
-    // Save to DB
     fetch("{% url 'fusiontec_price_list_form' %}", {
       method: "POST",
       body: formData,
@@ -316,9 +342,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!data.success) alert('Save failed: ' + (data.error || 'Unknown'));
       }).catch(() => alert('Network error during save'));
 
-    // Prepare preview table
     piPreviewTableBody.innerHTML = '';
-
     function addRow(label, value) {
       const tr = document.createElement('tr');
       tr.innerHTML = `<th style="width:40%">${label}</th><td>${value || 'N/A'}</td>`;
@@ -347,13 +371,12 @@ document.addEventListener('DOMContentLoaded', () => {
     piPreviewModal.show();
   });
 
-  // PDF Download
   const downloadPdfBtn = document.getElementById('downloadPdfBtn');
   downloadPdfBtn.addEventListener('click', e => {
     e.preventDefault();
     const formData = new FormData(form);
-
     const doc = new jsPDF();
+
     doc.setFontSize(18);
     doc.text('Proforma Invoice (PI)', 14, 22);
     doc.setFontSize(12);
@@ -404,6 +427,60 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 </script>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const stateSelect = document.getElementById("state");
+  const districtSelect = document.getElementById("district");
+
+  if (!stateSelect || !districtSelect) {
+    console.error("State or district dropdown not found in the DOM");
+    return;
+  }
+
+  // Load states
+  fetch("/api/states/")
+    .then(res => res.json())
+    .then(data => {
+      if (!data.states || !Array.isArray(data.states)) {
+        throw new Error("Invalid states data format");
+      }
+      stateSelect.innerHTML = `<option value="">Select State</option>` +
+        data.states.map(s => `<option value="${s}">${s}</option>`).join('');
+    })
+    .catch(err => {
+      console.error("Error loading states:", err);
+      alert("Failed to load states. Please try again later.");
+    });
+
+  // On state change: load districts
+  stateSelect.addEventListener("change", () => {
+    const state = stateSelect.value;
+    if (!state) return;
+
+    districtSelect.innerHTML = `<option>Loading...</option>`;
+
+    fetch(`/api/districts/${encodeURIComponent(state)}/`)
+      .then(res => res.json())
+      .then(data => {
+        if (!data.districts || !Array.isArray(data.districts)) {
+          throw new Error("Invalid districts data format");
+        }
+        districtSelect.innerHTML = `<option value="">Select District</option>` +
+          data.districts.map(d => `<option value="${d}">${d}</option>`).join('');
+      })
+      .catch(err => {
+        console.error("Error loading districts:", err);
+        districtSelect.innerHTML = `<option value="">Failed to load districts</option>`;
+        alert("Failed to load districts. Please try again.");
+      });
+  });
+});
+</script>
+
+
+
 <style>
   /* Simple inline error styling */
   .error-message {
