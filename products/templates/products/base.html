@@ -203,6 +203,14 @@
     100% { transform: translateY(-10px); }
   }
 
+   .floating-form {
+    transition: transform 0.4s ease;
+    transform: translateX(0);
+  }
+  .floating-form.hide {
+    transform: translateX(-120%);
+  }
+  
   /* Responsive for tablets and phones */
   @media (max-width: 992px) {
     .floating-form {
@@ -216,7 +224,7 @@
 
   @media (max-width: 576px) {
     .floating-form {
-      max-height: 280px; /* reduced height for mobiles */
+      max-height: 380px; /* reduced height for mobiles */
     }
   }
 
@@ -292,22 +300,6 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 });
 </script>
-
-
-
-<style>
-  .floating-form {
-    transition: transform 0.4s ease;
-    transform: translateX(0);
-  }
-  .floating-form.hide {
-    transform: translateX(-120%);
-  }
-</style>
-
-
-
-
 
 
 

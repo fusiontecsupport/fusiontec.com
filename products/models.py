@@ -221,3 +221,19 @@ class BizPriceListSubmission(models.Model):
 
     def __str__(self):
         return f"PI for {self.customer_name} - {self.product_name}"
+
+
+#Create Razorpay Model
+    
+# models.py
+class RazorpayTransactionForm(models.Model):
+    customer_name = models.CharField(max_length=100)
+    amount = models.FloatField()
+    product_name = models.CharField(max_length=100)
+    razorpay_payment_id = models.CharField(max_length=100)
+    razorpay_order_id = models.CharField(max_length=100)
+    status = models.CharField(max_length=20)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.customer_name} - {self.status}"

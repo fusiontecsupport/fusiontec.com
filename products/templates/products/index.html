@@ -238,19 +238,48 @@
 
     <div class="row g-4 justify-content-center">
 
-      <!-- Razorpay -->
+      <!-- Razorpay Info Card -->
       <div class="col-md-6">
         <div class="card border-0 shadow-sm h-100">
           <div class="card-body text-center">
             <div class="mb-3">
               <i class="bi bi-credit-card-2-front-fill fs-2 text-primary"></i>
             </div>
-            <h5 class="fw-semibold">Online Payment</h5>
-            <a href="https://rzp.io/l/demo" target="_blank" class="btn btn-primary mt-3 px-4">Pay with Razorpay</a>
+            <h5 class="fw-semibold">Online Payment (Razorpay)</h5>
+            <p class="text-muted">
+              If you wish to make payment directly, you can complete your payment securely using the Razorpay gateway.
+            </p>
+            <div class="pt-2">
+              <form>
+                <script src="https://checkout.razorpay.com/v1/payment-button.js" 
+                        data-payment_button_id="pl_QidEmmlNtFRhQm" async></script>
+              </form>
+            </div>
           </div>
         </div>
       </div>
 
+      <!--<div class="col-md-6">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-body text-center">
+            <div class="mb-3">
+              <i class="bi bi-credit-card-2-front-fill fs-2 text-primary"></i>
+            </div>
+            <h5 class="fw-semibold">Online Payment Info</h5>
+            <p class="text-muted">Online payment is only available for the products listed above.</p>
+            <button type="button" class="btn btn-outline-primary mt-3 px-4" data-bs-toggle="modal" data-bs-target="#paymentInfoModal">
+              View Payment Info
+            </button>
+            <div class="pt-2">
+              <form>
+                <script src="https://checkout.razorpay.com/v1/payment-button.js" data-payment_button_id="pl_QidEmmlNtFRhQm" async></script>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>-->
+
+      
       <!-- QR Code -->
       <div class="col-md-6">
         <div class="card border-0 shadow-sm h-100">
@@ -286,6 +315,38 @@
     </div>
   </div>
 </section>
+
+<!-- Payment Info Modal  for online Banking--> 
+<div class="modal fade" id="paymentInfoModal" tabindex="-1" aria-labelledby="paymentInfoModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title" id="paymentInfoModalLabel">Online Payment Information</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body text-center">
+        <p class="mb-3 text-muted">Please note: Online payment is exclusively available for the above listed products.</p>
+        <p class="mb-3">If you wish to make a direct payment, please scroll down to view other available payment options such as QR Code and Bank Transfer.</p>
+        <a href="#net_banking" class="btn btn-primary" onclick="closePaymentModal()">Go to Payment Section</a>
+
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  function closePaymentModal() {
+    const modalEl = document.getElementById('paymentInfoModal');
+    const modal = bootstrap.Modal.getInstance(modalEl);
+    modal.hide();
+
+    // Optional: smooth scroll to the payment section
+    const target = document.querySelector('#net_banking');
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth' });
+    }
+  }
+</script>
+
 
 
 <script>

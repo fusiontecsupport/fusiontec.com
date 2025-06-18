@@ -21,8 +21,18 @@ urlpatterns = [
     path('save-pi/', views.save_pi_data, name='save_pi_data'),   #for fusiontec form
     # path('fetch-tally-details/', views.fetch_tally_details, name='fetch_tally_details'),        #for tally form
 
+    #link for dynamic dropdown
     path('api/states/', views.get_states, name='get_states'),
     path('api/districts/<str:state>/', views.get_districts, name='get_districts'),
+
+    #paymeny fail or pass in razorpay
+    path("payment-success/", views.razorpay_success, name="payment-success"),
+    path('payment-failed/', views.payment_failed_page, name='payment_failed'),
+
+    #razor pay in emudhra form
+    path("verify-razorpay-payment/", views.razorpay_verify, name="razorpay_verify"),
+    path("create_order/", views.create_order, name="create_order"),
+
 ]
 
 # Serve static and media files

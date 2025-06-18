@@ -274,3 +274,87 @@
   margin-top: 6px;
   font-size: 13px;
 }
+
+/* --- Responsive Footer Fixes --- */
+
+/* Align text and elements in columns properly */
+.footer .footer-about,
+.footer .footer-links,
+.footer .footer-contact{
+  display: flex;
+  flex-direction: column;
+}
+
+/* Mobile & Tablet (up to 991px) */
+@media (max-width: 991.98px) {
+  .footer .footer-top .row > div {
+    text-align: center;
+    margin-bottom: 30px;
+  }
+
+  .footer .footer-about a {
+    justify-content: center;
+  }
+
+  .footer .footer-contact p {
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .footer .footer-links ul {
+    display: inline-block;
+    text-align: left;
+    margin: 0 auto;
+  }
+
+  .footer .social-links {
+    justify-content: center;
+    gap: 16px;
+    margin-top: 10px;
+  }
+
+  .footer .social-links a {
+    width: 40px;
+    height: 40px;
+    font-size: 20px !important;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .footer h4 {
+    margin-bottom: 10px;
+  }
+}
+
+/* Small mobile (up to 575px) */
+@media (max-width: 575.98px) {
+  .footer .footer-about img {
+    max-width: 160px;
+    height: auto;
+  }
+
+  .footer .footer-contact p,
+  .footer .footer-links ul li {
+    font-size: 13px;
+  }
+
+  .footer .footer-links ul {
+    padding-left: 0;
+  }
+
+  .footer h4 {
+    font-size: 15px;
+  }
+
+  .footer .social-links a {
+    font-size: 18px !important;
+    width: 36px;
+    height: 36px;
+  }
+
+  .footer .copyright {
+    font-size: 13px;
+    padding: 20px 0;
+  }
+}

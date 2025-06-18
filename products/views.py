@@ -369,6 +369,106 @@ def get_districts(request, state):
 
     return JsonResponse({"districts": districts})
 
+#---------------------------------------------------------------------------------------------
+
+# razor pay integration
+
+def razorpay_success(request):
+    return render(request, "products/success.html")
+
+def payment_failed_page(request):
+    return render(request, 'products/failed.html')
+
+#-------------------------------------------------------
+
+# emudhra form razor pay
+
+import json
+import razorpay
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+from django.conf import settings
+from .models import RazorpayTransactionForm
+
+@csrf_exempt
+def razorpay_verify(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        form_data = data.get("form_data", {})
+        payment_id = data.get("razorpay_payment_id")
+        order_id = data.get("razorpay_order_id")
+        signature = data.get("razorpay_signature")
+
+        client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
+
+        try:
+            # 🔐 Step 1: Verify Razorpay Signature
+            client.utility.verify_payment_signature({
+                'razorpay_order_id': order_id,
+                'razorpay_payment_id': payment_id,
+                'razorpay_signature': signature
+            })
+
+            # ✅ Step 2: Fetch Payment Info
+            payment = client.payment.fetch(payment_id)
+            payment_status = payment.get("status")  # captured, failed, etc.
+
+            if payment_status == "captured":
+                final_status = "paid"
+                amount = payment.get("amount") / 100  # Convert paisa to INR
+            else:
+                final_status = "failed"
+                amount = 0
+
+        except razorpay.errors.SignatureVerificationError:
+            # ❌ Invalid signature (fraud attempt or error)
+            final_status = "failed"
+            amount = 0
+        except Exception:
+            # ❌ General failure (API error, etc.)
+            final_status = "failed"
+            amount = 0
+
+        # 💾 Step 3: Save transaction to DB
+        RazorpayTransactionForm.objects.create(
+            customer_name=form_data.get("customer_name"),
+            product_name=form_data.get("product_name"),
+            amount=amount,
+            razorpay_payment_id=payment_id,
+            razorpay_order_id=order_id,
+            status=final_status
+        )
+
+        return JsonResponse({"status": final_status})
+
+
+
+@csrf_exempt
+def create_order(request):
+    if request.method == "POST":
+        amount = int(float(request.POST.get("amount", "0"))) * 100  # in paisa
+        customer_name = request.POST.get("customer_name")
+        product_name = request.POST.get("product_name")
+
+        client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
+        order = client.order.create({
+            "amount": amount,
+            "currency": "INR",
+            "payment_capture": "1"
+        })
+
+        RazorpayTransactionForm.objects.create(
+            customer_name=customer_name,
+            product_name=product_name,
+            amount=amount / 100,
+            razorpay_order_id=order["id"],
+            status="created"
+        )
+
+        return JsonResponse({
+            "order_id": order["id"],
+            "key": settings.RAZORPAY_KEY_ID
+        })
 
 
 

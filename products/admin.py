@@ -108,3 +108,22 @@ class BizPriceListSubmissionAdmin(admin.ModelAdmin):
 
 # ----------------------------------------------------------------------------------------
 
+# razorpay admin for form
+
+from django.contrib import admin
+from .models import RazorpayTransactionForm
+
+@admin.register(RazorpayTransactionForm)
+class RazorpayTransactionAdmin(admin.ModelAdmin):
+    list_display = (
+        'customer_name',
+        'product_name',
+        'razorpay_payment_id',
+        'razorpay_order_id',
+        'amount',
+        'status',
+        'created_at',
+    )
+    search_fields = ('customer_name', 'razorpay_payment_id', 'razorpay_order_id')
+    list_filter = ('status', 'created_at')
+
