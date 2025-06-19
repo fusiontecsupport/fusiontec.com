@@ -28,7 +28,6 @@ class Tally_1(models.Model):
     def __str__(self):
         return self.tally_name
 
-
 class Tally_Product(models.Model):
     tally_1 = models.ForeignKey(Tally_1, on_delete=models.CASCADE, related_name='products')
     type_name = models.CharField(max_length=255, null=True, blank=True)
@@ -44,7 +43,6 @@ class Tally_Product(models.Model):
 
     def __str__(self):
         return f"{self.tally_1.tally_name} - {self.type_name}"
-
 
 class Tally_Software_Service(models.Model):
     tally_1 = models.ForeignKey(Tally_1, on_delete=models.CASCADE, related_name='services')
@@ -62,7 +60,6 @@ class Tally_Software_Service(models.Model):
     def __str__(self):
         return f"{self.tally_1.tally_name} - {self.type_name}"
 
-
 class Tally_Upgrade(models.Model):
     tally_1 = models.ForeignKey(Tally_1, on_delete=models.CASCADE, related_name='upgrades')
     type_name = models.CharField(max_length=255, null=True, blank=True)
@@ -78,8 +75,6 @@ class Tally_Upgrade(models.Model):
 
     def __str__(self):
         return f"{self.tally_1.tally_name} - {self.type_name}"
-
-from django.db import models
 
 class TallyPriceListSubmission(models.Model):
     customer_name = models.CharField(max_length=200)
@@ -222,10 +217,9 @@ class BizPriceListSubmission(models.Model):
     def __str__(self):
         return f"PI for {self.customer_name} - {self.product_name}"
 
-
+#--------------------------------------------------------------------------------------
 #Create Razorpay Model
     
-# models.py
 class RazorpayTransactionForm(models.Model):
     customer_name = models.CharField(max_length=100)
     amount = models.FloatField()
@@ -237,3 +231,37 @@ class RazorpayTransactionForm(models.Model):
 
     def __str__(self):
         return f"{self.customer_name} - {self.status}"
+
+#---------------------------------------------------------------------------
+# netbanking section for QR editing section
+class CompanyPaymentInfoQR(models.Model):
+    company_name = models.CharField(max_length=100, default="FUSIONTEC SOFTWARE")
+    upi_id = models.CharField(max_length=100)
+    qr_image = models.ImageField(upload_to='qr_codes/', blank=True, null=True)
+
+    def __str__(self):
+        return self.company_name
+    
+#---------------------------------------------------------------------------
+# netbanking section bank details
+
+class BankTransferInfo(models.Model):
+    title = models.CharField(max_length=100, default="Bank Transfer")
+    account_name = models.CharField(max_length=100)
+    account_number = models.CharField(max_length=30)
+    ifsc_code = models.CharField(max_length=20)
+    bank_name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.account_name
+    
+#---------------------------------------------------------------------------
+# netbanking section razor pay button
+
+class RazorpayInfo(models.Model):
+    title = models.CharField(max_length=100, default="Online Payment (Razorpay)")
+    description = models.TextField(default="Secure payment via Razorpay.")
+    payment_button_id = models.CharField(max_length=100, help_text="Paste Razorpay payment_button_id here")
+
+    def __str__(self):
+        return self.title

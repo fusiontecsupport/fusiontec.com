@@ -40,7 +40,6 @@ class TallyPriceListSubmissionAdmin(admin.ModelAdmin):
     list_filter = ('product_type', 'created_at')
 
 # ----------------------------------------------------------------------------------------
-
 # e-mudhra section admin
 
 from .models import Emudhra_2, Emudhra_product,EmudhraPriceListSubmission
@@ -62,7 +61,6 @@ class EmudhraPriceListSubmissionAdmin(admin.ModelAdmin):
     list_filter = ('has_gst', 'created_at')
 
 # ----------------------------------------------------------------------------------------
-
 # fusiontec section admin
 
 from .models import Fusiontec_3, Fusiontec_product, FusiontecPriceListSubmission
@@ -83,10 +81,8 @@ class PriceListSubmissionAdmin(admin.ModelAdmin):
     search_fields = ('customer_name', 'mobile', 'email')
 
 # ----------------------------------------------------------------------------------------
-
 # biz section admin
 
-from django.contrib import admin
 from .models import Biz_4, biz_product, BizPriceListSubmission
 
 class BizProductInline(admin.TabularInline):
@@ -107,23 +103,44 @@ class BizPriceListSubmissionAdmin(admin.ModelAdmin):
     search_fields = ('customer_name', 'product_name', 'business_plan_name')
 
 # ----------------------------------------------------------------------------------------
-
 # razorpay admin for form
 
-from django.contrib import admin
 from .models import RazorpayTransactionForm
 
 @admin.register(RazorpayTransactionForm)
 class RazorpayTransactionAdmin(admin.ModelAdmin):
-    list_display = (
-        'customer_name',
-        'product_name',
-        'razorpay_payment_id',
-        'razorpay_order_id',
-        'amount',
-        'status',
-        'created_at',
-    )
+    list_display = ('customer_name','product_name','razorpay_payment_id','razorpay_order_id','amount','status','created_at',)
     search_fields = ('customer_name', 'razorpay_payment_id', 'razorpay_order_id')
     list_filter = ('status', 'created_at')
+
+
+#----------------------------------------------------------------
+# netbanking section for razorpay button
+
+from .models import RazorpayInfo
+
+@admin.register(RazorpayInfo)
+class RazorpayInfoAdmin(admin.ModelAdmin):
+    list_display = ['title', 'payment_button_id']
+
+#----------------------------------------------------------------
+# netbanking section for QR editing section
+
+from .models import CompanyPaymentInfoQR
+
+@admin.register(CompanyPaymentInfoQR)
+class CompanyPaymentInfoQRAdmin(admin.ModelAdmin):
+    list_display = ['company_name', 'upi_id']
+    search_fields = ['company_name', 'upi_id']
+
+#----------------------------------------------------------------
+# netbanking section for Banking details
+
+from .models import BankTransferInfo
+
+@admin.register(BankTransferInfo)
+class BankTransferInfoAdmin(admin.ModelAdmin):
+    list_display = ['account_name', 'account_number', 'ifsc_code', 'bank_name']
+    search_fields = ['account_name', 'bank_name', 'ifsc_code']
+
 

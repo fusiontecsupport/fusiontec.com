@@ -270,14 +270,16 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  // On load: show form for 3s, then hide
+  // On load: show form and auto-hide based on screen size
   form.classList.remove('hide');
   icon.style.display = 'none';
+
+  const timeoutDuration = window.innerWidth < 992 ? 0 : 3000;
   setTimeout(() => {
     hideForm();
-  }, 3000);
+  }, timeoutDuration);
 
-  // On hover or click icon, show form (but only once)
+  // On hover or click icon, show form
   icon.addEventListener('mouseenter', () => {
     showForm();
   });
@@ -300,6 +302,7 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 });
 </script>
+
 
 
 

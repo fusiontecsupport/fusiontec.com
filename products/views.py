@@ -3,9 +3,9 @@ from django.conf import settings
 from django.contrib import messages
 from django.core.mail import EmailMessage, send_mail
 from .models import ContactSubmission
-import mimetypes
 from django.template.loader import render_to_string
 from .models import Tally_1, Emudhra_2, Fusiontec_3, Biz_4
+from .models import RazorpayInfo, CompanyPaymentInfoQR, BankTransferInfo
 from .models import Emudhra_product
 from django.contrib.auth import logout
 from django.http import JsonResponse
@@ -85,12 +85,18 @@ def index(request):
     emudhra_products = Emudhra_2.objects.all()  # Second product model
     fusiontec_products = Fusiontec_3.objects.all()  #third product model
     biz_products = Biz_4.objects.all()  # Fourth product model
+    razorpay_infos = RazorpayInfo.objects.all() # for razorpay button
+    payment_infos = CompanyPaymentInfoQR.objects.all()  #for QR section in Net banking
+    bank_infos = BankTransferInfo.objects.all()   #for banking info in Net banking
 
     context = {
         "products": products,
         "emudhra_products": emudhra_products,
         "fusiontec_products": fusiontec_products,
         "biz_products": biz_products,
+        'razorpay_infos': razorpay_infos,
+        'payment_infos': payment_infos,
+        'bank_infos': bank_infos
     }
 
     # return render(request, "products.html", context)
@@ -105,20 +111,13 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET
 
-from .models import (
-    TallyPriceListSubmission,
-    Tally_1,
-    Tally_Product,
-    Tally_Software_Service,
-    Tally_Upgrade,
-)
+from .models import (TallyPriceListSubmission,Tally_1,Tally_Product,Tally_Software_Service,Tally_Upgrade)
 
 logger = logging.getLogger(__name__)
 
 def tally_form(request):
     # Render the HTML form template
     return render(request, 'products/tally_form.html')
-
 
 @require_GET
 def fetch_tally_details(request):
@@ -147,7 +146,6 @@ def fetch_tally_details(request):
     } for item in items]
 
     return JsonResponse({'items': data}, status=200)
-
 
 @csrf_exempt  # REMOVE this in production and use CSRF tokens instead!
 def save_tally_form(request):
@@ -184,9 +182,6 @@ def save_tally_form(request):
         logger.error(f"Error saving tally form: {e}")
         return JsonResponse({"success": False, "error": str(e)}, status=400)
 
-
-
-
 #------------------------------------------------------------------------------------------------
 #emudhra form view
 
@@ -198,6 +193,7 @@ def emudhra_form(request):
         'emudhra_products': emudhra_products,
         'emudhra_info': emudhra_info,
     })
+
 # for saving form for e-mudhra section
 
 @csrf_exempt
@@ -273,9 +269,6 @@ def biz_form(request):
           'bizz_info': bizz_info,
     })
 
-
-# products/views.py
-
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from .models import BizPriceListSubmission
@@ -336,7 +329,7 @@ def save_pi_data(request):
 
     return JsonResponse({'status': 'error', 'message': 'Invalid request'}, status=400)
   
-
+#--------------------------------------------------------------------------------------
 # API for the dropdown form for State and district
 import json, os
 from django.http import JsonResponse
@@ -370,18 +363,7 @@ def get_districts(request, state):
     return JsonResponse({"districts": districts})
 
 #---------------------------------------------------------------------------------------------
-
-# razor pay integration
-
-def razorpay_success(request):
-    return render(request, "products/success.html")
-
-def payment_failed_page(request):
-    return render(request, 'products/failed.html')
-
-#-------------------------------------------------------
-
-# emudhra form razor pay
+# razor pay integration in forms
 
 import json
 import razorpay
@@ -441,8 +423,6 @@ def razorpay_verify(request):
 
         return JsonResponse({"status": final_status})
 
-
-
 @csrf_exempt
 def create_order(request):
     if request.method == "POST":
@@ -469,7 +449,3 @@ def create_order(request):
             "order_id": order["id"],
             "key": settings.RAZORPAY_KEY_ID
         })
-
-
-
-

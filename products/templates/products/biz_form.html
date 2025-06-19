@@ -147,7 +147,7 @@
         <!-- Preview table will be injected here -->
       </div>
       <div class="modal-footer">
-        <button type="submit" class="btn btn-primary">PAY-ONLINE</button>
+        <button type="button" id="razorpayBtn" class="btn btn-primary">PAY-ONLINE</button>
         <button type="button" id="downloadPiBtn" class="btn btn-primary"> Download PDF </button>
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"> Close</button>
       </div>
@@ -155,8 +155,126 @@
   </div>
 </div>
 
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+document.getElementById('razorpayBtn').addEventListener('click', async function (e) {
+  e.preventDefault();
+
+  const form = document.getElementById('priceListForm');
+  const formData = new FormData(form);
+
+  const basicAmountText = document.getElementById('pricingTotalPrice')?.innerText?.replace(/[^\d.]/g, '') || "0";
+  const basicAmount = parseFloat(basicAmountText);
+
+  if (isNaN(basicAmount) || basicAmount <= 0) {
+    alert("Please select a valid plan to get the price.");
+    return;
+  }
+
+  formData.append('amount', basicAmount);
+
+  try {
+    const res = await fetch('/create_order/', {
+      method: 'POST',
+      body: formData
+    });
+
+    const data = await res.json();
+
+    if (!data.order_id || !data.key) {
+      alert("Something went wrong. Missing Razorpay credentials.");
+      return;
+    }
+
+    const customerName = document.getElementById('customerName')?.value.trim();
+    const email = document.getElementById('email')?.value.trim();
+    const contact = document.getElementById('mobile')?.value.trim();
+
+    if (!/^\d{10}$/.test(contact)) {
+      alert("Please enter a valid 10-digit mobile number.");
+      return;
+    }
+
+    const options = {
+      key: data.key,
+      amount: basicAmount * 100,
+      currency: 'INR',
+      name: customerName,
+      description: 'Business Plan Payment',
+      order_id: data.order_id,
+      prefill: {
+        name: customerName,
+        email: email,
+        contact: contact
+      },
+      handler: function (response) {
+        fetch('/verify-razorpay-payment/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+          },
+          body: JSON.stringify({
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_signature: response.razorpay_signature,
+            form_data: Object.fromEntries(formData)
+          })
+        })
+        .then(res => res.json())
+        .then(result => {
+          if (result.status === "paid") {
+            alert("✅ Payment successful! Thank you.");
+            form.reset();
+            document.getElementById('pricingDetailsContainer').style.display = 'none';
+            // Optional: Close modal if needed
+            // const modal = bootstrap.Modal.getInstance(document.getElementById('piPreviewModal'));
+            // modal.hide();
+          } else {
+            alert("❌ Payment failed. Please try again.");
+          }
+        })
+        .catch(() => {
+          alert("❌ Verification error. Please try again.");
+        });
+      },
+      theme: {
+        color: '#0d6efd'
+      }
+    };
+
+    const rzp = new Razorpay(options);
+    rzp.open();
+
+  } catch (err) {
+    console.error("Payment error:", err);
+    alert("❌ Failed to initiate payment. Please try again.");
+  }
+});
+
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+</script>
+
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- jsPDF library -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
@@ -332,81 +450,79 @@ document.addEventListener("DOMContentLoaded", function () {
       nonGstFields.style.display = 'block';
     }
   });
-
   gstSelector.dispatchEvent(new Event('change'));
 
-  // Modal and buttons
   const piPreviewModalEl = document.getElementById('piPreviewModal');
-  const piPreviewModal = new bootstrap.Modal(piPreviewModalEl);
+const piPreviewModal = new bootstrap.Modal(piPreviewModalEl);
 
-  const generatePiBtn = document.getElementById('generatePiBtn');
-  const downloadPiBtn = document.getElementById('downloadPiBtn');
-  const piPreviewContent = document.getElementById('piPreviewContent');
+const generatePiBtn = document.getElementById('generatePiBtn');
+const downloadPiBtn = document.getElementById('downloadPiBtn');
+const piPreviewContent = document.getElementById('piPreviewContent');
 
-  generatePiBtn.addEventListener('click', async () => {
-    // Before collecting form data, ensure hidden inputs are up-to-date
-    businessDropdown.dispatchEvent(new Event('change'));
+generatePiBtn.addEventListener('click', async () => {
+  businessDropdown.dispatchEvent(new Event('change'));
 
-    const form = document.getElementById('priceListForm');
-    const formData = new FormData(form);
+  const form = document.getElementById('priceListForm');
+  const formData = new FormData(form);
 
-    // Convert FormData to plain object for validation & preview
-    const data = {};
-    formData.forEach((value, key) => (data[key] = value));
+  const data = {};
+  formData.forEach((value, key) => (data[key] = value));
 
-    // Basic validation
-    if (!data.customer_name || !data.mobile || !data.product_name || !data.business_plan) {
-      alert('Please fill all required fields including Business Plan!');
+  if (!data.customer_name || !data.mobile || !data.product_name || !data.business_plan) {
+    alert('Please fill all required fields including Business Plan!');
+    return;
+  }
+
+  try {
+    const response = await fetch("{% url 'save_pi_data' %}", {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': '{{ csrf_token }}',
+      },
+      body: formData,
+    });
+
+    const result = await response.json();
+
+    if (result.status !== 'success') {
+      alert('Failed to save PI data: ' + (result.message || 'Unknown error'));
       return;
     }
 
-    try {
-      // POST formData to backend
-      const response = await fetch("{% url 'save_pi_data' %}", {
-        method: 'POST',
-        headers: {
-          'X-CSRFToken': '{{ csrf_token }}',
-        },
-        body: formData,
-      });
+    // Build GST section like your preview
+    const gstInfoHtml = data.has_gst === 'yes'
+      ? `<tr><th>GST Number</th><td>${data.gst_number || 'N/A'}</td></tr>`
+      : `<tr><th>GST Number</th><td>No GST</td></tr>
+         <tr><th>Address</th><td>${data.address || '-'}</td></tr>
+         <tr><th>State</th><td>${data.state || '-'}</td></tr>
+         <tr><th>District</th><td>${data.district || '-'}</td></tr>
+         <tr><th>Pincode</th><td>${data.pincode || '-'}</td></tr>`;
 
-      const result = await response.json();
+    // Match preview format
+    const previewHTML = `
+      <table class="table table-bordered">
+        <caption><strong>Proforma Invoice (PI)</strong></caption>
+        <tbody>
+          <tr><th>Customer Name</th><td>${data.customer_name}</td></tr>
+          <tr><th>Company Name</th><td>${data.company_name || 'N/A'}</td></tr>
+          ${gstInfoHtml}
+          <tr><th>Mobile Number</th><td>${data.mobile}</td></tr>
+          <tr><th>Email ID</th><td>${data.email || 'N/A'}</td></tr>
+          <tr><th>Product Name</th><td>${data.product_name}</td></tr>
+          <tr><th>Product Type</th><td>${data.business_plan_name}</td></tr>
+          <tr><th>Basic Amount</th><td>₹${parseFloat(data.total_price).toFixed(2)}</td></tr>
+        </tbody>
+      </table>
+    `;
 
-      if (result.status !== 'success') {
-        alert('Failed to save PI data: ' + (result.message || 'Unknown error'));
-        return;
-      }
+    piPreviewContent.innerHTML = previewHTML;
+    piPreviewModal.show();
 
-      // Prepare preview table
-      let previewHTML = '<table class="table table-bordered">';
-      previewHTML += `<tr><th>Customer Name</th><td>${data.customer_name}</td></tr>`;
-      previewHTML += `<tr><th>Company Name</th><td>${data.company_name || '-'}</td></tr>`;
-      previewHTML += `<tr><th>Has GST</th><td>${data.has_gst}</td></tr>`;
-      if(data.has_gst === 'yes'){
-        previewHTML += `<tr><th>GST Number</th><td>${data.gst_number || '-'}</td></tr>`;
-      } else {
-        previewHTML += `<tr><th>Address</th><td>${data.address || '-'}</td></tr>`;
-        previewHTML += `<tr><th>District</th><td>${data.district || '-'}</td></tr>`;
-        previewHTML += `<tr><th>State</th><td>${data.state || '-'}</td></tr>`;
-        previewHTML += `<tr><th>Pincode</th><td>${data.pincode || '-'}</td></tr>`;
-      }
-      previewHTML += `<tr><th>Mobile</th><td>${data.mobile}</td></tr>`;
-      previewHTML += `<tr><th>Email</th><td>${data.email || '-'}</td></tr>`;
-      previewHTML += `<tr><th>Product</th><td>${data.product_name}</td></tr>`;
+  } catch (error) {
+    alert('Error saving PI data: ' + error);
+  }
+});
 
-      previewHTML += `<tr><th>Business Plan</th><td>${data.business_plan_name}</td></tr>`;
-      previewHTML += `<tr><th>Original Price</th><td>${data.original_price > data.total_price ? '₹' + parseFloat(data.original_price).toFixed(2) : '-'}</td></tr>`;
-      previewHTML += `<tr><th>Total Price</th><td>₹${parseFloat(data.total_price).toFixed(2)}</td></tr>`;
-      previewHTML += '</table>';
-
-      piPreviewContent.innerHTML = previewHTML;
-
-      piPreviewModal.show();
-
-    } catch (error) {
-      alert('Error saving PI data: ' + error);
-    }
-  });
 
 
   downloadPiBtn.addEventListener('click', () => {

@@ -67,19 +67,16 @@
               <div class="product-actions d-flex flex-column justify-content-center align-items-start p-3">
                 <div class="row g-2 w-100">
                   <div class="col-6">
-                    <button id="sendEnquiryBtn" class="btn btn-light w-100 px-4">
-                      <!-- <i class="bi bi-arrow-left"></i> -->
-                       Send Enquiry
-                    </button>
+                    <button id="sendEnquiryBtn" class="btn btn-light w-100 px-4">Send Enquiry</button>
                   </div>
                   <div class="col-6">
-                    <button class="btn btn-light w-100 px-4">More Details</button>
+                    <a href="{{ product.tally_link|default:'#' }}" target="_blank" rel="noopener noreferrer">
+                      <button class="btn btn-light w-100 px-4">More Details</button>
+                    </a>
                   </div>
                   <div class="col-12">
                     <a href="{% url 'tally_form' %}">
-                      <button class="btn btn-light w-100 px-4">Price list 
-                        <!-- <i class="bi bi-arrow-right"></i>  -->
-                      </button>
+                      <button class="btn btn-light w-100 px-4">Price list</button>
                     </a>
                   </div>
                 </div>
@@ -91,8 +88,6 @@
         {% endfor %}
       </div>
     </div>
-
-    <!-- Repeat similar blocks for emudhra_products, fusiontec_products, biz_products -->
 
     <!-- Second loop for Emudhra_2 products -->
     <div class="row gx-5 justify-content-center">
@@ -113,19 +108,16 @@
               <div class="product-actions d-flex flex-column justify-content-center align-items-start p-3">
                 <div class="row g-2 w-100">
                   <div class="col-6">
-                    <button id="sendEnquiryBtn2" class="btn btn-light w-100 px-4">
-                      <!-- <i class="bi bi-arrow-left"></i>  -->
-                      Send Enquiry
-                    </button>
+                    <button id="sendEnquiryBtn2" class="btn btn-light w-100 px-4">Send Enquiry</button>
                   </div>
                   <div class="col-6">
-                    <button class="btn btn-light w-100 px-4">More Details</button>
+                    <a href="{{ product.emudhra_link|default:'#' }}"target="_blank" rel="noopener noreferrer">
+                      <button class="btn btn-light w-100 px-4">More Details</button>
+                    </a>  
                   </div>
                   <div class="col-12">
                     <a href="{% url 'emudhra_form' %}">
-                      <button class="btn btn-light w-100 px-4">Price list 
-                        <!-- <i class="bi bi-arrow-right"></i> -->
-                      </button>
+                      <button class="btn btn-light w-100 px-4">Price list</button>
                     </a>
                   </div>
                 </div>
@@ -157,19 +149,16 @@
               <div class="product-actions d-flex flex-column justify-content-center align-items-start p-3">
                 <div class="row g-2 w-100">
                   <div class="col-6">
-                    <button id="sendEnquiryBtn3" class="btn btn-light w-100 px-4">
-                      <!-- <i class="bi bi-arrow-left"></i> -->
-                       Send Enquiry
-                    </button>
+                    <button id="sendEnquiryBtn3" class="btn btn-light w-100 px-4">Send Enquiry</button>
                   </div>
                   <div class="col-6">
-                    <button class="btn btn-light w-100 px-4">More Details</button>
+                    <a href="{{ product.fusiontec_link|default:'#' }}"target="_blank" rel="noopener noreferrer">
+                      <button class="btn btn-light w-100 px-4">More Details</button>
+                    </a>
                   </div>
                   <div class="col-12">
                     <a href="{% url 'fusiontec_form' %}">
-                      <button class="btn btn-light w-100 px-4">Price list
-                         <!-- <i class="bi bi-arrow-right"></i> -->
-                        </button>
+                      <button class="btn btn-light w-100 px-4">Price list</button>
                     </a>
                   </div>
                 </div>
@@ -201,19 +190,16 @@
               <div class="product-actions d-flex flex-column justify-content-center align-items-start p-3">
                 <div class="row g-2 w-100">
                   <div class="col-6">
-                    <button id="sendEnquiryBtn4" class="btn btn-light w-100 px-4">
-                      <!-- <i class="bi bi-arrow-left"></i> -->
-                       Send Enquiry
-                    </button>
+                    <button id="sendEnquiryBtn4" class="btn btn-light w-100 px-4">Send Enquiry</button>
                   </div>
                   <div class="col-6">
-                    <button class="btn btn-light w-100 px-4">More Details</button>
+                    <a href="{{ product.biz_link|default:'#' }}"target="_blank" rel="noopener noreferrer">
+                      <button class="btn btn-light w-100 px-4">More Details</button>
+                    </a>
                   </div>
                   <div class="col-12">
                     <a href="{% url 'biz_form' %}">
-                      <button class="btn btn-light w-100 px-4">Price list 
-                        <!-- <i class="bi bi-arrow-right"></i> -->
-                      </button>
+                      <button class="btn btn-light w-100 px-4">Price list</button>
                     </a>
                   </div>
                 </div>
@@ -235,119 +221,77 @@
       <h1 class="display-5 fw-bold text-dark"id="online_payment">Net Banking</h1>
       <p class="text-muted">Choose your preferred method to make a payment</p>
     </div>
-
     <div class="row g-4 justify-content-center">
 
       <!-- Razorpay Info Card -->
+      {% for rp in razorpay_infos %}
       <div class="col-md-6">
         <div class="card border-0 shadow-sm h-100">
           <div class="card-body text-center">
             <div class="mb-3">
               <i class="bi bi-credit-card-2-front-fill fs-2 text-primary"></i>
             </div>
-            <h5 class="fw-semibold">Online Payment (Razorpay)</h5>
-            <p class="text-muted">
-              If you wish to make payment directly, you can complete your payment securely using the Razorpay gateway.
-            </p>
+            <h5 class="fw-semibold">{{ rp.title }}</h5>
+            <p class="text-muted">{{ rp.description }}</p>
             <div class="pt-2">
               <form>
-                <script src="https://checkout.razorpay.com/v1/payment-button.js" 
-                        data-payment_button_id="pl_QidEmmlNtFRhQm" async></script>
+                <script src="https://checkout.razorpay.com/v1/payment-button.js" data-payment_button_id="{{ rp.payment_button_id }}"async></script>
               </form>
             </div>
           </div>
         </div>
       </div>
-
-      <!--<div class="col-md-6">
-        <div class="card border-0 shadow-sm h-100">
-          <div class="card-body text-center">
-            <div class="mb-3">
-              <i class="bi bi-credit-card-2-front-fill fs-2 text-primary"></i>
-            </div>
-            <h5 class="fw-semibold">Online Payment Info</h5>
-            <p class="text-muted">Online payment is only available for the products listed above.</p>
-            <button type="button" class="btn btn-outline-primary mt-3 px-4" data-bs-toggle="modal" data-bs-target="#paymentInfoModal">
-              View Payment Info
-            </button>
-            <div class="pt-2">
-              <form>
-                <script src="https://checkout.razorpay.com/v1/payment-button.js" data-payment_button_id="pl_QidEmmlNtFRhQm" async></script>
-              </form>
-            </div>
-          </div>
-        </div>
-      </div>-->
-
+      {% endfor %}
       
       <!-- QR Code -->
+      {% for info in payment_infos %}
       <div class="col-md-6">
         <div class="card border-0 shadow-sm h-100">
           <div class="card-body text-center">
             <div class="mb-3">
               <i class="bi bi-qr-code-scan fs-2 text-success"></i>
             </div>
-            <h5 class="fw-semibold">FUSIONTEC SOFTWARE</h5>
-            <img src="{% static 'products/img/fusiotec_QR.png' %}" alt="QR Code" class="img-fluid  my-3" style="max-width: 160px;">
-            <p class="mb-0 text-muted small">UPI ID: <strong>201367004000418@cnrb</strong></p>
+            <h5 class="fw-semibold">{{ info.company_name }}</h5>
+            {% if info.qr_image %}
+              <img src="{{ info.qr_image.url }}" alt="QR Code" class="img-fluid my-3" style="max-width: 160px;">
+            {% endif %}
+            <p class="mb-0 text-muted small">UPI ID: <strong>{{ info.upi_id }}</strong></p>
           </div>
         </div>
       </div>
+      {% endfor %}
 
       <!-- Bank Transfer -->
+      {% for bank_info in bank_infos %}
       <div class="col-md-10">
         <div class="card border-0 shadow-sm h-100">
           <div class="card-body text-center">
             <div class="mb-3">
               <i class="bi bi-bank fs-2 text-warning"></i>
             </div>
-            <h5 class="fw-semibold">Bank Transfer</h5>
+            <h5 class="fw-semibold">{{ bank_info.title }}</h5>
             <div class="row mt-4">
-              <div class="col-md-3 col-6 mb-3"><strong>Account Name</strong><br>Fusiontec Software</div>
-              <div class="col-md-3 col-6 mb-3"><strong>Account No.</strong><br>123456789012</div>
-              <div class="col-md-3 col-6 mb-3"><strong>IFSC</strong><br>DEMO0000123</div>
-              <div class="col-md-3 col-6 mb-3"><strong>Bank</strong><br>Demo Bank</div>
+              <div class="col-md-3 col-6 mb-3">
+                <strong>Account Name</strong><br>{{ bank_info.account_name }}
+              </div>
+              <div class="col-md-3 col-6 mb-3">
+                <strong>Account No.</strong><br>{{ bank_info.account_number }}
+              </div>
+              <div class="col-md-3 col-6 mb-3">
+                <strong>IFSC</strong><br>{{ bank_info.ifsc_code }}
+              </div>
+              <div class="col-md-3 col-6 mb-3">
+                <strong>Bank</strong><br>{{ bank_info.bank_name }}
+              </div>
             </div>
           </div>
         </div>
       </div>
+      {% endfor %}
 
     </div>
   </div>
 </section>
-
-<!-- Payment Info Modal  for online Banking--> 
-<div class="modal fade" id="paymentInfoModal" tabindex="-1" aria-labelledby="paymentInfoModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content border-0 shadow">
-      <div class="modal-header bg-primary text-white">
-        <h5 class="modal-title" id="paymentInfoModalLabel">Online Payment Information</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body text-center">
-        <p class="mb-3 text-muted">Please note: Online payment is exclusively available for the above listed products.</p>
-        <p class="mb-3">If you wish to make a direct payment, please scroll down to view other available payment options such as QR Code and Bank Transfer.</p>
-        <a href="#net_banking" class="btn btn-primary" onclick="closePaymentModal()">Go to Payment Section</a>
-
-      </div>
-    </div>
-  </div>
-</div>
-<script>
-  function closePaymentModal() {
-    const modalEl = document.getElementById('paymentInfoModal');
-    const modal = bootstrap.Modal.getInstance(modalEl);
-    modal.hide();
-
-    // Optional: smooth scroll to the payment section
-    const target = document.querySelector('#net_banking');
-    if (target) {
-      target.scrollIntoView({ behavior: 'smooth' });
-    }
-  }
-</script>
-
-
 
 <script>
   // code for opening floating form using send enquiry button 

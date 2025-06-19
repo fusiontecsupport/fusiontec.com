@@ -106,9 +106,15 @@
       <!-- Contact Info -->
       <div class="form-section">
         <label for="mobile" class="form-label">Mobile Number <span style="color:red">*</span></label>
-        <input type="text" id="mobile" name="mobile" class="form-control" maxlength="10" pattern="[6-9][0-9]{9}" required />
+        <input type="tel" id="mobile" name="mobile" class="form-control" maxlength="10" pattern="[0-9]*" inputmode="numeric" required />
         <div class="error-message" id="error-mobile"></div>
       </div>
+      <script>
+        const mobileInput = document.getElementById('mobile');
+        mobileInput.addEventListener('input', () => {
+          mobileInput.value = mobileInput.value.replace(/\D/g, '').slice(0,10);
+        });
+      </script>
 
 
       <div class="form-section">
@@ -137,7 +143,9 @@
 
       <div class="form-section" id="dynamicDropdownContainer" style="display: none;">
         <label for="productTypeDetailSelector" class="form-label">Product Type Details <span style="color:red">*</span></label>
-        <select name="product_type_detail" id="productTypeDetailSelector" class="form-select" required></select>
+        <select name="product_type_detail" id="productTypeDetailSelector" class="form-select" required>
+           <option value="">-- Select Product Type Detail --</option>
+        </select>
         <div class="error-message" id="error-productTypeDetailSelector"></div>
       </div>
 
@@ -168,7 +176,7 @@
           <!-- PI content inserted here dynamically -->
         </div>
         <div class="modal-footer">
-          <button type="submit" class="btn btn-primary">PAY-ONLINE</button>
+          <button type="button" id="razorpayBtn" class="btn btn-primary">PAY-ONLINE</button>
           <button type="button" id="downloadPiBtn" class="btn btn-primary"> Download PDF</button>
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
         </div>
@@ -176,8 +184,124 @@
     </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+document.getElementById('razorpayBtn').addEventListener('click', async function (e) {
+  e.preventDefault();
+
+  const form = document.getElementById('priceListForm');
+  const formData = new FormData(form);
+
+  const basicAmount = parseFloat(document.getElementById('totalPrice').innerText || "0");
+
+  if (isNaN(basicAmount) || basicAmount <= 0) {
+    alert("Please select a valid product to get the price.");
+    return;
+  }
+
+  formData.append('amount', basicAmount);
+
+  try {
+    const res = await fetch('/create_order/', {
+      method: 'POST',
+      body: formData
+    });
+
+    const data = await res.json();
+
+    if (!data.order_id || !data.key) {
+      alert("Something went wrong. Missing Razorpay credentials.");
+      return;
+    }
+
+    // ✅ Fetch values directly from form fields
+    const customerName = document.getElementById('customerName')?.value.trim();
+    const email = document.getElementById('email')?.value.trim();
+    const contact = document.getElementById('mobile')?.value.trim();
+
+    // ✅ Validate mobile number
+    if (!/^\d{10}$/.test(contact)) {
+      alert("Please enter a valid 10-digit mobile number.");
+      return;
+    }
+
+    const options = {
+      key: data.key,
+      amount: basicAmount * 100,
+      currency: 'INR',
+      name: customerName,
+      description: 'E-Mudhra Payment',
+      order_id: data.order_id,
+      handler: function (response) {
+        // Send verification to server
+        fetch('/verify-razorpay-payment/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken') // Only if CSRF is enabled
+          },
+          body: JSON.stringify({
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_signature: response.razorpay_signature,
+            form_data: Object.fromEntries(formData)
+          })
+        }).then(res => res.json())
+          .then(result => {
+            if (result.status === "paid") {
+              alert("✅ Payment successful! Thank you.");
+              form.reset(); // optional
+              // Optional: location.reload();
+            } else {
+              alert("❌ Payment failed. Please try again.");
+            }
+          }).catch(() => {
+            alert("❌ Verification error. Please try again.");
+          });
+      },
+      prefill: {
+        name: customerName,
+        email: email,
+        contact: contact // ✅ Now using correct value from form
+      },
+      theme: {
+        color: '#0d6efd'
+      }
+    };
+
+    const rzp = new Razorpay(options);
+    rzp.open();
+
+  } catch (err) {
+    console.error("Payment error:", err);
+    alert("❌ Failed to initiate payment. Please check your internet connection or try again.");
+  }
+});
+
+// Optional: CSRF helper if needed
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+</script>
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<!-- jsPDF library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
@@ -197,18 +321,26 @@ document.addEventListener('DOMContentLoaded', function () {
     state: form.querySelector('[name="state"]'),
     district: form.querySelector('[name="district"]'),
     pincode: form.querySelector('[name="pincode"]'),
-    productTypeSelector: document.getElementById('productTypeSelector') // ✅ ID name and key now match
+    productTypeSelector: document.getElementById('productTypeSelector'),
+    productTypeDetailSelector: document.getElementById('productTypeDetailSelector')
   };
 
+  // Restrict mobile to 10 digits only
+  fields.mobile.addEventListener('input', () => {
+    fields.mobile.value = fields.mobile.value.replace(/\D/g, '').slice(0, 10);
+  });
+
   Object.values(fields).forEach(field => {
-    field.addEventListener('input', () => {
-      validateField(field.id);
-      checkFormValidity();
-    });
-    field.addEventListener('change', () => {
-      validateField(field.id);
-      checkFormValidity();
-    });
+    if (field) {
+      field.addEventListener('input', () => {
+        validateField(field.id);
+        checkFormValidity();
+      });
+      field.addEventListener('change', () => {
+        validateField(field.id);
+        checkFormValidity();
+      });
+    }
   });
 
   generateBtn.addEventListener('click', function (e) {
@@ -234,7 +366,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     if (id === 'mobile') {
-      if (!/^[6-9]\d{0,9}$/.test(value)) {
+      if (!/^[6-9]\d{9}$/.test(value)) {
         errorDiv.textContent = 'Enter a valid 10-digit mobile number starting with 6-9';
       }
     }
@@ -243,11 +375,17 @@ document.addEventListener('DOMContentLoaded', function () {
       errorDiv.textContent = 'Enter a valid email address';
     }
 
-    if (id === 'productTypeSelector') {
-      if (!value) {
-        errorDiv.textContent = 'Select a Product Type Correctly';
-      } else {
-        errorDiv.textContent = '';
+    if (id === 'productTypeSelector' && !value) {
+      errorDiv.textContent = 'Select a Product Type';
+    }
+
+    if (id === 'productTypeDetailSelector') {
+      const dropdown = fields.productTypeDetailSelector;
+      const container = document.getElementById('dynamicDropdownContainer');
+      const isVisible = container.offsetParent !== null;
+
+      if (isVisible && (!dropdown.value || dropdown.selectedIndex === 0)) {
+        errorDiv.textContent = 'Select Product Type Details';
       }
     }
 
@@ -261,8 +399,8 @@ document.addEventListener('DOMContentLoaded', function () {
       if (id === 'address' && !value) errorDiv.textContent = 'Address is required';
       if (id === 'state' && !value) errorDiv.textContent = 'State is required';
       if (id === 'district' && !value) errorDiv.textContent = 'District is required';
-      if (id === 'pincode') {
-        if (!/^\d{6}$/.test(value)) errorDiv.textContent = 'Enter a valid 6-digit pincode';
+      if (id === 'pincode' && !/^\d{6}$/.test(value)) {
+        errorDiv.textContent = 'Enter a valid 6-digit pincode';
       }
     }
   }
@@ -279,12 +417,18 @@ document.addEventListener('DOMContentLoaded', function () {
     const state = fields.state.value.trim();
     const district = fields.district.value.trim();
     const pincode = fields.pincode.value.trim();
-    const productType = fields.productTypeSelector.value; // ✅ corrected reference
+    const productType = fields.productTypeSelector.value;
+    const productTypeDetail = fields.productTypeDetailSelector.value;
+    const dropdownVisible = document.getElementById('dynamicDropdownContainer').offsetParent !== null;
 
     if (!customerName) isValid = false;
     if (!/^[6-9]\d{9}$/.test(mobile)) isValid = false;
     if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) isValid = false;
     if (!productType) isValid = false;
+
+    if (dropdownVisible && (!productTypeDetail || fields.productTypeDetailSelector.selectedIndex === 0)) {
+      isValid = false;
+    }
 
     if (gstSelector === 'yes') {
       if (!/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/.test(gstNumber)) isValid = false;
@@ -297,6 +441,8 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 });
 </script>
+
+
 
 
 
