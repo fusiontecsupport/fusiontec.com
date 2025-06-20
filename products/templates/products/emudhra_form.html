@@ -137,7 +137,7 @@
     <select name="product_type_detail" id="productTypeDetailSelector" class="form-select" required>
       <option value="">Select Product</option>
       {% for product in emudhra_products %}
-        <option value="{{ product.id }}" data-basic="{{ product.emudhra_rate }}">
+        <option value="{{ product.id }}" data-basic="{{ product.basic_amount }}">
           {{ product.class_product }}
         </option>
       {% endfor %}
@@ -148,6 +148,9 @@
   <div class="form-section bg-light rounded p-3" id="productDetailsContainer" style="display:none;">
     <h6 class="text-secondary">Product Details</h6>
     <p>Basic Amount: <strong>₹<span id="basicAmount"></span></strong></p>
+    <p>CGST (9%): <strong><span id="cgst">-</span></strong></p>
+    <p>SGST (9%): <strong><span id="sgst">-</span></strong></p>
+    <p>Total Price: <strong><span id="totalPrice">-</span></strong></p>
   </div>
 
   <!-- Generate PI Button -->
@@ -169,7 +172,6 @@
         <!-- PI content will be injected here -->
       </div>
       <div class="modal-footer">
-        <!--<button type="submit" class="btn btn-primary" form="priceListForm">PAY-ONLINE</button>-->
         <button type="button" id="razorpayBtn" class="btn btn-primary">PAY-ONLINE</button>
         <button type="button" id="downloadPdfBtn" class="btn btn-success">Download PDF</button>
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close Preview</button>
@@ -187,7 +189,7 @@ document.getElementById('razorpayBtn').addEventListener('click', async function 
   const form = document.getElementById('priceListForm');
   const formData = new FormData(form);
 
-  const basicAmount = parseFloat(document.getElementById('basicAmount').innerText || "0");
+  const basicAmount = parseFloat(document.getElementById('totalPrice').innerText || "0");
 
   if (isNaN(basicAmount) || basicAmount <= 0) {
     alert("Please select a valid product to get the price.");
@@ -265,6 +267,9 @@ document.getElementById('razorpayBtn').addEventListener('click', async function 
     };
 
     const rzp = new Razorpay(options);
+
+    downloadProformaPDF('piPreviewContent', 'emudhra_PI.pdf');  //to download pdf while clicking pay-online button
+
     rzp.open();
 
   } catch (err) {
@@ -288,6 +293,67 @@ function getCookie(name) {
   }
   return cookieValue;
 }
+</script>
+
+
+<script>
+   //to download pdf while clicking pay-online button
+  function downloadProformaPDF(previewContainerId, filename = 'Proforma_Invoice.pdf') {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  const container = document.getElementById(previewContainerId);
+  if (!container) return;
+
+  const rows = container.querySelectorAll('tr');
+  const marginLeft = 14;
+  let y = 20;
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const cellPadding = 3;
+  const labelColWidth = 60;
+  const valueColWidth = pageWidth - marginLeft * 2 - labelColWidth;
+  const defaultRowHeight = 10;
+
+  doc.setFontSize(16);
+  doc.setFont(undefined, 'bold');
+  doc.text('Proforma Invoice (PI)', marginLeft, y);
+  y += 10;
+
+  doc.setLineWidth(0.5);
+  doc.line(marginLeft, y, pageWidth - marginLeft, y);
+  y += 8;
+
+  doc.setFontSize(12);
+  doc.setFont(undefined, 'normal');
+
+  rows.forEach((row) => {
+    const cols = row.querySelectorAll('th, td');
+    if (cols.length < 2) return;
+
+    const label = cols[0].textContent.trim();
+    const value = cols[1].textContent.trim();
+    const wrappedValue = doc.splitTextToSize(value, valueColWidth - cellPadding * 2);
+    const rowHeight = Math.max(defaultRowHeight, wrappedValue.length * 7);
+
+    doc.rect(marginLeft, y, labelColWidth, rowHeight);
+    doc.rect(marginLeft + labelColWidth, y, valueColWidth, rowHeight);
+
+    doc.setFont(undefined, 'bold');
+    doc.text(label, marginLeft + cellPadding, y + 7);
+
+    doc.setFont(undefined, 'normal');
+    doc.text(wrappedValue, marginLeft + labelColWidth + cellPadding, y + 7);
+
+    y += rowHeight;
+
+    if (y > 280) {
+      doc.addPage();
+      y = 20;
+    }
+  });
+
+  doc.save(filename);
+}
+  
 </script>
 
 
@@ -455,18 +521,31 @@ document.addEventListener('DOMContentLoaded', function () {
     const productSelect = document.getElementById('productTypeDetailSelector');
     const amountContainer = document.getElementById('productDetailsContainer');
     const basicAmount = document.getElementById('basicAmount');
+    const cgstEl = document.getElementById('cgst');
+    const sgstEl = document.getElementById('sgst');
+    const totalPriceEl = document.getElementById('totalPrice');
 
     if (productSelect) {
       productSelect.addEventListener('change', function () {
         const selectedOption = this.options[this.selectedIndex];
-        const rate = selectedOption.getAttribute('data-basic');
+        const rate = parseFloat(selectedOption.getAttribute('data-basic'));
 
-        if (rate && !isNaN(rate)) {
+        if (!isNaN(rate)) {
+          const cgst = +(rate * 0.09).toFixed(2);
+          const sgst = +(rate * 0.09).toFixed(2);
+          const total = +(rate + cgst + sgst).toFixed(2);
+
           amountContainer.style.display = 'block';
-          basicAmount.textContent = rate;
+          basicAmount.textContent = rate.toFixed(2);
+          cgstEl.textContent = cgst.toFixed(2);
+          sgstEl.textContent = sgst.toFixed(2);
+          totalPriceEl.textContent = total.toFixed(2);
         } else {
           amountContainer.style.display = 'none';
           basicAmount.textContent = '';
+          cgstEl.textContent = '-';
+          sgstEl.textContent = '-';
+          totalPriceEl.textContent = '-';
         }
       });
     }
@@ -497,6 +576,11 @@ document.addEventListener('DOMContentLoaded', function () {
       const productType = productTypeSelect ? productTypeSelect.text : '';
       const basicAmountValue = productTypeSelect ? parseFloat(productTypeSelect.dataset.basic || 0).toFixed(2) : '0.00';
 
+      // ✅ Grab calculated tax values
+      const cgstValue = document.getElementById('cgst')?.textContent || '0.00';
+      const sgstValue = document.getElementById('sgst')?.textContent || '0.00';
+      const totalValue = document.getElementById('totalPrice')?.textContent || '0.00';
+
       const formData = new FormData();
       formData.append('customer_name', customerName);
       formData.append('company_name', companyName);
@@ -511,6 +595,9 @@ document.addEventListener('DOMContentLoaded', function () {
       formData.append('product_name', productName);
       formData.append('product_type_detail', productType);
       formData.append('basic_amount', basicAmountValue);
+      formData.append('cgst', cgstValue);
+      formData.append('sgst', sgstValue);
+      formData.append('total_price', totalValue);
 
       fetch('/save-price-list/', {
         method: 'POST',
@@ -539,6 +626,9 @@ document.addEventListener('DOMContentLoaded', function () {
                   <tr><th>Product Name</th><td>${productName}</td></tr>
                   <tr><th>Product Type</th><td>${productType}</td></tr>
                   <tr><th>Basic Amount</th><td>${basicAmountValue}</td></tr>
+                  <tr><th>CGST (9%)</th><td>${cgstValue}</td></tr>
+                  <tr><th>SGST (9%)</th><td>${sgstValue}</td></tr>
+                  <tr><th>Total Price</th><td>${totalValue}</td></tr>
                 </tbody>
               </table>
             `;
@@ -555,7 +645,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // PDF download logic
+    // PDF download logic — remains unchanged
     downloadPdfBtn.addEventListener('click', () => {
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
@@ -653,6 +743,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
 </script>
+
 
 <script>
   // for API dynamic dropdown

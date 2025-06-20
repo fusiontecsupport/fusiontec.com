@@ -22,7 +22,7 @@ urlpatterns = [
     path('api/states/', views.get_states, name='get_states'),
     path('api/districts/<str:state>/', views.get_districts, name='get_districts'),
 
-    #razor pay in emudhra form
+    #razor pay in form
     path("verify-razorpay-payment/", views.razorpay_verify, name="razorpay_verify"),
     path("create_order/", views.create_order, name="create_order"),
 

@@ -113,10 +113,18 @@ class Emudhra_2(models.Model):
 class Emudhra_product(models.Model):
     emudhra_2 = models.ForeignKey(Emudhra_2, on_delete=models.CASCADE)  # Use lowercase for field name
     class_product = models.CharField(max_length=255, null=True)
-    emudhra_rate = models.DecimalField(max_digits=10, decimal_places=2, null=True)
+    basic_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True)
+    cgst = models.DecimalField(max_digits=10, decimal_places=2, default=0, blank=True, null=True)
+    sgst = models.DecimalField(max_digits=10, decimal_places=2, default=0, blank=True, null=True)
+    total_price = models.DecimalField(max_digits=10, decimal_places=2, editable=False, default=0, blank=True, null=True)
+
+    def save(self, *args, **kwargs):
+        basic = self.basic_amount or 0
+        self.total_price = basic + self.cgst + self.sgst
+        super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.class_product} - {self.emudhra_rate}"
+        return f"{self.class_product} - {self.basic_amount}"
     
 class EmudhraPriceListSubmission(models.Model):
     customer_name = models.CharField(max_length=255)
@@ -132,6 +140,9 @@ class EmudhraPriceListSubmission(models.Model):
     product_name = models.CharField(max_length=255)
     product_type_detail = models.CharField(max_length=255)
     basic_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    cgst = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    sgst = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    total_price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -190,8 +201,16 @@ class biz_product(models.Model):
     biz_4 = models.ForeignKey(Biz_4, on_delete=models.CASCADE)
     old_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     billing_cycle = models.CharField( max_length=255,  blank=True,  null=True,  default="Billed for 1 Year | Per Device")
-    new_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)  
+    new_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    cgst = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    sgst = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    total_price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)  
     team_name = models.CharField(max_length=255, default="For Sales Team") 
+
+    def save(self, *args, **kwargs):
+        basic = self.new_price or 0
+        self.total_price = basic + self.cgst + self.sgst
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.team_name} ({self.new_price})"
@@ -211,6 +230,9 @@ class BizPriceListSubmission(models.Model):
     business_plan_id = models.IntegerField()  # store the ID of selected business plan
     business_plan_name = models.CharField(max_length=255)
     original_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    new_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    cgst = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    sgst = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     total_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     created_at = models.DateTimeField(auto_now_add=True)
 

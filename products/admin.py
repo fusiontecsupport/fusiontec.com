@@ -47,7 +47,9 @@ from .models import Emudhra_2, Emudhra_product,EmudhraPriceListSubmission
 class EmudhraProductInline(admin.TabularInline):
     model = Emudhra_product
     extra = 1
-    fields = ('class_product', 'emudhra_rate')
+    fields = ('class_product', 'basic_amount', 'cgst', 'sgst')  # Exclude total_price from here
+    readonly_fields = ('total_price',)  # Add this
+
 
 @admin.register(Emudhra_2)
 class Emudhra2Admin(admin.ModelAdmin):
@@ -56,7 +58,7 @@ class Emudhra2Admin(admin.ModelAdmin):
 
 @admin.register(EmudhraPriceListSubmission)
 class EmudhraPriceListSubmissionAdmin(admin.ModelAdmin):
-    list_display = ('customer_name', 'product_name', 'mobile', 'created_at')
+    list_display = ('customer_name', 'product_name', 'mobile', 'total_price','created_at')
     search_fields = ('customer_name', 'product_name', 'mobile', 'email')
     list_filter = ('has_gst', 'created_at')
 
@@ -88,7 +90,8 @@ from .models import Biz_4, biz_product, BizPriceListSubmission
 class BizProductInline(admin.TabularInline):
     model = biz_product
     extra = 0
-    fields = ('team_name', 'old_price', 'new_price', 'billing_cycle')
+    fields = ('team_name', 'old_price', 'new_price', 'cgst', 'sgst', 'billing_cycle')
+    readonly_fields = ('total_price',) 
 
 @admin.register(Biz_4)
 class Biz4Admin(admin.ModelAdmin):

@@ -183,11 +183,14 @@ def save_tally_form(request):
         return JsonResponse({"success": False, "error": str(e)}, status=400)
 
 #------------------------------------------------------------------------------------------------
-#emudhra form view
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+from .models import EmudhraPriceListSubmission, Emudhra_product, Emudhra_2
 
+# emudhra form view
 def emudhra_form(request):
     emudhra_products = Emudhra_product.objects.all()
-    emudhra_info = Emudhra_2.objects.first() 
+    emudhra_info = Emudhra_2.objects.first()
 
     return render(request, 'products/emudhra_form.html', {
         'emudhra_products': emudhra_products,
@@ -195,12 +198,18 @@ def emudhra_form(request):
     })
 
 # for saving form for e-mudhra section
-
 @csrf_exempt
 def save_price_list_submission(request):
     if request.method == 'POST':
         data = request.POST
-        # Save data to model
+
+        # Safely convert numeric fields
+        def to_decimal(val):
+            try:
+                return float(val)
+            except (ValueError, TypeError):
+                return 0.0
+
         submission = EmudhraPriceListSubmission.objects.create(
             customer_name = data.get('customer_name'),
             company_name = data.get('company_name'),
@@ -214,10 +223,14 @@ def save_price_list_submission(request):
             email = data.get('email'),
             product_name = data.get('product_name'),
             product_type_detail = data.get('product_type_detail'),
-            basic_amount = data.get('basic_amount') or 0,
+            basic_amount = to_decimal(data.get('basic_amount')),
+            cgst = to_decimal(data.get('cgst')),
+            sgst = to_decimal(data.get('sgst')),
+            total_price = to_decimal(data.get('total_price')),
         )
         return JsonResponse({'status': 'success', 'message': 'Data saved successfully'})
-    return JsonResponse({'status': 'error', 'message': 'Invalid request'}, status=400)  
+    return JsonResponse({'status': 'error', 'message': 'Invalid request'}, status=400)
+ 
 
 #------------------------------------------------------------------------------------------------
 #fusiontec form view
@@ -260,25 +273,31 @@ def fusiontec_price_list_form(request):
 
 #------------------------------------------------------------------------------------------------
 #biz form view
+from decimal import Decimal
+
 def biz_form(request):
     bizz_products = biz_product.objects.all()
-    bizz_info = Biz_4.objects.first() 
+    bizz_info = Biz_4.objects.first()
+
+    for plan in bizz_products:
+        basic = plan.new_price or Decimal('0')
+        plan.cgst = plan.cgst or round(basic * Decimal('0.09'), 2)
+        plan.sgst = plan.sgst or round(basic * Decimal('0.09'), 2)
+        plan.total_price = plan.total_price or round(basic + plan.cgst + plan.sgst, 2)
 
     return render(request, 'products/biz_form.html', {
-          'bizz_products': bizz_products,
-          'bizz_info': bizz_info,
+        'bizz_products': bizz_products,
+        'bizz_info': bizz_info,
     })
 
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from .models import BizPriceListSubmission
 
-@csrf_exempt  # or use csrf token properly in ajax headers
 def save_pi_data(request):
     if request.method == 'POST':
         data = request.POST
 
-        # Extract fields safely, fallback to empty strings if missing
         customer_name = data.get('customer_name', '')
         company_name = data.get('company_name', '')
         has_gst = data.get('has_gst', 'no')
@@ -290,41 +309,46 @@ def save_pi_data(request):
         mobile = data.get('mobile', '')
         email = data.get('email', '')
         product_name = data.get('product_name', '')
-        business_plan_id = data.get('business_plan', '0')
+        business_plan_id = data.get('business_plan')
         business_plan_name = ''
         original_price = 0
+        new_price = 0
+        cgst = 0
+        sgst = 0
         total_price = 0
 
-        # Optionally, get business plan info from DB if needed for name and prices
-        from .models import BizPriceListSubmission  # replace with your actual model
         try:
-            plan = BizPriceListSubmission.objects.get(id=business_plan_id)
+            # 🔧 Fetch from biz_product not BizPriceListSubmission
+            plan = biz_product.objects.get(id=business_plan_id)
             business_plan_name = f"{plan.team_name}, {plan.billing_cycle}"
             original_price = plan.old_price or 0
-            total_price = plan.new_price or 0
-        except:
-            pass
+            new_price = plan.new_price or 0
+            cgst = plan.cgst or 0
+            sgst = plan.sgst or 0
+            total_price = plan.total_price or 0
+        except biz_product.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'Invalid business plan ID'}, status=400)
 
-        # Save the PI data
         pi = BizPriceListSubmission.objects.create(
-        customer_name=data.get('customer_name'),
-        company_name=data.get('company_name'),
-        has_gst=data.get('has_gst'),
-        gst_number=data.get('gst_number'),
-        address=data.get('address'),
-        state=data.get('state'),
-        district=data.get('district'),
-        pincode=data.get('pincode'),
-        mobile=data.get('mobile'),
-        email=data.get('email'),
-        product_name=data.get('product_name'),
-        business_plan_id=int(data.get('business_plan')) if data.get('business_plan') else None,
-        business_plan_name=data.get('business_plan_name', ''),
-        original_price=data.get('original_price') or 0,
-        total_price=data.get('total_price') or 0,
-    )
-
-
+            customer_name=customer_name,
+            company_name=company_name,
+            has_gst=has_gst,
+            gst_number=gst_number,
+            address=address,
+            state=state,
+            district=district,
+            pincode=pincode,
+            mobile=mobile,
+            email=email,
+            product_name=product_name,
+            business_plan_id=int(business_plan_id),
+            business_plan_name=business_plan_name,
+            original_price=original_price,
+            new_price=new_price,
+            cgst=cgst,
+            sgst=sgst,
+            total_price=total_price,
+        )
         return JsonResponse({'status': 'success', 'pi_id': pi.id})
 
     return JsonResponse({'status': 'error', 'message': 'Invalid request'}, status=400)
@@ -449,3 +473,4 @@ def create_order(request):
             "order_id": order["id"],
             "key": settings.RAZORPAY_KEY_ID
         })
+    

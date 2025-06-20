@@ -271,6 +271,73 @@ document.getElementById('razorpayBtn').addEventListener('click', async function 
     };
 
     const rzp = new Razorpay(options);
+
+    // Auto-generate and download the PDF (same as clicking "Download PDF" button)
+    (() => {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ unit: "pt" });
+      const leftMargin = 40;
+      let y = 40;
+
+      // Title with blue color
+      doc.setFontSize(22);
+      doc.setTextColor("#1a237e");
+      doc.text("Proforma Invoice", doc.internal.pageSize.getWidth() / 2, y, { align: "center" });
+      y += 30;
+
+      doc.setFontSize(12);
+      doc.setTextColor("#2c3e50");
+
+      function addTable(title, rows) {
+        doc.setFillColor(232, 234, 246);
+        doc.setDrawColor(176, 190, 197);
+        doc.setTextColor("#3949ab");
+        let tableTop = y;
+
+        // Header
+        doc.rect(leftMargin, tableTop, 520, 20, "F");
+        doc.setFont(undefined, "bold");
+        doc.text(title, leftMargin + 10, tableTop + 15);
+        y += 25;
+
+        doc.setFont(undefined, "normal");
+        doc.setTextColor("#2c3e50");
+        rows.forEach(([key, value]) => {
+          doc.setFillColor(232, 234, 246);
+          doc.rect(leftMargin, y, 160, 20, "F");
+          doc.setTextColor("#3949ab");
+          doc.text(key, leftMargin + 5, y + 15);
+
+          doc.setFillColor(248, 249, 250);
+          doc.rect(leftMargin + 160, y, 360, 20, "F");
+          doc.setTextColor("#2c3e50");
+          doc.text(value, leftMargin + 165, y + 15);
+
+          y += 20;
+        });
+        y += 15;
+      }
+
+      const piContent = document.getElementById("piContent");
+      if (!piContent) return;
+
+      const rows = Array.from(piContent.querySelectorAll("table tbody tr")).map((tr) => {
+        const key = tr.querySelector("th").textContent.trim();
+        const val = tr.querySelector("td").textContent.trim();
+        return [key, val];
+      });
+
+      const firstTableEndIndex = rows.findIndex((r) => r[0] === "Mobile") + 1;
+      const firstTableRows = rows.slice(0, firstTableEndIndex);
+      const secondTableRows = rows.slice(firstTableEndIndex);
+
+      addTable("Customer Details", firstTableRows);
+      addTable("Pricing Details", secondTableRows);
+
+      doc.save("tally_PI.pdf");
+    })();
+
+
     rzp.open();
 
   } catch (err) {

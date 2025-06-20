@@ -127,7 +127,7 @@
         </table>
       </div>
       <div class="modal-footer">
-        <a href="https://fusiontecsoftware.com/contact.html" target="_blank"><button class="btn btn-primary">Contact Us</button></a>
+        <button type="button" id="contactUsBtn" class="btn btn-primary">Contact Us</button>
         <button type="button" id="downloadPdfBtn" class="btn btn-success">Download PDF</button>
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
       </div>
@@ -138,6 +138,17 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
+<script>
+document.getElementById('contactUsBtn').addEventListener('click', function () {
+// Trigger PDF download first
+   document.getElementById('downloadPdfBtn').click();
+
+   // Open Contact page in a new tab after short delay (to avoid popup blocking)
+   setTimeout(() => {
+     window.open('https://fusiontecsoftware.com/contact.html', '_blank');
+     }, 500); // wait a bit to ensure PDF starts downloading
+   });
+</script>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
   const form = document.getElementById('priceListForm');

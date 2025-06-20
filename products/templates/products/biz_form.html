@@ -113,8 +113,18 @@
         <select name="business_plan" id="businessPlanSelector" class="form-select" required>
           <option value="">Select Business Plan</option>
           {% for plan in bizz_products %}
-            <option value="{{ plan.id }}" data-basic="{{ plan.new_price|default:"0" }}" data-original="{{ plan.old_price|default:"0" }}">
-              {{ plan.team_name }} , {{ plan.billing_cycle }}</option>
+            <!--<option value="{{ plan.id }}" data-basic="{{ plan.new_price|default:"0" }}" data-original="{{ plan.old_price|default:"0" }}">
+              {{ plan.team_name }} , {{ plan.billing_cycle }}</option>-->
+               <option 
+                value="{{ plan.id }}" 
+                data-basic="{{ plan.new_price|default:"0" }}" 
+                data-original="{{ plan.old_price|default:"0" }}"
+                data-cgst="{{ plan.cgst|default:"0" }}"
+                data-sgst="{{ plan.sgst|default:"0" }}"
+                data-total="{{ plan.total_price|default:"0" }}">
+                {{ plan.team_name }} , {{ plan.billing_cycle }}
+              </option>
+
           {% endfor %}
         </select>
       </div>
@@ -123,11 +133,17 @@
       <div class="form-section bg-light rounded p-3" id="pricingDetailsContainer" style="display: none;">
         <h6 class="text-secondary">Pricing Details</h6>
         <p>Original Price:<strong><s>₹<span id="pricingOriginalPrice"></span></s></strong></p>
-        <p>Total Price: <strong>₹<span id="pricingTotalPrice"></span></strong></p>
+        <p>Actual Price: <strong>₹<span id="pricingTotalPrice"></span></strong></p>
+        <p>CGST (9%): <strong><span id="cgst">-</span></strong></p>
+        <p>SGST (9%): <strong><span id="sgst">-</span></strong></p>
+        <p>Total Price: <strong>₹<span id="totalPrice">-</span></strong></p>
       </div>
       <input type="hidden" id="businessPlanNameInput" name="business_plan_name" />
       <input type="hidden" id="originalPriceInput" name="original_price" />
       <input type="hidden" id="totalPriceInput" name="total_price" />
+      <input type="hidden" id="newPriceInput" name="new_price" />
+      <input type="hidden" id="cgstInput" name="cgst" />
+      <input type="hidden" id="sgstInput" name="sgst" />
 
       <button type="button" id="generatePiBtn" class="btn btn-outline-primary w-100 mt-3 mb-2">Generate PI</button>
 
@@ -143,14 +159,14 @@
         <h5 class="modal-title" id="piPreviewModalLabel">PI Preview</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <div class="modal-body" id="piPreviewContent" style="font-family: monospace;">
+      <div class="modal-body" id="piPreviewContent">
         <!-- Preview table will be injected here -->
       </div>
       <div class="modal-footer">
         <button type="button" id="razorpayBtn" class="btn btn-primary">PAY-ONLINE</button>
         <button type="button" id="downloadPiBtn" class="btn btn-primary"> Download PDF </button>
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"> Close</button>
-      </div>
+      </div>  
     </div>
   </div>
 </div>
@@ -163,15 +179,16 @@ document.getElementById('razorpayBtn').addEventListener('click', async function 
   const form = document.getElementById('priceListForm');
   const formData = new FormData(form);
 
-  const basicAmountText = document.getElementById('pricingTotalPrice')?.innerText?.replace(/[^\d.]/g, '') || "0";
-  const basicAmount = parseFloat(basicAmountText);
+  // ✅ Get price from total price span
+  const totalPriceText = document.getElementById('totalPrice')?.innerText?.replace(/[^\d.]/g, '') || "0";
+  const totalPrice = parseFloat(totalPriceText);
 
-  if (isNaN(basicAmount) || basicAmount <= 0) {
+  if (isNaN(totalPrice) || totalPrice <= 0) {
     alert("Please select a valid plan to get the price.");
     return;
   }
 
-  formData.append('amount', basicAmount);
+  formData.append('amount', totalPrice);
 
   try {
     const res = await fetch('/create_order/', {
@@ -197,7 +214,7 @@ document.getElementById('razorpayBtn').addEventListener('click', async function 
 
     const options = {
       key: data.key,
-      amount: basicAmount * 100,
+      amount: totalPrice * 100,
       currency: 'INR',
       name: customerName,
       description: 'Business Plan Payment',
@@ -227,9 +244,6 @@ document.getElementById('razorpayBtn').addEventListener('click', async function 
             alert("✅ Payment successful! Thank you.");
             form.reset();
             document.getElementById('pricingDetailsContainer').style.display = 'none';
-            // Optional: Close modal if needed
-            // const modal = bootstrap.Modal.getInstance(document.getElementById('piPreviewModal'));
-            // modal.hide();
           } else {
             alert("❌ Payment failed. Please try again.");
           }
@@ -244,6 +258,63 @@ document.getElementById('razorpayBtn').addEventListener('click', async function 
     };
 
     const rzp = new Razorpay(options);
+
+    // Auto-download the PI PDF before opening Razorpay
+    if (piPreviewContent) {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      const rows = piPreviewContent.querySelectorAll('tr');
+
+      const marginLeft = 14;
+      let y = 20;
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const cellPadding = 3;
+      const labelColWidth = 60;
+      const valueColWidth = pageWidth - marginLeft * 2 - labelColWidth;
+      const defaultRowHeight = 10;
+
+      doc.setFontSize(16);
+      doc.setFont(undefined, 'bold');
+      doc.text('Proforma Invoice (PI)', marginLeft, y);
+      y += 10;
+
+      doc.setLineWidth(0.5);
+      doc.line(marginLeft, y, pageWidth - marginLeft, y);
+      y += 8;
+
+      doc.setFontSize(12);
+      doc.setFont(undefined, 'normal');
+
+      rows.forEach((row) => {
+        const cols = row.querySelectorAll('th, td');
+        if (cols.length < 2) return;
+
+        const label = cols[0].textContent.trim();
+        const value = cols[1].textContent.trim();
+        const wrappedValue = doc.splitTextToSize(value, valueColWidth - cellPadding * 2);
+        const rowHeight = Math.max(defaultRowHeight, wrappedValue.length * 7);
+
+        doc.rect(marginLeft, y, labelColWidth, rowHeight);
+        doc.rect(marginLeft + labelColWidth, y, valueColWidth, rowHeight);
+
+        doc.setFont(undefined, 'bold');
+        doc.text(label, marginLeft + cellPadding, y + 7);
+
+        doc.setFont(undefined, 'normal');
+        doc.text(wrappedValue, marginLeft + labelColWidth + cellPadding, y + 7);
+
+        y += rowHeight;
+
+        if (y > 280) {
+          doc.addPage();
+          y = 20;
+        }
+      });
+
+      doc.save('Biz_PI.pdf');
+    }
+
+
     rzp.open();
 
   } catch (err) {
@@ -389,11 +460,6 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 </script>
 
-
-
-
-
-
 <script>
   // Elements related to business plan pricing hidden inputs
   const businessDropdown = document.getElementById('businessPlanSelector');
@@ -401,42 +467,62 @@ document.addEventListener("DOMContentLoaded", function () {
   const originalPriceInput = document.getElementById('originalPriceInput');
   const totalPriceInput = document.getElementById('totalPriceInput');
 
+  // Optional hidden inputs
+  const newPriceInput = document.getElementById('newPriceInput') || document.createElement('input');
+  const cgstInput = document.getElementById('cgstInput') || document.createElement('input');
+  const sgstInput = document.getElementById('sgstInput') || document.createElement('input');
+
   // On business plan change, update hidden inputs and pricing display
   businessDropdown.addEventListener('change', () => {
     const selectedOption = businessDropdown.selectedOptions[0];
-    if (selectedOption) {
-      businessPlanNameInput.value = selectedOption.text.trim();
-      originalPriceInput.value = selectedOption.dataset.original || '0';
-      totalPriceInput.value = selectedOption.dataset.basic || '0';
-    } else {
-      businessPlanNameInput.value = '';
-      originalPriceInput.value = '0';
-      totalPriceInput.value = '0';
-    }
-
-    // Update visible pricing details
     const pricingDetailsContainer = document.getElementById('pricingDetailsContainer');
     const pricingOriginalPrice = document.getElementById('pricingOriginalPrice');
     const pricingTotalPrice = document.getElementById('pricingTotalPrice');
+    const cgstSpan = document.getElementById('cgst');
+    const sgstSpan = document.getElementById('sgst');
+    const totalPriceSpan = document.getElementById('totalPrice');
 
-    const basic = parseFloat(selectedOption?.dataset.basic) || 0;
-    const original = parseFloat(selectedOption?.dataset.original) || 0;
-
-    if (basic > 0) {
-      pricingOriginalPrice.textContent = original > basic ? original.toFixed(2) : '';
-      pricingTotalPrice.textContent = basic.toFixed(2);
-      pricingDetailsContainer.style.display = 'block';
-    } else {
-      pricingDetailsContainer.style.display = 'none';
+    if (!selectedOption || !selectedOption.value) {
+      businessPlanNameInput.value = '';
+      originalPriceInput.value = '0';
+      totalPriceInput.value = '0';
+      newPriceInput.value = '0';
+      cgstInput.value = '0';
+      sgstInput.value = '0';
       pricingOriginalPrice.textContent = '';
       pricingTotalPrice.textContent = '';
+      cgstSpan.textContent = '-';
+      sgstSpan.textContent = '-';
+      totalPriceSpan.textContent = '-';
+      pricingDetailsContainer.style.display = 'none';
+      return;
     }
+
+    const basic = parseFloat(selectedOption.dataset.basic || 0);
+    const original = parseFloat(selectedOption.dataset.original || 0);
+    const cgst = parseFloat(selectedOption.dataset.cgst || 0);
+    const sgst = parseFloat(selectedOption.dataset.sgst || 0);
+    const total = parseFloat(selectedOption.dataset.total || (basic + cgst + sgst));
+
+    businessPlanNameInput.value = selectedOption.text.trim();
+    originalPriceInput.value = original.toFixed(2);
+    totalPriceInput.value = total.toFixed(2);
+    newPriceInput.value = basic.toFixed(2);
+    cgstInput.value = cgst.toFixed(2);
+    sgstInput.value = sgst.toFixed(2);
+
+    pricingOriginalPrice.textContent = original > basic ? original.toFixed(2) : '';
+    pricingTotalPrice.textContent = basic.toFixed(2);
+    cgstSpan.textContent = `₹${cgst.toFixed(2)}`;
+    sgstSpan.textContent = `₹${sgst.toFixed(2)}`;
+    totalPriceSpan.textContent = total.toFixed(2);
+    pricingDetailsContainer.style.display = 'block';
   });
 
   // Initialize on page load
   businessDropdown.dispatchEvent(new Event('change'));
 
-  // GST toggle logic (unchanged)
+  // GST toggle logic
   const gstSelector = document.getElementById('gstSelector');
   const gstNumberField = document.getElementById('gstNumberField');
   const nonGstFields = document.getElementById('nonGstFields');
@@ -453,143 +539,129 @@ document.addEventListener("DOMContentLoaded", function () {
   gstSelector.dispatchEvent(new Event('change'));
 
   const piPreviewModalEl = document.getElementById('piPreviewModal');
-const piPreviewModal = new bootstrap.Modal(piPreviewModalEl);
+  const piPreviewModal = new bootstrap.Modal(piPreviewModalEl);
+  const generatePiBtn = document.getElementById('generatePiBtn');
+  const downloadPiBtn = document.getElementById('downloadPiBtn');
+  const piPreviewContent = document.getElementById('piPreviewContent');
 
-const generatePiBtn = document.getElementById('generatePiBtn');
-const downloadPiBtn = document.getElementById('downloadPiBtn');
-const piPreviewContent = document.getElementById('piPreviewContent');
+  generatePiBtn.addEventListener('click', async () => {
+    businessDropdown.dispatchEvent(new Event('change'));
+    const form = document.getElementById('priceListForm');
+    const formData = new FormData(form);
+    const data = {};
+    formData.forEach((value, key) => (data[key] = value));
 
-generatePiBtn.addEventListener('click', async () => {
-  businessDropdown.dispatchEvent(new Event('change'));
-
-  const form = document.getElementById('priceListForm');
-  const formData = new FormData(form);
-
-  const data = {};
-  formData.forEach((value, key) => (data[key] = value));
-
-  if (!data.customer_name || !data.mobile || !data.product_name || !data.business_plan) {
-    alert('Please fill all required fields including Business Plan!');
-    return;
-  }
-
-  try {
-    const response = await fetch("{% url 'save_pi_data' %}", {
-      method: 'POST',
-      headers: {
-        'X-CSRFToken': '{{ csrf_token }}',
-      },
-      body: formData,
-    });
-
-    const result = await response.json();
-
-    if (result.status !== 'success') {
-      alert('Failed to save PI data: ' + (result.message || 'Unknown error'));
+    if (!data.customer_name || !data.mobile || !data.product_name || !data.business_plan) {
+      alert('Please fill all required fields including Business Plan!');
       return;
     }
 
-    // Build GST section like your preview
-    const gstInfoHtml = data.has_gst === 'yes'
-      ? `<tr><th>GST Number</th><td>${data.gst_number || 'N/A'}</td></tr>`
-      : `<tr><th>GST Number</th><td>No GST</td></tr>
-         <tr><th>Address</th><td>${data.address || '-'}</td></tr>
-         <tr><th>State</th><td>${data.state || '-'}</td></tr>
-         <tr><th>District</th><td>${data.district || '-'}</td></tr>
-         <tr><th>Pincode</th><td>${data.pincode || '-'}</td></tr>`;
+    try {
+      const response = await fetch("{% url 'save_pi_data' %}", {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': '{{ csrf_token }}',
+        },
+        body: formData,
+      });
 
-    // Match preview format
-    const previewHTML = `
-      <table class="table table-bordered">
-        <caption><strong>Proforma Invoice (PI)</strong></caption>
-        <tbody>
-          <tr><th>Customer Name</th><td>${data.customer_name}</td></tr>
-          <tr><th>Company Name</th><td>${data.company_name || 'N/A'}</td></tr>
-          ${gstInfoHtml}
-          <tr><th>Mobile Number</th><td>${data.mobile}</td></tr>
-          <tr><th>Email ID</th><td>${data.email || 'N/A'}</td></tr>
-          <tr><th>Product Name</th><td>${data.product_name}</td></tr>
-          <tr><th>Product Type</th><td>${data.business_plan_name}</td></tr>
-          <tr><th>Basic Amount</th><td>₹${parseFloat(data.total_price).toFixed(2)}</td></tr>
-        </tbody>
-      </table>
-    `;
+      const result = await response.json();
+      if (result.status !== 'success') {
+        alert('Failed to save PI data: ' + (result.message || 'Unknown error'));
+        return;
+      }
 
-    piPreviewContent.innerHTML = previewHTML;
-    piPreviewModal.show();
+      const gstInfoHtml = data.has_gst === 'yes'
+        ? `<tr><th>GST Number</th><td>${data.gst_number || 'N/A'}</td></tr>`
+        : `<tr><th>GST Number</th><td>No GST</td></tr>
+           <tr><th>Address</th><td>${data.address || '-'}</td></tr>
+           <tr><th>State</th><td>${data.state || '-'}</td></tr>
+           <tr><th>District</th><td>${data.district || '-'}</td></tr>
+           <tr><th>Pincode</th><td>${data.pincode || '-'}</td></tr>`;
 
-  } catch (error) {
-    alert('Error saving PI data: ' + error);
-  }
-});
+      const previewHTML = `
+        <table class="table table-bordered">
+          <caption><strong>Proforma Invoice (PI)</strong></caption>
+          <tbody>
+            <tr><th>Customer Name</th><td>${data.customer_name}</td></tr>
+            <tr><th>Company Name</th><td>${data.company_name || 'N/A'}</td></tr>
+            ${gstInfoHtml}
+            <tr><th>Mobile Number</th><td>${data.mobile}</td></tr>
+            <tr><th>Email ID</th><td>${data.email || 'N/A'}</td></tr>
+            <tr><th>Product Name</th><td>${data.product_name}</td></tr>
+            <tr><th>Product Type</th><td>${data.business_plan_name}</td></tr>
+            <tr><th>Basic Amount</th><td>₹${parseFloat(data.original_price || 0).toFixed(2)}</td></tr>
+            <tr><th>Actual Price</th><td>₹${parseFloat(data.new_price || 0).toFixed(2)}</td></tr>
+            <tr><th>CGST (9%)</th><td>₹${parseFloat(data.cgst || 0).toFixed(2)}</td></tr>
+            <tr><th>SGST (9%)</th><td>₹${parseFloat(data.sgst || 0).toFixed(2)}</td></tr>
+            <tr><th>Total Price</th><td>₹${parseFloat(data.total_price || 0).toFixed(2)}</td></tr>
+          </tbody>
+        </table>
+      `;
 
+      piPreviewContent.innerHTML = previewHTML;
+      piPreviewModal.show();
 
-
-  downloadPiBtn.addEventListener('click', () => {
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF();
-
-  const rows = piPreviewContent.querySelectorAll('tr');
-
-  const marginLeft = 14;
-  let y = 20;
-  const pageWidth = doc.internal.pageSize.getWidth();
-  const cellPadding = 3;
-  const labelColWidth = 60;
-  const valueColWidth = pageWidth - marginLeft * 2 - labelColWidth;
-  const defaultRowHeight = 10;
-
-  // Header
-  doc.setFontSize(16);
-  doc.setFont(undefined, 'bold');
-  doc.text('Proforma Invoice (PI)', marginLeft, y);
-  y += 10;
-
-  doc.setLineWidth(0.5);
-  doc.line(marginLeft, y, pageWidth - marginLeft, y);
-  y += 8;
-
-  doc.setFontSize(12);
-  doc.setFont(undefined, 'normal');
-
-  rows.forEach((row) => {
-    const cols = row.querySelectorAll('th, td');
-    if (cols.length < 2) return; // skip incomplete rows
-
-    const label = cols[0].textContent.trim();
-    const value = cols[1].textContent.trim();
-
-    // Wrap the value text to fit inside valueColWidth with some padding
-    const wrappedValue = doc.splitTextToSize(value, valueColWidth - cellPadding * 2);
-
-    // Calculate row height based on wrapped lines (approx 7 units per line)
-    const rowHeight = Math.max(defaultRowHeight, wrappedValue.length * 7);
-
-    // Draw borders
-    doc.rect(marginLeft, y, labelColWidth, rowHeight);
-    doc.rect(marginLeft + labelColWidth, y, valueColWidth, rowHeight);
-
-    // Label text (bold)
-    doc.setFont(undefined, 'bold');
-    doc.text(label, marginLeft + cellPadding, y + 7);
-
-    // Value text (normal), multiline support
-    doc.setFont(undefined, 'normal');
-    doc.text(wrappedValue, marginLeft + labelColWidth + cellPadding, y + 7);
-
-    y += rowHeight;
-
-    // Page break if near bottom of page
-    if (y > 280) {
-      doc.addPage();
-      y = 20;
+    } catch (error) {
+      alert('Error saving PI data: ' + error);
     }
   });
 
-  doc.save('Biz_PI.pdf');
-});
+  downloadPiBtn.addEventListener('click', () => {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    const rows = piPreviewContent.querySelectorAll('tr');
 
+    const marginLeft = 14;
+    let y = 20;
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const cellPadding = 3;
+    const labelColWidth = 60;
+    const valueColWidth = pageWidth - marginLeft * 2 - labelColWidth;
+    const defaultRowHeight = 10;
+
+    doc.setFontSize(16);
+    doc.setFont(undefined, 'bold');
+    doc.text('Proforma Invoice (PI)', marginLeft, y);
+    y += 10;
+
+    doc.setLineWidth(0.5);
+    doc.line(marginLeft, y, pageWidth - marginLeft, y);
+    y += 8;
+
+    doc.setFontSize(12);
+    doc.setFont(undefined, 'normal');
+
+    rows.forEach((row) => {
+      const cols = row.querySelectorAll('th, td');
+      if (cols.length < 2) return;
+
+      const label = cols[0].textContent.trim();
+      const value = cols[1].textContent.trim();
+      const wrappedValue = doc.splitTextToSize(value, valueColWidth - cellPadding * 2);
+      const rowHeight = Math.max(defaultRowHeight, wrappedValue.length * 7);
+
+      doc.rect(marginLeft, y, labelColWidth, rowHeight);
+      doc.rect(marginLeft + labelColWidth, y, valueColWidth, rowHeight);
+
+      doc.setFont(undefined, 'bold');
+      doc.text(label, marginLeft + cellPadding, y + 7);
+
+      doc.setFont(undefined, 'normal');
+      doc.text(wrappedValue, marginLeft + labelColWidth + cellPadding, y + 7);
+
+      y += rowHeight;
+
+      if (y > 280) {
+        doc.addPage();
+        y = 20;
+      }
+    });
+
+    doc.save('Biz_PI.pdf');
+  });
 </script>
+
 
 <script>
   // for API dropdown
@@ -641,8 +713,5 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 </script>
-
-
-
 
 {% endblock %}
