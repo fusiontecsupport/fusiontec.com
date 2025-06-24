@@ -1,0 +1,364 @@
+{% extends 'products/base.html' %}
+
+{% load static %}
+
+{% block title %}Fusiontec - Home{% endblock %}
+
+    <!-- Core theme CSS (includes Bootstrap)-->
+    <link rel="stylesheet" href="{% static 'products/css/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'products/css/main.css' %}">
+{% block content %}
+
+<main>
+<!-- About Section -->
+<section class="bg-light py-5" id="about">
+    <div class="container px-5">
+        <div class="row gx-5 justify-content-center">
+            <div class="col-xxl-8">
+                <div class="text-center my-5">
+                    <h2 class="display-5 fw-bolder"><span class="text-gradient d-inline">About Us</span></h2>
+                    <p class="lead fw-light mb-4">Empowering Businesses with Smart IT Solutions</p>
+                    <p class="text-muted">Fusiontec Software is a Chennai-based IT and Management Consultancy firm dedicated to delivering practical, cost-effective solutions that drive business growth. We specialize in ready-to-use software packages and customized software solutions tailored to meet the specific needs of diverse industries. Our mission is to foster lasting client relationships by combining quality products with exceptional customer service.</p>
+                    <div class="d-flex justify-content-center fs-2 gap-4">
+                        <div class="text-center text-lg-start">
+                            <a href="https://fusiontecsoftware.com/" target="_blank"
+                                class="btn-read-more d-inline-flex align-items-center justify-content-center align-self-center"
+                                style="text-decoration: none;">
+                                <span>Know More</span>
+                                <i class="bi bi-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-center fs-2 gap-4">
+                        <a class="text-gradient" href="https://www.facebook.com/fusiontecsoftware/" target="_blank"><i class="bi bi-facebook"></i></a>
+                        <a class="text-gradient" href="https://www.linkedin.com/company/fusiontec-software/" target="_blank"><i class="bi bi-linkedin"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<!-- Products Section -->
+<section class="py-5" id="products">
+  <div class="container px-4 px-lg-5 mb-5">
+    <div class="text-center mb-5">
+      <h1 class="display-5 fw-bolder mb-0">
+        <span class="text-gradient d-inline">Products</span>
+      </h1>
+    </div>
+
+    <div class="row gx-5 justify-content-center">
+      <div class="col-lg-11 col-xl-9 col-xxl-8">
+        {% for product in products %}
+        <div class="card overflow-hidden shadow rounded-4 border-0 mb-5">
+          <div class="card-body p-0">
+            <div class="d-flex flex-column flex-lg-row align-items-stretch">
+
+              <!-- Left -->
+              <div class="product-image d-flex flex-column justify-content-center align-items-center p-3">
+                <a href="{{ product.tally_link|default:'#' }}" target="_blank" rel="noopener noreferrer">
+                  <img class="img-fluid mb-2" src="{{ product.tally_image.url }}" alt="{{ product.tally_name }}" />
+                </a>
+              </div>
+
+              <!-- Right -->
+              <div class="product-actions d-flex flex-column justify-content-center align-items-start p-3">
+                <div class="row g-2 w-100">
+                  <div class="col-6">
+                    <button id="sendEnquiryBtn" class="btn btn-light w-100 px-4">Send Enquiry</button>
+                  </div>
+                  <div class="col-6">
+                    <a href="{{ product.tally_link|default:'#' }}" target="_blank" rel="noopener noreferrer">
+                      <button class="btn btn-light w-100 px-4">More Details</button>
+                    </a>
+                  </div>
+                  <div class="col-12">
+                    <a href="{% url 'tally_form' %}">
+                      <button class="btn btn-light w-100 px-4">Price list</button>
+                    </a>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Second loop for Emudhra_2 products -->
+    <div class="row gx-5 justify-content-center">
+      <div class="col-lg-11 col-xl-9 col-xxl-8">
+        {% for product in emudhra_products %}
+        <div class="card overflow-hidden shadow rounded-4 border-0 mb-5">
+          <div class="card-body p-0">
+            <div class="d-flex flex-column flex-lg-row align-items-stretch">
+
+              <!-- Left -->
+              <div class="product-image d-flex flex-column justify-content-center align-items-center p-3">
+                <a href="{{ product.emudhra_link|default:'#' }}"target="_blank" rel="noopener noreferrer">
+                  <img class="img-fluid mb-2" src="{{ product.emudhra_image.url }}" alt="{{ product.emudhra_name }}" />
+                </a>
+              </div>
+
+              <!-- Right -->
+              <div class="product-actions d-flex flex-column justify-content-center align-items-start p-3">
+                <div class="row g-2 w-100">
+                  <div class="col-6">
+                    <button id="sendEnquiryBtn2" class="btn btn-light w-100 px-4">Send Enquiry</button>
+                  </div>
+                  <div class="col-6">
+                    <a href="{{ product.emudhra_link|default:'#' }}"target="_blank" rel="noopener noreferrer">
+                      <button class="btn btn-light w-100 px-4">More Details</button>
+                    </a>  
+                  </div>
+                  <div class="col-12">
+                    <a href="{% url 'emudhra_form' %}">
+                      <button class="btn btn-light w-100 px-4">Price list</button>
+                    </a>
+                  </div>
+                </div>
+              </div>
+              
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Third loop for Fusiontec products -->
+    <div class="row gx-5 justify-content-center">
+      <div class="col-lg-11 col-xl-9 col-xxl-8">
+        {% for product in fusiontec_products %}
+        <div class="card overflow-hidden shadow rounded-4 border-0 mb-5">
+          <div class="card-body p-0">
+            <div class="d-flex flex-column flex-lg-row align-items-stretch">
+
+              <!-- Left -->
+              <div class="product-image d-flex flex-column justify-content-center align-items-center p-3">
+                <a href="{{ product.fusiontec_link|default:'#' }}"target="_blank" rel="noopener noreferrer">
+                  <img class="img-fluid mb-2" src="{{ product.fusiontec_image.url }}" alt="{{ product.fusiontec_name }}" />
+                </a>
+              </div>
+
+              <!-- Right -->
+              <div class="product-actions d-flex flex-column justify-content-center align-items-start p-3">
+                <div class="row g-2 w-100">
+                  <div class="col-6">
+                    <button id="sendEnquiryBtn3" class="btn btn-light w-100 px-4">Send Enquiry</button>
+                  </div>
+                  <div class="col-6">
+                    <a href="{{ product.fusiontec_link|default:'#' }}"target="_blank" rel="noopener noreferrer">
+                      <button class="btn btn-light w-100 px-4">More Details</button>
+                    </a>
+                  </div>
+                  <div class="col-12">
+                    <a href="{% url 'fusiontec_form' %}">
+                      <button class="btn btn-light w-100 px-4">Price list</button>
+                    </a>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Fourth loop for Biz_analyst products -->
+    <div class="row gx-5 justify-content-center">
+      <div class="col-lg-11 col-xl-9 col-xxl-8">
+        {% for product in biz_products %}
+        <div class="card overflow-hidden shadow rounded-4 border-0 mb-5">
+          <div class="card-body p-0">
+            <div class="d-flex flex-column flex-lg-row align-items-stretch">
+
+              <!-- Left -->
+              <div class="product-image d-flex flex-column justify-content-center align-items-center p-3">
+                <a href="{{ product.biz_link|default:'#' }}"target="_blank" rel="noopener noreferrer">
+                  <img class="img-fluid mb-2" src="{{ product.biz_image.url }}" alt="{{ product.biz_name }}" />
+                </a>
+              </div>
+
+              <!-- Right -->
+              <div class="product-actions d-flex flex-column justify-content-center align-items-start p-3">
+                <div class="row g-2 w-100">
+                  <div class="col-6">
+                    <button id="sendEnquiryBtn4" class="btn btn-light w-100 px-4">Send Enquiry</button>
+                  </div>
+                  <div class="col-6">
+                    <a href="{{ product.biz_link|default:'#' }}"target="_blank" rel="noopener noreferrer">
+                      <button class="btn btn-light w-100 px-4">More Details</button>
+                    </a>
+                  </div>
+                  <div class="col-12">
+                    <a href="{% url 'biz_form' %}">
+                      <button class="btn btn-light w-100 px-4">Price list</button>
+                    </a>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Net Banking Section -->
+<section class="py-5 bg-light" id="net_banking">
+  <div class="container px-4 px-lg-5">
+    <div class="text-center mb-5">
+      <h1 class="display-5 fw-bold text-dark"id="online_payment">Net Banking</h1>
+      <p class="text-muted">Choose your preferred method to make a payment</p>
+    </div>
+    <div class="row g-4 justify-content-center">
+
+      <!-- Razorpay Info Card -->
+      {% for rp in razorpay_infos %}
+      <div class="col-md-6">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-body text-center">
+            <div class="mb-3">
+              <i class="bi bi-credit-card-2-front-fill fs-2 text-primary"></i>
+            </div>
+            <h5 class="fw-semibold">{{ rp.title }}</h5>
+            <p class="text-muted">{{ rp.description }}</p>
+            <div class="pt-2">
+              <form>
+                <script src="https://checkout.razorpay.com/v1/payment-button.js" data-payment_button_id="{{ rp.payment_button_id }}"async></script>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+      
+      <!-- QR Code -->
+      {% for info in payment_infos %}
+      <div class="col-md-6">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-body text-center">
+            <div class="mb-3">
+              <i class="bi bi-qr-code-scan fs-2 text-success"></i>
+            </div>
+            <h5 class="fw-semibold">{{ info.company_name }}</h5>
+            {% if info.qr_image %}
+              <img src="{{ info.qr_image.url }}" alt="QR Code" class="img-fluid my-3" style="max-width: 160px;">
+            {% endif %}
+            <p class="mb-0 text-muted small">UPI ID: <strong>{{ info.upi_id }}</strong></p>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+
+      <!-- Bank Transfer -->
+      {% for bank_info in bank_infos %}
+      <div class="col-md-10">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-body text-center">
+            <div class="mb-3">
+              <i class="bi bi-bank fs-2 text-warning"></i>
+            </div>
+            <h5 class="fw-semibold">{{ bank_info.title }}</h5>
+            <div class="row mt-4">
+              <div class="col-md-3 col-6 mb-3">
+                <strong>Account Name</strong><br>{{ bank_info.account_name }}
+              </div>
+              <div class="col-md-3 col-6 mb-3">
+                <strong>Account No.</strong><br>{{ bank_info.account_number }}
+              </div>
+              <div class="col-md-3 col-6 mb-3">
+                <strong>IFSC</strong><br>{{ bank_info.ifsc_code }}
+              </div>
+              <div class="col-md-3 col-6 mb-3">
+                <strong>Bank</strong><br>{{ bank_info.bank_name }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+
+    </div>
+  </div>
+</section>
+
+<script>
+  // code for opening floating form using send enquiry button 
+document.addEventListener("DOMContentLoaded", function () {
+  const form = document.getElementById('enquiryForm');
+  const icon = document.getElementById('enquiryIcon');
+  const closeBtn = document.getElementById('closeEnquiry');
+
+  // All buttons that open the form
+  const sendButtons = [
+    document.getElementById('sendEnquiryBtn'),
+    document.getElementById('sendEnquiryBtn2'),
+    document.getElementById('sendEnquiryBtn3'),
+    document.getElementById('sendEnquiryBtn4')
+  ];
+
+  // Show the form and hide the icon
+  function showForm() {
+    form.classList.remove('hide');
+    icon.style.display = 'none';
+  }
+
+  // Hide the form and show the icon
+  function hideForm() {
+    form.classList.add('hide');
+    icon.style.display = 'flex';
+  }
+
+  // Close button
+  if (closeBtn) {
+    closeBtn.addEventListener('click', hideForm);
+  }
+
+  // Icon interactions
+  if (icon) {
+    icon.addEventListener('click', showForm);
+
+    icon.addEventListener('keydown', function (event) {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        showForm();
+      }
+    });
+  }
+
+  // Attach showForm to all send buttons
+  sendButtons.forEach(btn => {
+    if (btn) {
+      btn.addEventListener('click', function (e) {
+        e.preventDefault();
+        showForm();
+        setTimeout(() => {
+          form.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 100); // small delay to allow form to become visible
+      });
+    }
+  });
+
+  // Initial state on small screens
+  if (window.innerWidth <= 768) {
+    hideForm();
+  }
+});
+</script>
+
+
+</main>
+  <script src="{% static 'products/js/scripts.js' %}"></script>
+
+{% endblock %}

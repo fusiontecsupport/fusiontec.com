@@ -1,0 +1,502 @@
+{% extends 'products/base2.html' %}
+
+{% load static %}
+
+{% block title %}Fusiontec - Fusiontec Form{% endblock %}
+
+{% block content %}
+
+<style>
+  body {
+    background-color: #f8f9fa;
+  }
+  .form-container {
+    background: #fff;
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    padding: 2rem;
+    max-width: 600px;
+    margin: 2rem auto;
+  }
+  .form-container h4 {
+    margin-bottom: 1.5rem;
+  }
+  .form-section {
+    margin-bottom: 1.5rem;
+  }
+  .form-section h6 {
+    margin-bottom: 0.75rem;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="form-container">
+    <h4 class="text-primary text-center">Fusiontec Price List Form</h4>
+
+    <form id="priceListForm">
+      {% csrf_token %}
+      <div class="form-section">
+        <label for="customerName" class="form-label">Customer Name <span style="color:red">*</span></label>
+        <input type="text" id="customerName" name="customer_name" class="form-control" maxlength="50" required />
+      </div>
+
+      <div class="form-section">
+        <label for="companyName" class="form-label">Company Name</label>
+        <input type="text" id="companyName" name="company_name" class="form-control" maxlength="50"/>
+      </div>
+
+      <div class="form-section">
+        <label for="gstSelector" class="form-label">GST Number?</label>
+        <select id="gstSelector" name="has_gst" class="form-select">
+          <option value="yes">Yes</option>
+          <option value="no">No</option>
+        </select>
+      </div>
+
+      <div class="form-section" id="gstNumberField">
+        <label for="gstNumber" class="form-label">GST Number <span style="color:red">*</span></label>
+        <input type="text" id="gstNumber" name="gst_number" class="form-control" maxlength="15"/>
+      </div>
+
+      <div class="form-section" id="nonGstFields" style="display:none;">
+        <label for="address" class="form-label">Address <span style="color:red">*</span></label>
+        <textarea id="address" name="address" class="form-control"></textarea>
+          <div class="row g-2 mt-2">
+          <div class="col-12 col-md-4">
+            <select id="state" name="state" class="form-select" required>
+              <option value="">Select State</option>
+            </select>
+          </div>
+          <div class="col-12 col-md-4">
+            <select id="district" name="district" class="form-select" required>
+              <option value="">Select District</option>
+            </select>
+          </div>
+          <div class="col-12 col-md-4">
+            <input type="text" name="pincode" placeholder="Pincode" class="form-control" />
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <label for="mobile" class="form-label">Mobile Number <span style="color:red">*</span></label>
+        <input  type="text"  id="mobile"  name="mobile"  class="form-control"  inputmode="numeric"  pattern="[6-9][0-9]{9}"  maxlength="10"  required />
+      </div>
+
+      <div class="form-section">
+        <label for="email" class="form-label">Email ID <span style="color:red">*</span></label>
+        <input type="email" id="email" name="email" class="form-control" />
+      </div>
+
+      <div class="form-section">
+          <label for="popupProductName" class="form-label">Product Name</label>
+          <input type="text" id="popupProductName" name="product_name" class="form-control" required value="{{ fusiontec_name }}" readonly />
+      </div>
+
+      <div class="form-section" id="dynamicDropdownContainer">
+          <label for="productTypeDetailSelector" class="form-label">Product Type Details <span style="color:red">*</span></label>
+          <select name="product_type_detail" id="productTypeDetailSelector" class="form-select" required>
+              <option value="">Select Product</option>
+              {% for product in product_types %}
+                  <option value="{{ product.fusiontec_product }}">{{ product.fusiontec_product }}</option>
+              {% endfor %}
+          </select>
+      </div>
+
+      <!-- Generate PI Button -->
+      <button type="button" id="generatePiBtn" class="btn btn-outline-primary w-100 mb-3" style="font-weight: 600;">Generate PI</button>
+    </form>
+
+  </div>
+</div>
+<!-- PI Preview Modal with styled table -->
+<div class="modal fade" id="piPreviewModal" tabindex="-1" aria-labelledby="piPreviewLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title" id="piPreviewLabel">Proforma Invoice Preview</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <table class="table table-bordered">
+          <tbody id="piPreviewTableBody">
+            <!-- Dynamic rows will be inserted here -->
+          </tbody>
+        </table>
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="contactUsBtn" class="btn btn-primary">Contact Us</button>
+        <button type="button" id="downloadPdfBtn" class="btn btn-success">Download PDF</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+document.getElementById('contactUsBtn').addEventListener('click', function () {
+// Trigger PDF download first
+   document.getElementById('downloadPdfBtn').click();
+
+   // Open Contact page in a new tab after short delay (to avoid popup blocking)
+   setTimeout(() => {
+     window.open('https://fusiontecsoftware.com/contact.html', '_blank');
+     }, 500); // wait a bit to ensure PDF starts downloading
+   });
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.getElementById('priceListForm');
+  const generatePiBtn = document.getElementById('generatePiBtn');
+
+  const validations = {
+    customer_name: {
+      validate: val => val.trim().length > 0,
+      message: 'Customer Name is required'
+    },
+    has_gst: {
+      validate: val => val === 'yes' || val === 'no',
+      message: 'Please select GST option'
+    },
+    gst_number: {
+      validate: val => val.trim().length > 0,
+      message: 'GST Number is required',
+      dependsOn: () => form.querySelector('[name=has_gst]').value === 'yes'
+    },
+    address: {
+      validate: val => val.trim().length > 0,
+      message: 'Address is required',
+      dependsOn: () => form.querySelector('[name=has_gst]').value === 'no'
+    },
+    district: {
+      validate: val => val.trim().length > 0,
+      message: 'District is required',
+      dependsOn: () => form.querySelector('[name=has_gst]').value === 'no'
+    },
+    state: {
+      validate: val => val.trim().length > 0,
+      message: 'State is required',
+      dependsOn: () => form.querySelector('[name=has_gst]').value === 'no'
+    },
+    pincode: {
+      validate: val => /^[0-9]{6}$/.test(val.trim()),
+      message: 'Pincode must be 6 digits',
+      dependsOn: () => form.querySelector('[name=has_gst]').value === 'no'
+    },
+    mobile: {
+      validate: val => /^[6-9][0-9]{9}$/.test(val.trim()),
+      message: 'Mobile must be 10 digits starting with 6-9'
+    },
+    email: {
+      validate: val => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val.trim()),
+      message: 'Invalid email address'
+    },
+    product_name: {
+      validate: val => val.trim().length > 0,
+      message: 'Product Name is required'
+    },
+    product_type_detail: {
+      validate: val => val.trim().length > 0,
+      message: 'Product Type Detail is required'
+    }
+  };
+
+  function showError(inputEl, message) {
+    let errorEl = inputEl.nextElementSibling;
+    if (!errorEl || !errorEl.classList.contains('error-message')) {
+      errorEl = document.createElement('div');
+      errorEl.classList.add('error-message');
+      errorEl.style.color = 'red';
+      errorEl.style.fontSize = '0.85em';
+      errorEl.style.display = 'none'; // hidden by default
+      inputEl.parentNode.insertBefore(errorEl, inputEl.nextSibling);
+    }
+    errorEl.textContent = message;
+    errorEl.style.display = 'block';
+  }
+
+  function clearError(inputEl) {
+    let errorEl = inputEl.nextElementSibling;
+    if (errorEl && errorEl.classList.contains('error-message')) {
+      errorEl.textContent = '';
+      errorEl.style.display = 'none';
+    }
+  }
+
+  function validateField(name) {
+    const inputEl = form.querySelector(`[name=${name}]`);
+    if (!inputEl) return true;
+
+    const config = validations[name];
+    if (!config) return true;
+
+    if (config.dependsOn && !config.dependsOn()) {
+      clearError(inputEl);
+      return true;
+    }
+
+    const value = inputEl.value || '';
+    if (!config.validate(value)) {
+      showError(inputEl, config.message);
+      return false;
+    } else {
+      clearError(inputEl);
+      return true;
+    }
+  }
+
+  function validateForm() {
+    let allValid = true;
+    for (const name in validations) {
+      if (!validateField(name)) allValid = false;
+    }
+    return allValid;
+  }
+
+  // Only show error messages when input changes
+  form.addEventListener('input', e => {
+    const name = e.target.name;
+    if (!name) return;
+    validateField(name);
+    generatePiBtn.disabled = !validateForm();
+  });
+
+  // Disable submit on load, do not show any errors
+  generatePiBtn.disabled = true;
+
+  // Expose validation functions to global scope for reuse in other scripts
+  window.validateForm = validateForm;
+});
+
+//mobile validation;
+document.addEventListener('DOMContentLoaded', () => {
+          const mobileInput = document.getElementById('mobile');
+
+          // Allow only numeric input and limit to 10 digits
+          mobileInput.addEventListener('input', (e) => {
+            let cleaned = e.target.value.replace(/\D/g, '');
+            if (cleaned.length > 10) {
+              cleaned = cleaned.slice(0, 10);
+            }
+            e.target.value = cleaned;
+          });
+        });
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.getElementById('priceListForm');
+  const generatePiBtn = document.getElementById('generatePiBtn');
+
+  const gstSelector = document.getElementById('gstSelector');
+  const gstNumberField = document.getElementById('gstNumberField');
+  const nonGstFields = document.getElementById('nonGstFields');
+
+  gstSelector.addEventListener('change', () => {
+    if (gstSelector.value === 'yes') {
+      gstNumberField.style.display = 'block';
+      nonGstFields.style.display = 'none';
+    } else {
+      gstNumberField.style.display = 'none';
+      nonGstFields.style.display = 'block';
+    }
+
+    // Run validation again since visible fields changed
+    if (typeof window.validateForm === 'function') {
+      generatePiBtn.disabled = !window.validateForm();
+    }
+  });
+
+  const dropdown = document.getElementById('productTypeDetailSelector');
+  const detailsContainer = document.getElementById('productDetailsContainer');
+  const basicAmountEl = document.getElementById('basicAmount');
+
+  dropdown.addEventListener('change', () => {
+    const option = dropdown.selectedOptions[0];
+    const basic = parseFloat(option.dataset.basic || 0);
+    if (basic > 0) {
+      basicAmountEl.textContent = basic.toFixed(2);
+      detailsContainer.style.display = 'block';
+    } else {
+      detailsContainer.style.display = 'none';
+      basicAmountEl.textContent = '';
+    }
+  });
+
+  const piPreviewModalEl = document.getElementById('piPreviewModal');
+  const piPreviewTableBody = document.getElementById('piPreviewTableBody');
+  const { jsPDF } = window.jspdf;
+  const piPreviewModal = new bootstrap.Modal(piPreviewModalEl);
+
+  generatePiBtn.addEventListener('click', e => {
+    e.preventDefault();
+    if (!window.validateForm || !window.validateForm()) {
+      alert('Please fix errors before generating Proforma Invoice');
+      return;
+    }
+
+    const formData = new FormData(form);
+
+    fetch("{% url 'fusiontec_price_list_form' %}", {
+      method: "POST",
+      body: formData,
+      headers: {
+        'X-CSRFToken': form.querySelector('[name=csrfmiddlewaretoken]').value
+      }
+    }).then(res => res.json())
+      .then(data => {
+        if (!data.success) alert('Save failed: ' + (data.error || 'Unknown'));
+      }).catch(() => alert('Network error during save'));
+
+    piPreviewTableBody.innerHTML = '';
+    function addRow(label, value) {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<th style="width:40%">${label}</th><td>${value || 'N/A'}</td>`;
+      piPreviewTableBody.appendChild(tr);
+    }
+
+    addRow('Customer Name', formData.get('customer_name'));
+    addRow('Company Name', formData.get('company_name'));
+    const hasGst = formData.get('has_gst') || '';
+    addRow('Has GST', hasGst.toUpperCase());
+
+    if (hasGst === 'yes') {
+      addRow('GST Number', formData.get('gst_number'));
+    } else {
+      addRow('Address', formData.get('address'));
+      addRow('District', formData.get('district'));
+      addRow('State', formData.get('state'));
+      addRow('Pincode', formData.get('pincode'));
+    }
+
+    addRow('Mobile', formData.get('mobile'));
+    addRow('Email', formData.get('email'));
+    addRow('Product Name', formData.get('product_name'));
+    addRow('Product Type Detail', formData.get('product_type_detail'));
+
+    piPreviewModal.show();
+  });
+
+  const downloadPdfBtn = document.getElementById('downloadPdfBtn');
+  downloadPdfBtn.addEventListener('click', e => {
+    e.preventDefault();
+    const formData = new FormData(form);
+    const doc = new jsPDF();
+
+    doc.setFontSize(18);
+    doc.text('Proforma Invoice (PI)', 14, 22);
+    doc.setFontSize(12);
+
+    let y = 30;
+    const leftColX = 14;
+    const rightColX = 90;
+    const rowHeight = 10;
+    const pageHeightLimit = 270;
+
+    doc.setFillColor(220, 220, 220);
+    doc.rect(leftColX - 2, y - 8, 180, rowHeight, 'F');
+    doc.setTextColor(0, 0, 0);
+    doc.text('Description', leftColX, y);
+    doc.text('Value', rightColX, y);
+    y += rowHeight;
+
+    function addPdfRow(label, value) {
+      doc.text(label, leftColX, y);
+      doc.text(value || 'N/A', rightColX, y);
+      y += rowHeight;
+      if (y > pageHeightLimit) {
+        doc.addPage();
+        y = 20;
+      }
+    }
+
+    addPdfRow('Customer Name', formData.get('customer_name'));
+    addPdfRow('Company Name', formData.get('company_name'));
+    const hasGstVal = formData.get('has_gst') || '';
+    addPdfRow('Has GST', hasGstVal.toUpperCase());
+
+    if (hasGstVal === 'yes') {
+      addPdfRow('GST Number', formData.get('gst_number'));
+    } else {
+      addPdfRow('Address', formData.get('address'));
+      addPdfRow('District', formData.get('district'));
+      addPdfRow('State', formData.get('state'));
+      addPdfRow('Pincode', formData.get('pincode'));
+    }
+
+    addPdfRow('Mobile', formData.get('mobile'));
+    addPdfRow('Email', formData.get('email'));
+    addPdfRow('Product Name', formData.get('product_name'));
+    addPdfRow('Product Type Detail', formData.get('product_type_detail'));
+
+    doc.save('fusiontec_PI.pdf');
+  });
+});
+</script>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const stateSelect = document.getElementById("state");
+  const districtSelect = document.getElementById("district");
+
+  if (!stateSelect || !districtSelect) {
+    console.error("State or district dropdown not found in the DOM");
+    return;
+  }
+
+  // Load states
+  fetch("/api/states/")
+    .then(res => res.json())
+    .then(data => {
+      if (!data.states || !Array.isArray(data.states)) {
+        throw new Error("Invalid states data format");
+      }
+      stateSelect.innerHTML = `<option value="">Select State</option>` +
+        data.states.map(s => `<option value="${s}">${s}</option>`).join('');
+    })
+    .catch(err => {
+      console.error("Error loading states:", err);
+      alert("Failed to load states. Please try again later.");
+    });
+
+  // On state change: load districts
+  stateSelect.addEventListener("change", () => {
+    const state = stateSelect.value;
+    if (!state) return;
+
+    districtSelect.innerHTML = `<option>Loading...</option>`;
+
+    fetch(`/api/districts/${encodeURIComponent(state)}/`)
+      .then(res => res.json())
+      .then(data => {
+        if (!data.districts || !Array.isArray(data.districts)) {
+          throw new Error("Invalid districts data format");
+        }
+        districtSelect.innerHTML = `<option value="">Select District</option>` +
+          data.districts.map(d => `<option value="${d}">${d}</option>`).join('');
+      })
+      .catch(err => {
+        console.error("Error loading districts:", err);
+        districtSelect.innerHTML = `<option value="">Failed to load districts</option>`;
+        alert("Failed to load districts. Please try again.");
+      });
+  });
+});
+</script>
+
+
+
+<style>
+  /* Simple inline error styling */
+  .error-message {
+    margin-top: 2px;
+  }
+</style>
+
+{% endblock %}

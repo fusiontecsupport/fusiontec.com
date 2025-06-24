@@ -1,0 +1,215 @@
+{% extends 'products/base2.html' %}
+{% load static %}
+
+{% block title %}Fusiontec - Applicant Form{% endblock %}
+
+{% block content %}
+<style>
+  .form-container {
+    background: #fff;
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    padding: 2rem;
+    max-width: 700px;
+    margin: 2rem auto;
+  }
+  .form-section {
+    margin-bottom: 1.5rem;
+  }
+</style>
+
+<div class="container">
+  <div class="form-container">
+    <h4 class="text-primary text-center mb-4">Applicant Registration Form</h4>
+
+    {% if success %}
+        <div class="alert alert-success text-center">Form submitted successfully!</div>
+    {% endif %}
+
+    <form method="POST" enctype="multipart/form-data" id="applicantForm">
+      {% csrf_token %}
+
+      <!-- Applicant Type -->
+      <div class="form-section">
+        <label class="form-label">Applicant Type:</label><br>
+        <div class="form-check form-check-inline">
+          <input class="form-check-input" type="radio" name="applicant_type" id="individual" value="individual" checked>
+          <label class="form-check-label" for="individual">Individual</label>
+        </div>
+        <div class="form-check form-check-inline">
+          <input class="form-check-input" type="radio" name="applicant_type" id="organisation" value="organisation">
+          <label class="form-check-label" for="organisation">Organisation</label>
+        </div>
+      </div>
+
+      <!-- Basic Fields (Shown for all) -->
+      <div class="form-section">
+        <label for="name" class="form-label">Name</label>
+        <input type="text" class="form-control" name="name" id="name">
+      </div>
+
+      <div class="form-section">
+        <label for="pan_number" class="form-label">Pan Number</label>
+        <input type="text" class="form-control" name="pan_number" id="pan_number" maxlength="10">
+        <small class="text-danger"></small>
+      </div>
+
+      <div class="form-section">
+        <label for="aadhar_number" class="form-label">Aadhar Number</label>
+        <input type="text" class="form-control" name="aadhar_number" id="aadhar_number" maxlength="12">
+        <small class="text-danger"></small>
+      </div>
+
+      <div class="form-section">
+        <label for="mobile_number" class="form-label">Mobile Number</label>
+        <input type="text" class="form-control" name="mobile_number" id="mobile_number" maxlength="15">
+        <small class="text-danger"></small>
+      </div>
+
+      <div class="form-section">
+        <label for="email" class="form-label">Email ID</label>
+        <input type="email" class="form-control" name="email" id="email">
+        <small class="text-danger"></small>
+      </div>
+
+      <div class="form-section">
+        <label for="reference" class="form-label">Reference <span style="color:red">*</span></label>
+        <input type="text" class="form-control" name="reference" id="reference" required>
+      </div>
+
+      <div class="form-section">
+        <label for="reference_contact" class="form-label">Contact Number <span style="color:red">*</span></label>
+        <input type="text" class="form-control" name="reference_contact" id="reference_contact" required>
+        <small class="text-danger"></small>
+      </div>
+
+      <div class="form-section">
+        <label for="pan_copy" class="form-label">Pan Copy</label>
+        <input type="file" class="form-control" name="pan_copy" id="pan_copy" accept=".pdf,.jpg,.jpeg,.png">
+      </div>
+
+      <div class="form-section">
+        <label for="aadhar_copy" class="form-label">Aadhar Copy</label>
+        <input type="file" class="form-control" name="aadhar_copy" id="aadhar_copy" accept=".pdf,.jpg,.jpeg,.png">
+      </div>
+
+      <!-- Organisation Only Fields -->
+      <div id="orgFields" style="display: none;">
+        <div class="form-section">
+          <label for="photo" class="form-label">Photo</label>
+          <input type="file" class="form-control" name="photo" id="photo" accept=".jpg,.jpeg,.png">
+        </div>
+
+        <div class="form-section">
+          <label for="gst_certificate" class="form-label">GST Certificate</label>
+          <input type="file" class="form-control" name="gst_certificate" id="gst_certificate" accept=".pdf,.jpg,.jpeg">
+        </div>
+
+        <div class="form-section">
+          <label for="authorization_letter" class="form-label">Authorization Letter</label>
+          <input type="file" class="form-control" name="authorization_letter" id="authorization_letter" accept=".pdf,.jpg,.jpeg">
+        </div>
+
+        <div class="form-section">
+          <label for="company_pan" class="form-label">Company Pan</label>
+          <input type="file" class="form-control" name="company_pan" id="company_pan" accept=".pdf,.jpg,.jpeg">
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary w-100">Submit</button>
+    </form>
+  </div>
+</div>
+
+<script>
+  // Toggle organisation fields
+  document.addEventListener('DOMContentLoaded', function () {
+    const orgFields = document.getElementById('orgFields');
+    const radios = document.getElementsByName('applicant_type');
+
+    function toggleFields() {
+      const selected = document.querySelector('input[name="applicant_type"]:checked').value;
+      orgFields.style.display = selected === 'organisation' ? 'block' : 'none';
+    }
+
+    radios.forEach(r => r.addEventListener('change', toggleFields));
+    toggleFields(); // Initial toggle
+  });
+
+  document.addEventListener('DOMContentLoaded', function () {
+    const orgFields = document.getElementById('orgFields');
+    const radios = document.getElementsByName('applicant_type');
+    const form = document.getElementById('applicantForm');
+
+    function toggleFields() {
+      const selected = document.querySelector('input[name="applicant_type"]:checked').value;
+      orgFields.style.display = selected === 'organisation' ? 'block' : 'none';
+    }
+
+    radios.forEach(r => r.addEventListener('change', toggleFields));
+    toggleFields();
+
+    form.addEventListener('submit', function (e) {
+      let isValid = true;
+
+      // Clear old errors
+      document.querySelectorAll('.text-danger').forEach(el => el.textContent = '');
+
+      // PAN: 10 characters, format: 5 letters + 4 digits + 1 letter
+      const pan = document.getElementById('pan_number');
+      const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/i;
+      if (pan.value && !panRegex.test(pan.value)) {
+        isValid = false;
+        showError(pan, 'Invalid PAN format (e.g., ABCDE1234F)');
+      }
+
+      // Aadhar: 12 digits
+      const aadhar = document.getElementById('aadhar_number');
+      const aadharRegex = /^\d{12}$/;
+      if (aadhar.value && !aadharRegex.test(aadhar.value)) {
+        isValid = false;
+        showError(aadhar, 'Aadhar must be 12 digits');
+      }
+
+      // Mobile: 10 digits, starts with 6–9
+      const mobile = document.getElementById('mobile_number');
+      const mobileRegex = /^[6-9]\d{9}$/;
+      if (mobile.value && !mobileRegex.test(mobile.value)) {
+        isValid = false;
+        showError(mobile, 'Enter valid 10-digit mobile number');
+      }
+
+      // Email
+      const email = document.getElementById('email');
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (email.value && !emailRegex.test(email.value)) {
+        isValid = false;
+        showError(email, 'Enter a valid email address');
+      }
+
+        // Reference Contact: 10 digits, starts with 6–9
+        const refContact = document.getElementById('reference_contact');
+        const contactRegex = /^[6-9]\d{9}$/;
+        if (!refContact.value || !contactRegex.test(refContact.value)) {
+        isValid = false;
+        showError(refContact, 'Enter a valid 10-digit contact number');
+        }
+
+      if (!isValid) {
+        e.preventDefault();
+      }
+    });
+
+    function showError(inputElement, message) {
+      let errorElem = inputElement.nextElementSibling;
+      if (!errorElem || !errorElem.classList.contains('text-danger')) {
+        errorElem = document.createElement('small');
+        errorElem.classList.add('text-danger');
+        inputElement.parentNode.appendChild(errorElem);
+      }
+      errorElem.textContent = message;
+    }
+  });
+</script>
+
+{% endblock %}

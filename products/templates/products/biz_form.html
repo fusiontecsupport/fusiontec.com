@@ -1,0 +1,717 @@
+{% extends 'products/base2.html' %}
+
+{% load static %}
+
+{% block title %}Fusiontec - Biz Analyst Form{% endblock %}
+
+{% block content %}
+<style>
+  body {
+    background-color: #f8f9fa;
+  }
+  .form-container {
+    background: #fff;
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    padding: 2rem;
+    max-width: 600px;
+    margin: 2rem auto;
+  }
+  .form-container h4 {
+    margin-bottom: 1.5rem;
+  }
+  .form-section {
+    margin-bottom: 1.5rem;
+  }
+  .form-section h6 {
+    margin-bottom: 0.75rem;
+  }
+  .error-msg {
+    color: red;
+    font-size: 0.875rem;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="form-container">
+    <h4 class="text-primary text-center">Biz Analyst List Form</h4>
+
+    <form id="priceListForm" method="POST" action="{% url 'biz_form' %}">
+      {% csrf_token %}
+      <div class="form-section">
+        <label for="customerName" class="form-label">Customer Name <span style="color:red">*</span></label>
+        <input type="text" id="customerName" name="customer_name" class="form-control" maxlength="50" required />
+      </div>
+
+      <div class="form-section">
+        <label for="companyName" class="form-label">Company Name</label>
+        <input type="text" id="companyName" name="company_name" class="form-control" maxlength="50"/>
+      </div>
+
+      <div class="form-section">
+        <label for="gstSelector" class="form-label">GST Number?</label>
+        <select id="gstSelector" name="has_gst" class="form-select">
+          <option value="yes">Yes</option>
+          <option value="no">No</option>
+        </select>
+      </div>
+
+      <div class="form-section" id="gstNumberField">
+        <label for="gstNumber" class="form-label">GST Number <span style="color:red">*</span></label>
+        <input type="text" id="gstNumber" name="gst_number" class="form-control" maxlength="15"/>
+      </div>
+
+      <div class="form-section" id="nonGstFields" style="display: none;">
+        <label for="address" class="form-label">Address <span style="color:red">*</span></label>
+        <textarea id="address" name="address" class="form-control"></textarea>
+        <div class="row g-2 mt-2">
+          <div class="col-12 col-md-4">
+            <select id="state" name="state" class="form-select" required>
+              <option value="">Select State</option>
+            </select>
+          </div>
+          <div class="col-12 col-md-4">
+            <select id="district" name="district" class="form-select" required>
+              <option value="">Select District</option>
+            </select>
+          </div>
+          <div class="col-12 col-md-4">
+            <input type="text" name="pincode" placeholder="Pincode" class="form-control" />
+          </div>
+          <!--<div class="col-4"><input type="text" name="district" placeholder="District" class="form-control" /></div>
+          <div class="col-4"><input type="text" name="state" placeholder="State" class="form-control" /></div>
+          <div class="col-4"><input type="text" name="pincode" placeholder="Pincode" class="form-control" /></div>-->
+        </div>
+      </div>
+
+      <div class="form-section">
+        <label for="mobile" class="form-label">Mobile Number <span style="color:red">*</span></label>
+        <input  type="tel"  id="mobile"  name="mobile"  class="form-control"  maxlength="10"  pattern="[0-9]*" inputmode="numeric" required />
+      </div>
+      <script>
+        const mobileInput = document.getElementById('mobile');
+        mobileInput.addEventListener('input', () => {
+          mobileInput.value = mobileInput.value.replace(/\D/g, '').slice(0,10);
+        });
+      </script>
+
+      <div class="form-section">
+        <label for="email" class="form-label">Email ID <span style="color:red">*</span></label>
+        <input type="email" id="email" name="email" class="form-control" required/>
+      </div>
+
+       <div class="form-section">
+        <label for="popupProductName" class="form-label">Product Name</label>
+        <input type="text" id="popupProductName" name="product_name" class="form-control" required value="{{ bizz_info.biz_name }}" readonly/>
+      </div>
+
+      <!-- Business Plans Dropdown -->
+      <div class="form-section" id="businessPlansContainer">
+        <label for="businessPlanSelector" class="form-label">Business Plans <span style="color:red">*</span></label>
+        <select name="business_plan" id="businessPlanSelector" class="form-select" required>
+          <option value="">Select Business Plan</option>
+          {% for plan in bizz_products %}
+            <!--<option value="{{ plan.id }}" data-basic="{{ plan.new_price|default:"0" }}" data-original="{{ plan.old_price|default:"0" }}">
+              {{ plan.team_name }} , {{ plan.billing_cycle }}</option>-->
+               <option 
+                value="{{ plan.id }}" 
+                data-basic="{{ plan.new_price|default:"0" }}" 
+                data-original="{{ plan.old_price|default:"0" }}"
+                data-cgst="{{ plan.cgst|default:"0" }}"
+                data-sgst="{{ plan.sgst|default:"0" }}"
+                data-total="{{ plan.total_price|default:"0" }}">
+                {{ plan.team_name }} , {{ plan.billing_cycle }}
+              </option>
+
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Pricing details -->
+      <div class="form-section bg-light rounded p-3" id="pricingDetailsContainer" style="display: none;">
+        <h6 class="text-secondary">Pricing Details</h6>
+        <p>Original Price:<strong><s>₹<span id="pricingOriginalPrice"></span></s></strong></p>
+        <p>Actual Price: <strong>₹<span id="pricingTotalPrice"></span></strong></p>
+        <p>CGST (9%): <strong><span id="cgst">-</span></strong></p>
+        <p>SGST (9%): <strong><span id="sgst">-</span></strong></p>
+        <p>Total Price: <strong>₹<span id="totalPrice">-</span></strong></p>
+      </div>
+      <input type="hidden" id="businessPlanNameInput" name="business_plan_name" />
+      <input type="hidden" id="originalPriceInput" name="original_price" />
+      <input type="hidden" id="totalPriceInput" name="total_price" />
+      <input type="hidden" id="newPriceInput" name="new_price" />
+      <input type="hidden" id="cgstInput" name="cgst" />
+      <input type="hidden" id="sgstInput" name="sgst" />
+
+      <button type="button" id="generatePiBtn" class="btn btn-outline-primary w-100 mt-3 mb-2">Generate PI</button>
+
+    </form>
+  </div>
+</div>
+
+<!-- Modal for PI Preview -->
+<div class="modal fade" id="piPreviewModal" tabindex="-1" aria-labelledby="piPreviewModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="piPreviewModalLabel">PI Preview</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="piPreviewContent">
+        <!-- Preview table will be injected here -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="razorpayBtn" class="btn btn-primary">PAY-ONLINE</button>
+        <button type="button" id="downloadPiBtn" class="btn btn-primary"> Download PDF </button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"> Close</button>
+      </div>  
+    </div>
+  </div>
+</div>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+document.getElementById('razorpayBtn').addEventListener('click', async function (e) {
+  e.preventDefault();
+
+  const form = document.getElementById('priceListForm');
+  const formData = new FormData(form);
+
+  // ✅ Get price from total price span
+  const totalPriceText = document.getElementById('totalPrice')?.innerText?.replace(/[^\d.]/g, '') || "0";
+  const totalPrice = parseFloat(totalPriceText);
+
+  if (isNaN(totalPrice) || totalPrice <= 0) {
+    alert("Please select a valid plan to get the price.");
+    return;
+  }
+
+  formData.append('amount', totalPrice);
+
+  try {
+    const res = await fetch('/create_order/', {
+      method: 'POST',
+      body: formData
+    });
+
+    const data = await res.json();
+
+    if (!data.order_id || !data.key) {
+      alert("Something went wrong. Missing Razorpay credentials.");
+      return;
+    }
+
+    const customerName = document.getElementById('customerName')?.value.trim();
+    const email = document.getElementById('email')?.value.trim();
+    const contact = document.getElementById('mobile')?.value.trim();
+
+    if (!/^\d{10}$/.test(contact)) {
+      alert("Please enter a valid 10-digit mobile number.");
+      return;
+    }
+
+    const options = {
+      key: data.key,
+      amount: totalPrice * 100,
+      currency: 'INR',
+      name: customerName,
+      description: 'Business Plan Payment',
+      order_id: data.order_id,
+      prefill: {
+        name: customerName,
+        email: email,
+        contact: contact
+      },
+      handler: function (response) {
+        fetch('/verify-razorpay-payment/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+          },
+          body: JSON.stringify({
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_signature: response.razorpay_signature,
+            form_data: Object.fromEntries(formData)
+          })
+        })
+        .then(res => res.json())
+        .then(result => {
+          if (result.status === "paid") {
+            alert("✅ Payment successful! Thank you.");
+            form.reset();
+            document.getElementById('pricingDetailsContainer').style.display = 'none';
+          } else {
+            alert("❌ Payment failed. Please try again.");
+          }
+        })
+        .catch(() => {
+          alert("❌ Verification error. Please try again.");
+        });
+      },
+      theme: {
+        color: '#0d6efd'
+      }
+    };
+
+    const rzp = new Razorpay(options);
+
+    // Auto-download the PI PDF before opening Razorpay
+    if (piPreviewContent) {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      const rows = piPreviewContent.querySelectorAll('tr');
+
+      const marginLeft = 14;
+      let y = 20;
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const cellPadding = 3;
+      const labelColWidth = 60;
+      const valueColWidth = pageWidth - marginLeft * 2 - labelColWidth;
+      const defaultRowHeight = 10;
+
+      doc.setFontSize(16);
+      doc.setFont(undefined, 'bold');
+      doc.text('Proforma Invoice (PI)', marginLeft, y);
+      y += 10;
+
+      doc.setLineWidth(0.5);
+      doc.line(marginLeft, y, pageWidth - marginLeft, y);
+      y += 8;
+
+      doc.setFontSize(12);
+      doc.setFont(undefined, 'normal');
+
+      rows.forEach((row) => {
+        const cols = row.querySelectorAll('th, td');
+        if (cols.length < 2) return;
+
+        const label = cols[0].textContent.trim();
+        const value = cols[1].textContent.trim();
+        const wrappedValue = doc.splitTextToSize(value, valueColWidth - cellPadding * 2);
+        const rowHeight = Math.max(defaultRowHeight, wrappedValue.length * 7);
+
+        doc.rect(marginLeft, y, labelColWidth, rowHeight);
+        doc.rect(marginLeft + labelColWidth, y, valueColWidth, rowHeight);
+
+        doc.setFont(undefined, 'bold');
+        doc.text(label, marginLeft + cellPadding, y + 7);
+
+        doc.setFont(undefined, 'normal');
+        doc.text(wrappedValue, marginLeft + labelColWidth + cellPadding, y + 7);
+
+        y += rowHeight;
+
+        if (y > 280) {
+          doc.addPage();
+          y = 20;
+        }
+      });
+
+      doc.save('Biz_PI.pdf');
+    }
+
+
+    rzp.open();
+
+  } catch (err) {
+    console.error("Payment error:", err);
+    alert("❌ Failed to initiate payment. Please try again.");
+  }
+});
+
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+</script>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- jsPDF library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const form = document.getElementById("priceListForm");
+  const generateBtn = document.getElementById("generatePiBtn");
+
+  const requiredFields = [
+    { id: "customerName", name: "Customer Name" },
+    { id: "mobile", name: "Mobile Number" },
+    { id: "popupProductName", name: "Product Name" },
+    { id: "businessPlanSelector", name: "Business Plan" }
+  ];
+
+  const extraFields = [
+    { id: "address", name: "Address" },
+    { id: "district", name: "District" },
+    { id: "state", name: "State" },
+    { id: "pincode", name: "Pincode" }
+  ];
+
+  const touchedFields = new Set();
+
+  const createError = (el, message) => {
+    removeError(el);
+    const error = document.createElement("div");
+    error.className = "text-danger mt-1 small";
+    error.textContent = message;
+    el.parentNode.appendChild(error);
+  };
+
+  const removeError = (el) => {
+    const error = el.parentNode.querySelector(".text-danger");
+    if (error) error.remove();
+  };
+
+  const validateField = (el, name) => {
+    const value = el.value.trim();
+    let isValid = !!value;
+
+    // Specific validation for mobile number
+    if (el.id === "mobile") {
+      isValid = /^[6-9][0-9]{9}$/.test(value);
+    }
+
+    if (!isValid) {
+      if (touchedFields.has(el)) createError(el, `${name} is required or invalid`);
+      else removeError(el);
+    } else {
+      removeError(el);
+    }
+
+    return isValid;
+  };
+
+  const validateForm = () => {
+    let isValid = true;
+
+    requiredFields.forEach(({ id, name }) => {
+      const el = document.getElementById(id);
+      if (!validateField(el, name)) isValid = false;
+    });
+
+    const gstSelector = document.getElementById("gstSelector");
+
+    if (gstSelector.value === "yes") {
+      const gstNumber = document.getElementById("gstNumber");
+      if (!validateField(gstNumber, "GST Number")) isValid = false;
+    } else {
+      extraFields.forEach(({ id, name }) => {
+        const el = document.getElementById(id) || document.getElementsByName(id)[0];
+        if (!validateField(el, name)) isValid = false;
+      });
+    }
+
+    generateBtn.disabled = !isValid;
+    return isValid;
+  };
+
+  // Attach live validation
+  const allFields = [...requiredFields, ...extraFields, { id: "gstNumber", name: "GST Number" }];
+
+  allFields.forEach(({ id, name }) => {
+    const el = document.getElementById(id) || document.getElementsByName(id)[0];
+    if (el) {
+      el.addEventListener("input", () => {
+        touchedFields.add(el);
+        validateField(el, name);
+        validateForm(); // <-- Live check after input
+      });
+    }
+  });
+
+  // GST selector triggers re-validation
+  document.getElementById("gstSelector").addEventListener("change", () => {
+    validateForm();
+  });
+
+  // Disable on load
+  generateBtn.disabled = true;
+
+  // On button click: show all errors
+  generateBtn.addEventListener("click", (e) => {
+    allFields.forEach(({ id }) => {
+      const el = document.getElementById(id) || document.getElementsByName(id)[0];
+      if (el) touchedFields.add(el);
+    });
+
+    if (!validateForm()) {
+      e.preventDefault();
+    }
+  });
+});
+</script>
+
+<script>
+  // Elements related to business plan pricing hidden inputs
+  const businessDropdown = document.getElementById('businessPlanSelector');
+  const businessPlanNameInput = document.getElementById('businessPlanNameInput');
+  const originalPriceInput = document.getElementById('originalPriceInput');
+  const totalPriceInput = document.getElementById('totalPriceInput');
+
+  // Optional hidden inputs
+  const newPriceInput = document.getElementById('newPriceInput') || document.createElement('input');
+  const cgstInput = document.getElementById('cgstInput') || document.createElement('input');
+  const sgstInput = document.getElementById('sgstInput') || document.createElement('input');
+
+  // On business plan change, update hidden inputs and pricing display
+  businessDropdown.addEventListener('change', () => {
+    const selectedOption = businessDropdown.selectedOptions[0];
+    const pricingDetailsContainer = document.getElementById('pricingDetailsContainer');
+    const pricingOriginalPrice = document.getElementById('pricingOriginalPrice');
+    const pricingTotalPrice = document.getElementById('pricingTotalPrice');
+    const cgstSpan = document.getElementById('cgst');
+    const sgstSpan = document.getElementById('sgst');
+    const totalPriceSpan = document.getElementById('totalPrice');
+
+    if (!selectedOption || !selectedOption.value) {
+      businessPlanNameInput.value = '';
+      originalPriceInput.value = '0';
+      totalPriceInput.value = '0';
+      newPriceInput.value = '0';
+      cgstInput.value = '0';
+      sgstInput.value = '0';
+      pricingOriginalPrice.textContent = '';
+      pricingTotalPrice.textContent = '';
+      cgstSpan.textContent = '-';
+      sgstSpan.textContent = '-';
+      totalPriceSpan.textContent = '-';
+      pricingDetailsContainer.style.display = 'none';
+      return;
+    }
+
+    const basic = parseFloat(selectedOption.dataset.basic || 0);
+    const original = parseFloat(selectedOption.dataset.original || 0);
+    const cgst = parseFloat(selectedOption.dataset.cgst || 0);
+    const sgst = parseFloat(selectedOption.dataset.sgst || 0);
+    const total = parseFloat(selectedOption.dataset.total || (basic + cgst + sgst));
+
+    businessPlanNameInput.value = selectedOption.text.trim();
+    originalPriceInput.value = original.toFixed(2);
+    totalPriceInput.value = total.toFixed(2);
+    newPriceInput.value = basic.toFixed(2);
+    cgstInput.value = cgst.toFixed(2);
+    sgstInput.value = sgst.toFixed(2);
+
+    pricingOriginalPrice.textContent = original > basic ? original.toFixed(2) : '';
+    pricingTotalPrice.textContent = basic.toFixed(2);
+    cgstSpan.textContent = `₹${cgst.toFixed(2)}`;
+    sgstSpan.textContent = `₹${sgst.toFixed(2)}`;
+    totalPriceSpan.textContent = total.toFixed(2);
+    pricingDetailsContainer.style.display = 'block';
+  });
+
+  // Initialize on page load
+  businessDropdown.dispatchEvent(new Event('change'));
+
+  // GST toggle logic
+  const gstSelector = document.getElementById('gstSelector');
+  const gstNumberField = document.getElementById('gstNumberField');
+  const nonGstFields = document.getElementById('nonGstFields');
+
+  gstSelector.addEventListener('change', () => {
+    if (gstSelector.value === 'yes') {
+      gstNumberField.style.display = 'block';
+      nonGstFields.style.display = 'none';
+    } else {
+      gstNumberField.style.display = 'none';
+      nonGstFields.style.display = 'block';
+    }
+  });
+  gstSelector.dispatchEvent(new Event('change'));
+
+  const piPreviewModalEl = document.getElementById('piPreviewModal');
+  const piPreviewModal = new bootstrap.Modal(piPreviewModalEl);
+  const generatePiBtn = document.getElementById('generatePiBtn');
+  const downloadPiBtn = document.getElementById('downloadPiBtn');
+  const piPreviewContent = document.getElementById('piPreviewContent');
+
+  generatePiBtn.addEventListener('click', async () => {
+    businessDropdown.dispatchEvent(new Event('change'));
+    const form = document.getElementById('priceListForm');
+    const formData = new FormData(form);
+    const data = {};
+    formData.forEach((value, key) => (data[key] = value));
+
+    if (!data.customer_name || !data.mobile || !data.product_name || !data.business_plan) {
+      alert('Please fill all required fields including Business Plan!');
+      return;
+    }
+
+    try {
+      const response = await fetch("{% url 'save_pi_data' %}", {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': '{{ csrf_token }}',
+        },
+        body: formData,
+      });
+
+      const result = await response.json();
+      if (result.status !== 'success') {
+        alert('Failed to save PI data: ' + (result.message || 'Unknown error'));
+        return;
+      }
+
+      const gstInfoHtml = data.has_gst === 'yes'
+        ? `<tr><th>GST Number</th><td>${data.gst_number || 'N/A'}</td></tr>`
+        : `<tr><th>GST Number</th><td>No GST</td></tr>
+           <tr><th>Address</th><td>${data.address || '-'}</td></tr>
+           <tr><th>State</th><td>${data.state || '-'}</td></tr>
+           <tr><th>District</th><td>${data.district || '-'}</td></tr>
+           <tr><th>Pincode</th><td>${data.pincode || '-'}</td></tr>`;
+
+      const previewHTML = `
+        <table class="table table-bordered">
+          <caption><strong>Proforma Invoice (PI)</strong></caption>
+          <tbody>
+            <tr><th>Customer Name</th><td>${data.customer_name}</td></tr>
+            <tr><th>Company Name</th><td>${data.company_name || 'N/A'}</td></tr>
+            ${gstInfoHtml}
+            <tr><th>Mobile Number</th><td>${data.mobile}</td></tr>
+            <tr><th>Email ID</th><td>${data.email || 'N/A'}</td></tr>
+            <tr><th>Product Name</th><td>${data.product_name}</td></tr>
+            <tr><th>Product Type</th><td>${data.business_plan_name}</td></tr>
+            <tr><th>Basic Amount</th><td>₹${parseFloat(data.original_price || 0).toFixed(2)}</td></tr>
+            <tr><th>Actual Price</th><td>₹${parseFloat(data.new_price || 0).toFixed(2)}</td></tr>
+            <tr><th>CGST (9%)</th><td>₹${parseFloat(data.cgst || 0).toFixed(2)}</td></tr>
+            <tr><th>SGST (9%)</th><td>₹${parseFloat(data.sgst || 0).toFixed(2)}</td></tr>
+            <tr><th>Total Price</th><td>₹${parseFloat(data.total_price || 0).toFixed(2)}</td></tr>
+          </tbody>
+        </table>
+      `;
+
+      piPreviewContent.innerHTML = previewHTML;
+      piPreviewModal.show();
+
+    } catch (error) {
+      alert('Error saving PI data: ' + error);
+    }
+  });
+
+  downloadPiBtn.addEventListener('click', () => {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    const rows = piPreviewContent.querySelectorAll('tr');
+
+    const marginLeft = 14;
+    let y = 20;
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const cellPadding = 3;
+    const labelColWidth = 60;
+    const valueColWidth = pageWidth - marginLeft * 2 - labelColWidth;
+    const defaultRowHeight = 10;
+
+    doc.setFontSize(16);
+    doc.setFont(undefined, 'bold');
+    doc.text('Proforma Invoice (PI)', marginLeft, y);
+    y += 10;
+
+    doc.setLineWidth(0.5);
+    doc.line(marginLeft, y, pageWidth - marginLeft, y);
+    y += 8;
+
+    doc.setFontSize(12);
+    doc.setFont(undefined, 'normal');
+
+    rows.forEach((row) => {
+      const cols = row.querySelectorAll('th, td');
+      if (cols.length < 2) return;
+
+      const label = cols[0].textContent.trim();
+      const value = cols[1].textContent.trim();
+      const wrappedValue = doc.splitTextToSize(value, valueColWidth - cellPadding * 2);
+      const rowHeight = Math.max(defaultRowHeight, wrappedValue.length * 7);
+
+      doc.rect(marginLeft, y, labelColWidth, rowHeight);
+      doc.rect(marginLeft + labelColWidth, y, valueColWidth, rowHeight);
+
+      doc.setFont(undefined, 'bold');
+      doc.text(label, marginLeft + cellPadding, y + 7);
+
+      doc.setFont(undefined, 'normal');
+      doc.text(wrappedValue, marginLeft + labelColWidth + cellPadding, y + 7);
+
+      y += rowHeight;
+
+      if (y > 280) {
+        doc.addPage();
+        y = 20;
+      }
+    });
+
+    doc.save('Biz_PI.pdf');
+  });
+</script>
+
+
+<script>
+  // for API dropdown
+document.addEventListener("DOMContentLoaded", () => {
+  const stateSelect = document.getElementById("state");
+  const districtSelect = document.getElementById("district");
+
+  if (!stateSelect || !districtSelect) {
+    console.error("State or district dropdown not found in the DOM");
+    return;
+  }
+
+  // Load states
+  fetch("/api/states/")
+    .then(res => res.json())
+    .then(data => {
+      if (!data.states || !Array.isArray(data.states)) {
+        throw new Error("Invalid states data format");
+      }
+      stateSelect.innerHTML = `<option value="">Select State</option>` +
+        data.states.map(s => `<option value="${s}">${s}</option>`).join('');
+    })
+    .catch(err => {
+      console.error("Error loading states:", err);
+      alert("Failed to load states. Please try again later.");
+    });
+
+  // On state change: load districts
+  stateSelect.addEventListener("change", () => {
+    const state = stateSelect.value;
+    if (!state) return;
+
+    districtSelect.innerHTML = `<option>Loading...</option>`;
+
+    fetch(`/api/districts/${encodeURIComponent(state)}/`)
+      .then(res => res.json())
+      .then(data => {
+        if (!data.districts || !Array.isArray(data.districts)) {
+          throw new Error("Invalid districts data format");
+        }
+        districtSelect.innerHTML = `<option value="">Select District</option>` +
+          data.districts.map(d => `<option value="${d}">${d}</option>`).join('');
+      })
+      .catch(err => {
+        console.error("Error loading districts:", err);
+        districtSelect.innerHTML = `<option value="">Failed to load districts</option>`;
+        alert("Failed to load districts. Please try again.");
+      });
+  });
+});
+</script>
+
+{% endblock %}

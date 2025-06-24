@@ -1,0 +1,6 @@
+django
+django-jazzmin
+whitenoise
+razorpay
+pillow
+xhtml2pdf
