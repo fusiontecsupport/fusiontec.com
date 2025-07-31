@@ -166,6 +166,40 @@ class Fusiontec_product(models.Model):
 
     def __str__(self):
         return self.fusiontec_product
+
+class Fusiontec_Software(models.Model):
+    fusiontec_3 = models.ForeignKey(Fusiontec_3, on_delete=models.CASCADE, related_name='software')
+    software_name = models.CharField(max_length=255, null=True, blank=True)
+    software_description = models.TextField(blank=True, null=True)
+    basic_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    cgst = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    sgst = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    total_price = models.DecimalField(max_digits=10, decimal_places=2, editable=False, default=0)
+
+    def save(self, *args, **kwargs):
+        basic = self.basic_amount or 0
+        self.total_price = basic + self.cgst + self.sgst
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.fusiontec_3.fusiontec_name} - {self.software_name}"
+
+class Fusiontec_Service(models.Model):
+    fusiontec_3 = models.ForeignKey(Fusiontec_3, on_delete=models.CASCADE, related_name='services')
+    service_name = models.CharField(max_length=255, null=True, blank=True)
+    service_description = models.TextField(blank=True, null=True)
+    basic_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    cgst = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    sgst = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    total_price = models.DecimalField(max_digits=10, decimal_places=2, editable=False, default=0)
+
+    def save(self, *args, **kwargs):
+        basic = self.basic_amount or 0
+        self.total_price = basic + self.cgst + self.sgst
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.fusiontec_3.fusiontec_name} - {self.service_name}"
     
 class FusiontecPriceListSubmission(models.Model):
     customer_name = models.CharField(max_length=100)
@@ -214,6 +248,43 @@ class biz_product(models.Model):
 
     def __str__(self):
         return f"{self.team_name} ({self.new_price})"
+
+class Biz_Service(models.Model):
+    biz_4 = models.ForeignKey(Biz_4, on_delete=models.CASCADE, related_name='services')
+    service_name = models.CharField(max_length=255, null=True, blank=True)
+    service_description = models.TextField(blank=True, null=True)
+    basic_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    cgst = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    sgst = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    total_price = models.DecimalField(max_digits=10, decimal_places=2, editable=False, default=0)
+    billing_cycle = models.CharField(max_length=255, blank=True, null=True, default="Billed for 1 Year | Per Device")
+
+    def save(self, *args, **kwargs):
+        basic = self.basic_amount or 0
+        self.total_price = basic + self.cgst + self.sgst
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.biz_4.biz_name} - {self.service_name}"
+
+class Biz_Plan(models.Model):
+    biz_4 = models.ForeignKey(Biz_4, on_delete=models.CASCADE, related_name='plans')
+    plan_name = models.CharField(max_length=255, null=True, blank=True)
+    plan_description = models.TextField(blank=True, null=True)
+    old_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    new_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    cgst = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    sgst = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    total_price = models.DecimalField(max_digits=10, decimal_places=2, editable=False, default=0)
+    billing_cycle = models.CharField(max_length=255, blank=True, null=True, default="Billed for 1 Year | Per Device")
+
+    def save(self, *args, **kwargs):
+        basic = self.new_price or 0
+        self.total_price = basic + self.cgst + self.sgst
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.biz_4.biz_name} - {self.plan_name}"
 
 class BizPriceListSubmission(models.Model):
     customer_name = models.CharField(max_length=255)

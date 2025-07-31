@@ -1,0 +1,70 @@
+{% extends 'products/admin/base.html' %}
+
+{% block title %}Add QR Code Settings - FusionTec Admin{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-plus"></i> Add QR Code Settings</h2>
+            <a href="{% url 'custom_admin_settings' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Settings
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-qrcode"></i> New QR Code Information</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="company_name" class="form-label">Company Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="company_name" name="company_name" 
+                                       placeholder="e.g., FUSIONTEC SOFTWARE" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="upi_id" class="form-label">UPI ID <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="upi_id" name="upi_id" 
+                                       placeholder="e.g., fusiontec@upi" required>
+                                <small class="form-text text-muted">Enter the UPI ID for QR code payments</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="qr_image" class="form-label">QR Code Image</label>
+                                <input type="file" class="form-control" id="qr_image" name="qr_image" accept="image/*">
+                                <small class="form-text text-muted">Upload QR code image (optional)</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Add QR Code Settings
+                            </button>
+                            <a href="{% url 'custom_admin_settings' %}" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

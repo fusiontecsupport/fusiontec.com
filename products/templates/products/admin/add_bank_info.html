@@ -1,0 +1,86 @@
+{% extends 'products/admin/base.html' %}
+
+{% block title %}Add Bank Transfer Settings - FusionTec Admin{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-plus"></i> Add Bank Transfer Settings</h2>
+            <a href="{% url 'custom_admin_settings' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Settings
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-university"></i> New Bank Transfer Information</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="title" class="form-label">Title <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="title" name="title" 
+                                       placeholder="e.g., Bank Transfer" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="account_name" class="form-label">Account Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="account_name" name="account_name" 
+                                       placeholder="e.g., FUSIONTEC SOFTWARE" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="account_number" class="form-label">Account Number <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="account_number" name="account_number" 
+                                       placeholder="e.g., 1234567890" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="ifsc_code" class="form-label">IFSC Code <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="ifsc_code" name="ifsc_code" 
+                                       placeholder="e.g., SBIN0001234" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="bank_name" class="form-label">Bank Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="bank_name" name="bank_name" 
+                                       placeholder="e.g., State Bank of India" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Add Bank Transfer Settings
+                            </button>
+                            <a href="{% url 'custom_admin_settings' %}" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

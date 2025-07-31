@@ -1,0 +1,73 @@
+{% extends 'products/admin/base.html' %}
+
+{% block title %}Add Razorpay Settings - FusionTec Admin{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-plus"></i> Add Razorpay Settings</h2>
+            <a href="{% url 'custom_admin_settings' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Settings
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-credit-card"></i> New Razorpay Information</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="title" class="form-label">Title <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="title" name="title" 
+                                       placeholder="e.g., Online Payment (Razorpay)" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label for="description" class="form-label">Description <span class="text-danger">*</span></label>
+                                <textarea class="form-control" id="description" name="description" 
+                                          rows="3" placeholder="e.g., Secure payment via Razorpay." required></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="payment_button_id" class="form-label">Payment Button ID <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="payment_button_id" name="payment_button_id" 
+                                       placeholder="Enter Razorpay payment button ID" required>
+                                <small class="form-text text-muted">Enter the Razorpay payment button ID</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Add Razorpay Settings
+                            </button>
+                            <a href="{% url 'custom_admin_settings' %}" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

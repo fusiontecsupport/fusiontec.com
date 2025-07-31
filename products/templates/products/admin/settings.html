@@ -1,0 +1,250 @@
+{% extends 'products/admin/base.html' %}
+
+{% block title %}Payment Settings - FusionTec Admin{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-cog"></i> Payment Settings</h2>
+        </div>
+    </div>
+</div>
+
+<!-- Razorpay Settings -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-credit-card"></i> Razorpay Settings</h5>
+            </div>
+            <div class="card-body">
+                {% if razorpay_info %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Description</th>
+                                    <th>Payment Button ID</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for info in razorpay_info %}
+                                <tr>
+                                    <td><strong>{{ info.title }}</strong></td>
+                                    <td>{{ info.description }}</td>
+                                    <td>
+                                        <code>{{ info.payment_button_id }}</code>
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'edit_razorpay_info' info.id %}" class="btn btn-sm btn-primary">
+                                            <i class="fas fa-edit"></i> Edit
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-credit-card fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No Razorpay settings found.</p>
+                        <a href="{% url 'add_razorpay_info' %}" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Add Razorpay Settings
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- QR Code Settings -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-qrcode"></i> QR Code Payment Settings</h5>
+            </div>
+            <div class="card-body">
+                {% if qr_info %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Company Name</th>
+                                    <th>UPI ID</th>
+                                    <th>QR Image</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for info in qr_info %}
+                                <tr>
+                                    <td><strong>{{ info.company_name }}</strong></td>
+                                    <td>
+                                        <code>{{ info.upi_id }}</code>
+                                    </td>
+                                    <td>
+                                        {% if info.qr_image %}
+                                            <img src="{{ info.qr_image.url }}" alt="QR Code" class="img-thumbnail" style="max-height: 50px;">
+                                        {% else %}
+                                            <span class="text-muted">No QR image</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'edit_qr_info' info.id %}" class="btn btn-sm btn-primary">
+                                            <i class="fas fa-edit"></i> Edit
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-qrcode fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No QR code settings found.</p>
+                        <a href="{% url 'add_qr_info' %}" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Add QR Code Settings
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bank Transfer Settings -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-university"></i> Bank Transfer Settings</h5>
+            </div>
+            <div class="card-body">
+                {% if bank_info %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Account Name</th>
+                                    <th>Account Number</th>
+                                    <th>IFSC Code</th>
+                                    <th>Bank Name</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for info in bank_info %}
+                                <tr>
+                                    <td><strong>{{ info.title }}</strong></td>
+                                    <td>{{ info.account_name }}</td>
+                                    <td>
+                                        <code>{{ info.account_number }}</code>
+                                    </td>
+                                    <td>
+                                        <code>{{ info.ifsc_code }}</code>
+                                    </td>
+                                    <td>{{ info.bank_name }}</td>
+                                    <td>
+                                        <a href="{% url 'edit_bank_info' info.id %}" class="btn btn-sm btn-primary">
+                                            <i class="fas fa-edit"></i> Edit
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-university fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No bank transfer settings found.</p>
+                        <a href="{% url 'add_bank_info' %}" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Add Bank Transfer Settings
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-plus"></i> Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                                         <div class="col-md-4">
+                         <a href="{% url 'add_razorpay_info' %}" class="btn btn-outline-primary w-100 mb-2">
+                             <i class="fas fa-plus"></i> Add Razorpay Settings
+                         </a>
+                     </div>
+                     <div class="col-md-4">
+                         <a href="{% url 'add_qr_info' %}" class="btn btn-outline-primary w-100 mb-2">
+                             <i class="fas fa-plus"></i> Add QR Code Settings
+                         </a>
+                     </div>
+                     <div class="col-md-4">
+                         <a href="{% url 'add_bank_info' %}" class="btn btn-outline-primary w-100 mb-2">
+                             <i class="fas fa-plus"></i> Add Bank Transfer Settings
+                         </a>
+                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Settings Summary -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-chart-bar"></i> Settings Summary</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="card border-primary">
+                            <div class="card-body text-center">
+                                <i class="fas fa-credit-card fa-2x text-primary mb-2"></i>
+                                <h5 class="card-title">{{ razorpay_info.count }}</h5>
+                                <p class="card-text">Razorpay Settings</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card border-success">
+                            <div class="card-body text-center">
+                                <i class="fas fa-qrcode fa-2x text-success mb-2"></i>
+                                <h5 class="card-title">{{ qr_info.count }}</h5>
+                                <p class="card-text">QR Code Settings</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card border-info">
+                            <div class="card-body text-center">
+                                <i class="fas fa-university fa-2x text-info mb-2"></i>
+                                <h5 class="card-title">{{ bank_info.count }}</h5>
+                                <p class="card-text">Bank Transfer Settings</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -65,17 +65,29 @@ class EmudhraPriceListSubmissionAdmin(admin.ModelAdmin):
 # ----------------------------------------------------------------------------------------
 # fusiontec section admin
 
-from .models import Fusiontec_3, Fusiontec_product, FusiontecPriceListSubmission
+from .models import Fusiontec_3, Fusiontec_product, Fusiontec_Software, Fusiontec_Service, FusiontecPriceListSubmission
 
 class FusiontecProductInline(admin.TabularInline):
     model = Fusiontec_product
     extra = 1
     fields = ('fusiontec_product',)
 
+class FusiontecSoftwareInline(admin.TabularInline):
+    model = Fusiontec_Software
+    extra = 1
+    fields = ('software_name', 'software_description', 'basic_amount', 'cgst', 'sgst')
+    readonly_fields = ('total_price',)
+
+class FusiontecServiceInline(admin.TabularInline):
+    model = Fusiontec_Service
+    extra = 1
+    fields = ('service_name', 'service_description', 'basic_amount', 'cgst', 'sgst')
+    readonly_fields = ('total_price',)
+
 @admin.register(Fusiontec_3)
 class Fusiontec3Admin(admin.ModelAdmin):
     list_display = ('fusiontec_name', 'fusiontec_link')
-    inlines = [FusiontecProductInline]
+    inlines = [FusiontecProductInline, FusiontecSoftwareInline, FusiontecServiceInline]
 
 @admin.register(FusiontecPriceListSubmission)
 class PriceListSubmissionAdmin(admin.ModelAdmin):
@@ -85,7 +97,7 @@ class PriceListSubmissionAdmin(admin.ModelAdmin):
 # ----------------------------------------------------------------------------------------
 # biz section admin
 
-from .models import Biz_4, biz_product, BizPriceListSubmission
+from .models import Biz_4, biz_product, Biz_Service, Biz_Plan, BizPriceListSubmission
 
 class BizProductInline(admin.TabularInline):
     model = biz_product
@@ -93,10 +105,22 @@ class BizProductInline(admin.TabularInline):
     fields = ('team_name', 'old_price', 'new_price', 'cgst', 'sgst', 'billing_cycle')
     readonly_fields = ('total_price',) 
 
+class BizServiceInline(admin.TabularInline):
+    model = Biz_Service
+    extra = 1
+    fields = ('service_name', 'service_description', 'basic_amount', 'cgst', 'sgst', 'billing_cycle')
+    readonly_fields = ('total_price',)
+
+class BizPlanInline(admin.TabularInline):
+    model = Biz_Plan
+    extra = 1
+    fields = ('plan_name', 'plan_description', 'old_price', 'new_price', 'cgst', 'sgst', 'billing_cycle')
+    readonly_fields = ('total_price',)
+
 @admin.register(Biz_4)
 class Biz4Admin(admin.ModelAdmin):
     list_display = ('biz_name', 'biz_link')
-    inlines = [BizProductInline]
+    inlines = [BizProductInline, BizServiceInline, BizPlanInline]
 
 
 @admin.register(BizPriceListSubmission)
@@ -119,32 +143,32 @@ class RazorpayTransactionAdmin(admin.ModelAdmin):
 
 #----------------------------------------------------------------
 # netbanking section for razorpay button
+# Note: RazorpayInfo is now managed through custom admin views
+# from .models import RazorpayInfo
 
-from .models import RazorpayInfo
-
-@admin.register(RazorpayInfo)
-class RazorpayInfoAdmin(admin.ModelAdmin):
-    list_display = ['title', 'payment_button_id']
+# @admin.register(RazorpayInfo)
+# class RazorpayInfoAdmin(admin.ModelAdmin):
+#     list_display = ['title', 'payment_button_id']
 
 #----------------------------------------------------------------
 # netbanking section for QR editing section
+# Note: CompanyPaymentInfoQR is now managed through custom admin views
+# from .models import CompanyPaymentInfoQR
 
-from .models import CompanyPaymentInfoQR
-
-@admin.register(CompanyPaymentInfoQR)
-class CompanyPaymentInfoQRAdmin(admin.ModelAdmin):
-    list_display = ['company_name', 'upi_id']
-    search_fields = ['company_name', 'upi_id']
+# @admin.register(CompanyPaymentInfoQR)
+# class CompanyPaymentInfoQRAdmin(admin.ModelAdmin):
+#     list_display = ['company_name', 'upi_id']
+#     search_fields = ['company_name', 'upi_id']
 
 #----------------------------------------------------------------
 # netbanking section for Banking details
+# Note: BankTransferInfo is now managed through custom admin views
+# from .models import BankTransferInfo
 
-from .models import BankTransferInfo
-
-@admin.register(BankTransferInfo)
-class BankTransferInfoAdmin(admin.ModelAdmin):
-    list_display = ['account_name', 'account_number', 'ifsc_code', 'bank_name']
-    search_fields = ['account_name', 'bank_name', 'ifsc_code']
+# @admin.register(BankTransferInfo)
+# class BankTransferInfoAdmin(admin.ModelAdmin):
+#     list_display = ['account_name', 'account_number', 'ifsc_code', 'bank_name']
+#     search_fields = ['account_name', 'bank_name', 'ifsc_code']
 
 
 from .models import Applicant

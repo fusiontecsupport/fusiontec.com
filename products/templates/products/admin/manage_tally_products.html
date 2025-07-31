@@ -1,0 +1,136 @@
+{% extends 'products/admin/base.html' %}
+
+{% block title %}Manage Tally Products - FusionTec Admin{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-box"></i> Manage Products for: {{ tally_product.tally_name }}</h2>
+            <a href="{% url 'custom_admin_products' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Products
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-plus"></i> Add New Product</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="type_name" class="form-label">Product Type Name *</label>
+                        <input type="text" class="form-control" id="type_name" name="type_name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="basic_amount" class="form-label">Basic Amount</label>
+                        <input type="number" step="0.01" class="form-control" id="basic_amount" name="basic_amount">
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="cgst" class="form-label">CGST</label>
+                                <input type="number" step="0.01" class="form-control" id="cgst" name="cgst" value="0">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="sgst" class="form-label">SGST</label>
+                                <input type="number" step="0.01" class="form-control" id="sgst" name="sgst" value="0">
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Add Product
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-list"></i> Current Products ({{ related_products.count }})</h5>
+            </div>
+            <div class="card-body">
+                {% if related_products %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Type Name</th>
+                                    <th>Basic Amount</th>
+                                    <th>CGST</th>
+                                    <th>SGST</th>
+                                    <th>Total Price</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for product in related_products %}
+                                <tr>
+                                    <td><strong>{{ product.type_name }}</strong></td>
+                                    <td>₹{{ product.basic_amount|default:"0.00" }}</td>
+                                    <td>₹{{ product.cgst|default:"0.00" }}</td>
+                                    <td>₹{{ product.sgst|default:"0.00" }}</td>
+                                    <td><strong>₹{{ product.total_price|default:"0.00" }}</strong></td>
+                                    <td>
+                                        <a href="{% url 'delete_tally_product_item' product.id 'product' %}" 
+                                           class="btn btn-sm btn-danger"
+                                           onclick="return confirm('Are you sure you want to delete this product?')">
+                                            <i class="fas fa-trash"></i> Delete
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No products found for this Tally product.</p>
+                        <p class="text-muted">Add your first product using the form on the left.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Navigation to other related items -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-link"></i> Manage Other Related Items</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <a href="{% url 'manage_tally_services' tally_product.id %}" class="btn btn-outline-success w-100">
+                            <i class="fas fa-tools"></i> Manage Services ({{ tally_product.services.count }})
+                        </a>
+                    </div>
+                    <div class="col-md-4">
+                        <a href="{% url 'manage_tally_upgrades' tally_product.id %}" class="btn btn-outline-warning w-100">
+                            <i class="fas fa-arrow-up"></i> Manage Upgrades ({{ tally_product.upgrades.count }})
+                        </a>
+                    </div>
+                    <div class="col-md-4">
+                        <a href="{% url 'edit_tally_product' tally_product.id %}" class="btn btn-outline-primary w-100">
+                            <i class="fas fa-edit"></i> Edit Main Product
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

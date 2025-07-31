@@ -1,0 +1,384 @@
+{% extends 'products/admin/base.html' %}
+{% load product_filters %}
+
+{% block title %}Edit {{ item_type|title }} - {{ main_product|get_attribute:config.name_field }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="mb-0">
+                        <i class="fas fa-edit text-primary"></i> 
+                        Edit {{ item_type|title }}
+                    </h2>
+                    <p class="text-muted mb-0">
+                        {{ main_product|get_attribute:config.name_field }}
+                    </p>
+                </div>
+                <div>
+                    <a href="{% url 'manage_product_items' product_type main_product.id %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to Manage
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-gradient-warning text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-edit"></i> Edit {{ item_type|title }}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" id="editItemForm">
+                        {% csrf_token %}
+                        
+                        {% if product_type == 'tally' %}
+                            <div class="mb-3">
+                                <label for="type_name" class="form-label">
+                                    <i class="fas fa-tag text-primary"></i> Type Name *
+                                </label>
+                                <input type="text" class="form-control" id="type_name" name="type_name" 
+                                       value="{% if item_type == 'products' %}{{ item.type_name }}{% elif item_type == 'services' %}{{ item.type_name }}{% elif item_type == 'upgrades' %}{{ item.type_name }}{% endif %}" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="basic_amount" class="form-label">
+                                    <i class="fas fa-rupee-sign text-success"></i> Basic Amount
+                                </label>
+                                <input type="number" step="0.01" class="form-control" id="basic_amount" name="basic_amount" 
+                                       value="{{ item.basic_amount|default:'' }}">
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="cgst" class="form-label">CGST</label>
+                                        <input type="number" step="0.01" class="form-control" id="cgst" name="cgst" 
+                                               value="{{ item.cgst|default:0 }}">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="sgst" class="form-label">SGST</label>
+                                        <input type="number" step="0.01" class="form-control" id="sgst" name="sgst" 
+                                               value="{{ item.sgst|default:0 }}">
+                                    </div>
+                                </div>
+                            </div>
+                        {% elif product_type == 'emudhra' %}
+                            <div class="mb-3">
+                                <label for="type_name" class="form-label">
+                                    <i class="fas fa-tag text-primary"></i> Product Class *
+                                </label>
+                                <input type="text" class="form-control" id="type_name" name="type_name" 
+                                       value="{{ item.class_product }}" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="basic_amount" class="form-label">
+                                    <i class="fas fa-rupee-sign text-success"></i> Basic Amount
+                                </label>
+                                <input type="number" step="0.01" class="form-control" id="basic_amount" name="basic_amount" 
+                                       value="{{ item.basic_amount|default:'' }}">
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="cgst" class="form-label">CGST</label>
+                                        <input type="number" step="0.01" class="form-control" id="cgst" name="cgst" 
+                                               value="{{ item.cgst|default:0 }}">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="sgst" class="form-label">SGST</label>
+                                        <input type="number" step="0.01" class="form-control" id="sgst" name="sgst" 
+                                               value="{{ item.sgst|default:0 }}">
+                                    </div>
+                                </div>
+                            </div>
+                        {% elif product_type == 'fusiontec' %}
+                            {% if item_type == 'products' %}
+                                <div class="mb-3">
+                                    <label for="type_name" class="form-label">
+                                        <i class="fas fa-tag text-primary"></i> Product Name *
+                                    </label>
+                                    <input type="text" class="form-control" id="type_name" name="type_name" 
+                                           value="{{ item.fusiontec_product }}" required>
+                                </div>
+                            {% elif item_type == 'software' %}
+                                <div class="mb-3">
+                                    <label for="type_name" class="form-label">
+                                        <i class="fas fa-desktop text-primary"></i> Software Name *
+                                    </label>
+                                    <input type="text" class="form-control" id="type_name" name="type_name" 
+                                           value="{{ item.software_name }}" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="description" class="form-label">
+                                        <i class="fas fa-info-circle text-info"></i> Description
+                                    </label>
+                                    <textarea class="form-control" id="description" name="description" rows="3">{{ item.software_description }}</textarea>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="basic_amount" class="form-label">
+                                        <i class="fas fa-rupee-sign text-success"></i> Basic Amount
+                                    </label>
+                                    <input type="number" step="0.01" class="form-control" id="basic_amount" name="basic_amount" 
+                                           value="{{ item.basic_amount|default:'' }}">
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="cgst" class="form-label">CGST</label>
+                                            <input type="number" step="0.01" class="form-control" id="cgst" name="cgst" 
+                                                   value="{{ item.cgst|default:0 }}">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="sgst" class="form-label">SGST</label>
+                                            <input type="number" step="0.01" class="form-control" id="sgst" name="sgst" 
+                                                   value="{{ item.sgst|default:0 }}">
+                                        </div>
+                                    </div>
+                                </div>
+                            {% elif item_type == 'services' %}
+                                <div class="mb-3">
+                                    <label for="type_name" class="form-label">
+                                        <i class="fas fa-tools text-primary"></i> Service Name *
+                                    </label>
+                                    <input type="text" class="form-control" id="type_name" name="type_name" 
+                                           value="{{ item.service_name }}" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="description" class="form-label">
+                                        <i class="fas fa-info-circle text-info"></i> Description
+                                    </label>
+                                    <textarea class="form-control" id="description" name="description" rows="3">{{ item.service_description }}</textarea>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="basic_amount" class="form-label">
+                                        <i class="fas fa-rupee-sign text-success"></i> Basic Amount
+                                    </label>
+                                    <input type="number" step="0.01" class="form-control" id="basic_amount" name="basic_amount" 
+                                           value="{{ item.basic_amount|default:'' }}">
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="cgst" class="form-label">CGST</label>
+                                            <input type="number" step="0.01" class="form-control" id="cgst" name="cgst" 
+                                                   value="{{ item.cgst|default:0 }}">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="sgst" class="form-label">SGST</label>
+                                            <input type="number" step="0.01" class="form-control" id="sgst" name="sgst" 
+                                                   value="{{ item.sgst|default:0 }}">
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        {% elif product_type == 'biz' %}
+                            {% if item_type == 'products' %}
+                                <div class="mb-3">
+                                    <label for="type_name" class="form-label">
+                                        <i class="fas fa-users text-primary"></i> Team Name *
+                                    </label>
+                                    <input type="text" class="form-control" id="type_name" name="type_name" 
+                                           value="{{ item.team_name }}" required>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="old_price" class="form-label">
+                                                <i class="fas fa-rupee-sign text-muted"></i> Old Price
+                                            </label>
+                                            <input type="number" step="0.01" class="form-control" id="old_price" name="old_price" 
+                                                   value="{{ item.old_price|default:'' }}">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="basic_amount" class="form-label">
+                                                <i class="fas fa-rupee-sign text-success"></i> New Price
+                                            </label>
+                                            <input type="number" step="0.01" class="form-control" id="basic_amount" name="basic_amount" 
+                                                   value="{{ item.new_price|default:'' }}">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="cgst" class="form-label">CGST</label>
+                                            <input type="number" step="0.01" class="form-control" id="cgst" name="cgst" 
+                                                   value="{{ item.cgst|default:0 }}">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="sgst" class="form-label">SGST</label>
+                                            <input type="number" step="0.01" class="form-control" id="sgst" name="sgst" 
+                                                   value="{{ item.sgst|default:0 }}">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="billing_cycle" class="form-label">
+                                        <i class="fas fa-calendar text-info"></i> Billing Cycle
+                                    </label>
+                                    <input type="text" class="form-control" id="billing_cycle" name="billing_cycle" 
+                                           value="{{ item.billing_cycle|default:'Billed for 1 Year | Per Device' }}">
+                                </div>
+                            {% elif item_type == 'services' %}
+                                <div class="mb-3">
+                                    <label for="type_name" class="form-label">
+                                        <i class="fas fa-tools text-primary"></i> Service Name *
+                                    </label>
+                                    <input type="text" class="form-control" id="type_name" name="type_name" 
+                                           value="{{ item.service_name }}" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="description" class="form-label">
+                                        <i class="fas fa-info-circle text-info"></i> Description
+                                    </label>
+                                    <textarea class="form-control" id="description" name="description" rows="3">{{ item.service_description }}</textarea>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="basic_amount" class="form-label">
+                                        <i class="fas fa-rupee-sign text-success"></i> Basic Amount
+                                    </label>
+                                    <input type="number" step="0.01" class="form-control" id="basic_amount" name="basic_amount" 
+                                           value="{{ item.basic_amount|default:'' }}">
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="cgst" class="form-label">CGST</label>
+                                            <input type="number" step="0.01" class="form-control" id="cgst" name="cgst" 
+                                                   value="{{ item.cgst|default:0 }}">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="sgst" class="form-label">SGST</label>
+                                            <input type="number" step="0.01" class="form-control" id="sgst" name="sgst" 
+                                                   value="{{ item.sgst|default:0 }}">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="billing_cycle" class="form-label">
+                                        <i class="fas fa-calendar text-info"></i> Billing Cycle
+                                    </label>
+                                    <input type="text" class="form-control" id="billing_cycle" name="billing_cycle" 
+                                           value="{{ item.billing_cycle|default:'Billed for 1 Year | Per Device' }}">
+                                </div>
+                            {% elif item_type == 'plans' %}
+                                <div class="mb-3">
+                                    <label for="type_name" class="form-label">
+                                        <i class="fas fa-chart-line text-primary"></i> Plan Name *
+                                    </label>
+                                    <input type="text" class="form-control" id="type_name" name="type_name" 
+                                           value="{{ item.plan_name }}" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="description" class="form-label">
+                                        <i class="fas fa-info-circle text-info"></i> Description
+                                    </label>
+                                    <textarea class="form-control" id="description" name="description" rows="3">{{ item.plan_description }}</textarea>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="old_price" class="form-label">
+                                                <i class="fas fa-rupee-sign text-muted"></i> Old Price
+                                            </label>
+                                            <input type="number" step="0.01" class="form-control" id="old_price" name="old_price" 
+                                                   value="{{ item.old_price|default:'' }}">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="basic_amount" class="form-label">
+                                                <i class="fas fa-rupee-sign text-success"></i> New Price
+                                            </label>
+                                            <input type="number" step="0.01" class="form-control" id="basic_amount" name="basic_amount" 
+                                                   value="{{ item.new_price|default:'' }}">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="cgst" class="form-label">CGST</label>
+                                            <input type="number" step="0.01" class="form-control" id="cgst" name="cgst" 
+                                                   value="{{ item.cgst|default:0 }}">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="sgst" class="form-label">SGST</label>
+                                            <input type="number" step="0.01" class="form-control" id="sgst" name="sgst" 
+                                                   value="{{ item.sgst|default:0 }}">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="billing_cycle" class="form-label">
+                                        <i class="fas fa-calendar text-info"></i> Billing Cycle
+                                    </label>
+                                    <input type="text" class="form-control" id="billing_cycle" name="billing_cycle" 
+                                           value="{{ item.billing_cycle|default:'Billed for 1 Year | Per Device' }}">
+                                </div>
+                            {% endif %}
+                        {% endif %}
+                        
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-warning">
+                                <i class="fas fa-save"></i> Update {{ item_type|title }}
+                            </button>
+                            <a href="{% url 'manage_product_items' product_type main_product.id %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.bg-gradient-warning {
+    background: linear-gradient(45deg, #ffc107, #e0a800);
+}
+
+.card {
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.btn {
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+.form-control {
+    border-radius: 6px;
+    border: 1px solid #e9ecef;
+}
+
+.form-control:focus {
+    border-color: #ffc107;
+    box-shadow: 0 0 0 0.2rem rgba(255, 193, 7, 0.25);
+}
+</style>
+{% endblock %} 

@@ -1,0 +1,332 @@
+{% extends 'products/admin/base.html' %}
+
+{% block title %}Tally Submissions - FusionTec Admin{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-calculator"></i> Tally Submissions</h2>
+            <span class="badge bg-primary fs-6">{{ page_obj.paginator.count }} Total</span>
+        </div>
+    </div>
+</div>
+
+<!-- Search Bar -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <form method="GET" class="row g-3">
+                    <div class="col-md-8">
+                        <input type="text" name="search" class="form-control search-box" 
+                               placeholder="Search by customer name, mobile, or product name..." 
+                               value="{{ search_query }}">
+                    </div>
+                    <div class="col-md-4">
+                        <button type="submit" class="btn btn-primary me-2">
+                            <i class="fas fa-search"></i> Search
+                        </button>
+                        <a href="{% url 'custom_admin_tally_submissions' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times"></i> Clear
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Submissions Table -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-list me-2"></i>Tally Price List Submissions</h5>
+            </div>
+            <div class="card-body">
+                {% if page_obj %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Customer Name</th>
+                                    <th>Company</th>
+                                    <th>Contact Info</th>
+                                    <th>Product Details</th>
+                                    <th>Pricing</th>
+                                    <th>Address</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for submission in page_obj %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ submission.customer_name }}</strong>
+                                    </td>
+                                    <td>
+                                        {% if submission.company_name %}
+                                            {{ submission.company_name }}
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div>
+                                            <a href="tel:{{ submission.mobile }}" class="text-decoration-none">
+                                                <i class="fas fa-phone"></i> {{ submission.mobile }}
+                                            </a>
+                                        </div>
+                                        {% if submission.email %}
+                                            <div>
+                                                <a href="mailto:{{ submission.email }}" class="text-decoration-none">
+                                                    <i class="fas fa-envelope"></i> {{ submission.email }}
+                                                </a>
+                                            </div>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div><strong>{{ submission.product_name }}</strong></div>
+                                        <div class="text-muted">{{ submission.product_type }}</div>
+                                        {% if submission.product_type_detail %}
+                                            <div class="text-muted">{{ submission.product_type_detail }}</div>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if submission.total_price %}
+                                            <div class="text-success fw-bold">₹{{ submission.total_price }}</div>
+                                            {% if submission.basic_amount %}
+                                                <small class="text-muted">
+                                                    Base: ₹{{ submission.basic_amount }}
+                                                    {% if submission.cgst or submission.sgst %}
+                                                        (CGST: ₹{{ submission.cgst|default:0 }}, SGST: ₹{{ submission.sgst|default:0 }})
+                                                    {% endif %}
+                                                </small>
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="text-muted">Price not set</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if submission.address %}
+                                            <span data-bs-toggle="tooltip" data-bs-placement="top" 
+                                                  title="{{ submission.address }}">
+                                                {{ submission.address|truncatechars:50 }}
+                                            </span>
+                                            {% if submission.state or submission.district %}
+                                                <br><small class="text-muted">
+                                                    {{ submission.state }}{% if submission.district %}, {{ submission.district }}{% endif %}
+                                                    {% if submission.pincode %} - {{ submission.pincode }}{% endif %}
+                                                </small>
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="text-muted">No address</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ submission.created_at|date:"M d, Y H:i" }}</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary" 
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#submissionModal{{ submission.id }}">
+                                            <i class="fas fa-eye"></i> View
+                                        </button>
+                                    </td>
+                                </tr>
+                                
+                                <!-- Modal for each submission -->
+                                <div class="modal fade" id="submissionModal{{ submission.id }}" tabindex="-1">
+                                    <div class="modal-dialog modal-lg">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Tally Submission Details</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <div class="row">
+                                                    <div class="col-md-6">
+                                                        <h6><i class="fas fa-user"></i> Customer Information</h6>
+                                                        <p><strong>Name:</strong> {{ submission.customer_name }}</p>
+                                                        {% if submission.company_name %}
+                                                            <p><strong>Company:</strong> {{ submission.company_name }}</p>
+                                                        {% endif %}
+                                                        <p><strong>Mobile:</strong> {{ submission.mobile }}</p>
+                                                        {% if submission.email %}
+                                                            <p><strong>Email:</strong> {{ submission.email }}</p>
+                                                        {% endif %}
+                                                        {% if submission.has_gst %}
+                                                            <p><strong>GST Number:</strong> {{ submission.gst_number|default:"Not provided" }}</p>
+                                                        {% endif %}
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <h6><i class="fas fa-box"></i> Product Information</h6>
+                                                        <p><strong>Product:</strong> {{ submission.product_name }}</p>
+                                                        <p><strong>Type:</strong> {{ submission.product_type }}</p>
+                                                        {% if submission.product_type_detail %}
+                                                            <p><strong>Details:</strong> {{ submission.product_type_detail }}</p>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                                
+                                                {% if submission.basic_amount or submission.total_price %}
+                                                    <hr>
+                                                    <h6><i class="fas fa-money-bill"></i> Pricing Details</h6>
+                                                    <div class="row">
+                                                        {% if submission.basic_amount %}
+                                                            <div class="col-md-3">
+                                                                <p><strong>Base Amount:</strong><br>₹{{ submission.basic_amount }}</p>
+                                                            </div>
+                                                        {% endif %}
+                                                        {% if submission.cgst %}
+                                                            <div class="col-md-3">
+                                                                <p><strong>CGST:</strong><br>₹{{ submission.cgst }}</p>
+                                                            </div>
+                                                        {% endif %}
+                                                        {% if submission.sgst %}
+                                                            <div class="col-md-3">
+                                                                <p><strong>SGST:</strong><br>₹{{ submission.sgst }}</p>
+                                                            </div>
+                                                        {% endif %}
+                                                        {% if submission.total_price %}
+                                                            <div class="col-md-3">
+                                                                <p><strong>Total:</strong><br><span class="text-success fw-bold">₹{{ submission.total_price }}</span></p>
+                                                            </div>
+                                                        {% endif %}
+                                                    </div>
+                                                {% endif %}
+                                                
+                                                {% if submission.address %}
+                                                    <hr>
+                                                    <h6><i class="fas fa-map-marker-alt"></i> Address</h6>
+                                                    <p>{{ submission.address }}</p>
+                                                    {% if submission.state or submission.district %}
+                                                        <p>
+                                                            <strong>Location:</strong> 
+                                                            {{ submission.state }}{% if submission.district %}, {{ submission.district }}{% endif %}
+                                                            {% if submission.pincode %} - {{ submission.pincode }}{% endif %}
+                                                        </p>
+                                                    {% endif %}
+                                                {% endif %}
+                                                
+                                                <hr>
+                                                <div class="row">
+                                                    <div class="col-md-6">
+                                                        <h6><i class="fas fa-calendar"></i> Submission Details</h6>
+                                                        <p><strong>Submitted:</strong> {{ submission.created_at|date:"F d, Y at H:i" }}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                <a href="mailto:{{ submission.email|default:'' }}?subject=Regarding your Tally inquiry" 
+                                                   class="btn btn-primary" target="_blank">
+                                                    <i class="fas fa-envelope"></i> Send Email
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Pagination -->
+                    {% if page_obj.has_other_pages %}
+                        <nav aria-label="Page navigation" class="mt-4">
+                            <ul class="pagination justify-content-center">
+                                {% if page_obj.has_previous %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}">
+                                            <i class="fas fa-angle-double-left"></i>
+                                        </a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}">
+                                            <i class="fas fa-angle-left"></i>
+                                        </a>
+                                    </li>
+                                {% endif %}
+                                
+                                {% for num in page_obj.paginator.page_range %}
+                                    {% if page_obj.number == num %}
+                                        <li class="page-item active">
+                                            <span class="page-link">{{ num }}</span>
+                                        </li>
+                                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}">{{ num }}</a>
+                                        </li>
+                                    {% endif %}
+                                {% endfor %}
+                                
+                                {% if page_obj.has_next %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}">
+                                            <i class="fas fa-angle-right"></i>
+                                        </a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}">
+                                            <i class="fas fa-angle-double-right"></i>
+                                        </a>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                    {% endif %}
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-calculator fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No Tally submissions found.</p>
+                        {% if search_query %}
+                            <a href="{% url 'custom_admin_tally_submissions' %}" class="btn btn-outline-primary">
+                                <i class="fas fa-times"></i> Clear Search
+                            </a>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Export Options -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-download"></i> Export Options</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <a href="{% url 'custom_admin_tally_submissions' %}?export=csv{% if search_query %}&search={{ search_query }}{% endif %}" 
+                           class="btn btn-outline-success w-100 mb-2">
+                            <i class="fas fa-file-csv"></i> Export CSV
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{% url 'custom_admin_tally_submissions' %}?export=excel{% if search_query %}&search={{ search_query }}{% endif %}" 
+                           class="btn btn-outline-success w-100 mb-2">
+                            <i class="fas fa-file-excel"></i> Export Excel
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{% url 'custom_admin_tally_submissions' %}?export=pdf{% if search_query %}&search={{ search_query }}{% endif %}" 
+                           class="btn btn-outline-danger w-100 mb-2">
+                            <i class="fas fa-file-pdf"></i> Export PDF
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <button class="btn btn-outline-info w-100 mb-2" onclick="window.print()">
+                            <i class="fas fa-print"></i> Print View
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

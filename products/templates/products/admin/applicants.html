@@ -1,0 +1,377 @@
+{% extends 'products/admin/base.html' %}
+
+{% block title %}Applicants - FusionTec Admin{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-users"></i> Applicants</h2>
+            <span class="badge bg-primary fs-6">{{ page_obj.paginator.count }} Total</span>
+        </div>
+    </div>
+</div>
+
+<!-- Search Bar -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <form method="GET" class="row g-3">
+                    <div class="col-md-8">
+                        <input type="text" name="search" class="form-control search-box" 
+                               placeholder="Search by name, mobile, email, or reference..." 
+                               value="{{ search_query }}">
+                    </div>
+                    <div class="col-md-4">
+                        <button type="submit" class="btn btn-primary me-2">
+                            <i class="fas fa-search"></i> Search
+                        </button>
+                        <a href="{% url 'custom_admin_applicants' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times"></i> Clear
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Applicants Table -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-list me-2"></i>Applicant Submissions</h5>
+            </div>
+            <div class="card-body">
+                {% if page_obj %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Contact Info</th>
+                                    <th>Documents</th>
+                                    <th>Reference</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for applicant in page_obj %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ applicant.name|default:"Not provided" }}</strong>
+                                        {% if applicant.pan_number %}
+                                            <br><small class="text-muted">PAN: {{ applicant.pan_number }}</small>
+                                        {% endif %}
+                                        {% if applicant.aadhar_number %}
+                                            <br><small class="text-muted">Aadhar: {{ applicant.aadhar_number }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if applicant.mobile_number %}
+                                            <div>
+                                                <a href="tel:{{ applicant.mobile_number }}" class="text-decoration-none">
+                                                    <i class="fas fa-phone"></i> {{ applicant.mobile_number }}
+                                                </a>
+                                            </div>
+                                        {% endif %}
+                                        {% if applicant.email %}
+                                            <div>
+                                                <a href="mailto:{{ applicant.email }}" class="text-decoration-none">
+                                                    <i class="fas fa-envelope"></i> {{ applicant.email }}
+                                                </a>
+                                            </div>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="d-flex flex-wrap gap-1">
+                                            {% if applicant.pan_copy %}
+                                                <span class="badge bg-success">
+                                                    <i class="fas fa-file-pdf"></i> PAN
+                                                </span>
+                                            {% endif %}
+                                            {% if applicant.aadhar_copy %}
+                                                <span class="badge bg-info">
+                                                    <i class="fas fa-file-pdf"></i> Aadhar
+                                                </span>
+                                            {% endif %}
+                                            {% if applicant.photo %}
+                                                <span class="badge bg-warning">
+                                                    <i class="fas fa-image"></i> Photo
+                                                </span>
+                                            {% endif %}
+                                            {% if applicant.gst_certificate %}
+                                                <span class="badge bg-primary">
+                                                    <i class="fas fa-file-pdf"></i> GST
+                                                </span>
+                                            {% endif %}
+                                            {% if applicant.authorization_letter %}
+                                                <span class="badge bg-secondary">
+                                                    <i class="fas fa-file-pdf"></i> Auth
+                                                </span>
+                                            {% endif %}
+                                            {% if applicant.company_pan %}
+                                                <span class="badge bg-dark">
+                                                    <i class="fas fa-file-pdf"></i> Company PAN
+                                                </span>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div><strong>{{ applicant.reference }}</strong></div>
+                                        <div>
+                                            <a href="tel:{{ applicant.reference_contact }}" class="text-decoration-none">
+                                                <i class="fas fa-phone"></i> {{ applicant.reference_contact }}
+                                            </a>
+                                        </div>
+                                    </td>
+                                    <td>{{ applicant.submitted_at|date:"M d, Y H:i" }}</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary" 
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#applicantModal{{ applicant.id }}">
+                                            <i class="fas fa-eye"></i> View
+                                        </button>
+                                    </td>
+                                </tr>
+                                
+                                <!-- Modal for each applicant -->
+                                <div class="modal fade" id="applicantModal{{ applicant.id }}" tabindex="-1">
+                                    <div class="modal-dialog modal-xl">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Applicant Details</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <div class="row">
+                                                    <div class="col-md-6">
+                                                        <h6><i class="fas fa-user"></i> Personal Information</h6>
+                                                        <p><strong>Name:</strong> {{ applicant.name|default:"Not provided" }}</p>
+                                                        {% if applicant.pan_number %}
+                                                            <p><strong>PAN Number:</strong> {{ applicant.pan_number }}</p>
+                                                        {% endif %}
+                                                        {% if applicant.aadhar_number %}
+                                                            <p><strong>Aadhar Number:</strong> {{ applicant.aadhar_number }}</p>
+                                                        {% endif %}
+                                                        {% if applicant.mobile_number %}
+                                                            <p><strong>Mobile:</strong> {{ applicant.mobile_number }}</p>
+                                                        {% endif %}
+                                                        {% if applicant.email %}
+                                                            <p><strong>Email:</strong> {{ applicant.email }}</p>
+                                                        {% endif %}
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <h6><i class="fas fa-user-friends"></i> Reference Information</h6>
+                                                        <p><strong>Reference:</strong> {{ applicant.reference }}</p>
+                                                        <p><strong>Reference Contact:</strong> {{ applicant.reference_contact }}</p>
+                                                    </div>
+                                                </div>
+                                                
+                                                <hr>
+                                                <h6><i class="fas fa-file-alt"></i> Uploaded Documents</h6>
+                                                <div class="row">
+                                                    <div class="col-md-4">
+                                                        {% if applicant.pan_copy %}
+                                                            <div class="card mb-3">
+                                                                <div class="card-body text-center">
+                                                                    <i class="fas fa-file-pdf fa-2x text-danger mb-2"></i>
+                                                                    <h6>PAN Copy</h6>
+                                                                    <a href="{{ applicant.pan_copy.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                                                        <i class="fas fa-download"></i> Download
+                                                                    </a>
+                                                                </div>
+                                                            </div>
+                                                        {% endif %}
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        {% if applicant.aadhar_copy %}
+                                                            <div class="card mb-3">
+                                                                <div class="card-body text-center">
+                                                                    <i class="fas fa-file-pdf fa-2x text-info mb-2"></i>
+                                                                    <h6>Aadhar Copy</h6>
+                                                                    <a href="{{ applicant.aadhar_copy.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                                                        <i class="fas fa-download"></i> Download
+                                                                    </a>
+                                                                </div>
+                                                            </div>
+                                                        {% endif %}
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        {% if applicant.photo %}
+                                                            <div class="card mb-3">
+                                                                <div class="card-body text-center">
+                                                                    <i class="fas fa-image fa-2x text-warning mb-2"></i>
+                                                                    <h6>Photo</h6>
+                                                                    <a href="{{ applicant.photo.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                                                        <i class="fas fa-eye"></i> View
+                                                                    </a>
+                                                                </div>
+                                                            </div>
+                                                        {% endif %}
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        {% if applicant.gst_certificate %}
+                                                            <div class="card mb-3">
+                                                                <div class="card-body text-center">
+                                                                    <i class="fas fa-file-pdf fa-2x text-primary mb-2"></i>
+                                                                    <h6>GST Certificate</h6>
+                                                                    <a href="{{ applicant.gst_certificate.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                                                        <i class="fas fa-download"></i> Download
+                                                                    </a>
+                                                                </div>
+                                                            </div>
+                                                        {% endif %}
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        {% if applicant.authorization_letter %}
+                                                            <div class="card mb-3">
+                                                                <div class="card-body text-center">
+                                                                    <i class="fas fa-file-pdf fa-2x text-secondary mb-2"></i>
+                                                                    <h6>Authorization Letter</h6>
+                                                                    <a href="{{ applicant.authorization_letter.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                                                        <i class="fas fa-download"></i> Download
+                                                                    </a>
+                                                                </div>
+                                                            </div>
+                                                        {% endif %}
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        {% if applicant.company_pan %}
+                                                            <div class="card mb-3">
+                                                                <div class="card-body text-center">
+                                                                    <i class="fas fa-file-pdf fa-2x text-dark mb-2"></i>
+                                                                    <h6>Company PAN</h6>
+                                                                    <a href="{{ applicant.company_pan.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                                                        <i class="fas fa-download"></i> Download
+                                                                    </a>
+                                                                </div>
+                                                            </div>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                                
+                                                <hr>
+                                                <div class="row">
+                                                    <div class="col-md-6">
+                                                        <h6><i class="fas fa-calendar"></i> Submission Details</h6>
+                                                        <p><strong>Submitted:</strong> {{ applicant.submitted_at|date:"F d, Y at H:i" }}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                <a href="mailto:{{ applicant.email|default:'' }}?subject=Regarding your application" 
+                                                   class="btn btn-primary" target="_blank">
+                                                    <i class="fas fa-envelope"></i> Send Email
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Pagination -->
+                    {% if page_obj.has_other_pages %}
+                        <nav aria-label="Page navigation" class="mt-4">
+                            <ul class="pagination justify-content-center">
+                                {% if page_obj.has_previous %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}">
+                                            <i class="fas fa-angle-double-left"></i>
+                                        </a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}">
+                                            <i class="fas fa-angle-left"></i>
+                                        </a>
+                                    </li>
+                                {% endif %}
+                                
+                                {% for num in page_obj.paginator.page_range %}
+                                    {% if page_obj.number == num %}
+                                        <li class="page-item active">
+                                            <span class="page-link">{{ num }}</span>
+                                        </li>
+                                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}">{{ num }}</a>
+                                        </li>
+                                    {% endif %}
+                                {% endfor %}
+                                
+                                {% if page_obj.has_next %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}">
+                                            <i class="fas fa-angle-right"></i>
+                                        </a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}">
+                                            <i class="fas fa-angle-double-right"></i>
+                                        </a>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                    {% endif %}
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No applicants found.</p>
+                        {% if search_query %}
+                            <a href="{% url 'custom_admin_applicants' %}" class="btn btn-outline-primary">
+                                <i class="fas fa-times"></i> Clear Search
+                            </a>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Export Options -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-download"></i> Export Options</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <a href="{% url 'custom_admin_applicants' %}?export=csv{% if search_query %}&search={{ search_query }}{% endif %}" 
+                           class="btn btn-outline-success w-100 mb-2">
+                            <i class="fas fa-file-csv"></i> Export CSV
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{% url 'custom_admin_applicants' %}?export=excel{% if search_query %}&search={{ search_query }}{% endif %}" 
+                           class="btn btn-outline-success w-100 mb-2">
+                            <i class="fas fa-file-excel"></i> Export Excel
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{% url 'custom_admin_applicants' %}?export=pdf{% if search_query %}&search={{ search_query }}{% endif %}" 
+                           class="btn btn-outline-danger w-100 mb-2">
+                            <i class="fas fa-file-pdf"></i> Export PDF
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <button class="btn btn-outline-info w-100 mb-2" onclick="window.print()">
+                            <i class="fas fa-print"></i> Print View
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
