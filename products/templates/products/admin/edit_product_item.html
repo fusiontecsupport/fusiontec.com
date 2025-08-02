@@ -39,6 +39,54 @@
                     <form method="POST" id="editItemForm">
                         {% csrf_token %}
                         
+                        <!-- Token Switch (for all product types) -->
+                        <div class="mb-3">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="tokenSwitch" name="has_token">
+                                <label class="form-check-label" for="tokenSwitch">
+                                    <i class="fas fa-key text-warning"></i> Enable Token Configuration
+                                </label>
+                            </div>
+                        </div>
+                        <!-- Token Fields (initially hidden) -->
+                        <div id="tokenFields" class="mb-3" style="display: none;">
+                            <div class="card border-warning">
+                                <div class="card-header bg-warning text-dark">
+                                    <h6 class="mb-0"><i class="fas fa-key"></i> Token Configuration</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="token_name" class="form-label">
+                                                    <i class="fas fa-tag text-primary"></i> Token Name *
+                                                </label>
+                                                <input type="text" class="form-control" id="token_name" name="token_name" 
+                                                       value="{{ item.token_name|default:'' }}" placeholder="Enter token name">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="token_amount" class="form-label">
+                                                    <i class="fas fa-rupee-sign text-success"></i> Token Amount *
+                                                </label>
+                                                <input type="number" step="0.01" class="form-control" id="token_amount" name="token_amount" 
+                                                       value="{{ item.token_amount|default:'' }}" placeholder="Enter token amount">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="installing_charges" class="form-label">
+                                            <i class="fas fa-tools text-info"></i> Installing Charges
+                                        </label>
+                                        <input type="number" step="0.01" class="form-control" id="installing_charges" name="installing_charges" 
+                                               value="{{ item.installing_charges|default:'' }}" placeholder="Enter installing charges (optional)">
+                                        <div class="form-text">Leave empty if not applicable</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
                         {% if product_type == 'tally' %}
                             <div class="mb-3">
                                 <label for="type_name" class="form-label">
@@ -381,4 +429,38 @@
     box-shadow: 0 0 0 0.2rem rgba(255, 193, 7, 0.25);
 }
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const tokenSwitch = document.getElementById('tokenSwitch');
+    const tokenFields = document.getElementById('tokenFields');
+    const tokenNameInput = document.getElementById('token_name');
+    const tokenAmountInput = document.getElementById('token_amount');
+    
+    // Toggle token fields visibility
+    tokenSwitch.addEventListener('change', function() {
+        if (this.checked) {
+            tokenFields.style.display = 'block';
+            tokenNameInput.required = true;
+            tokenAmountInput.required = true;
+        } else {
+            tokenFields.style.display = 'none';
+            tokenNameInput.required = false;
+            tokenAmountInput.required = false;
+            // Clear the fields when hiding
+            tokenNameInput.value = '';
+            tokenAmountInput.value = '';
+            document.getElementById('installing_charges').value = '';
+        }
+    });
+    
+    // Check if token fields should be shown on page load (if values exist)
+    if (tokenNameInput && tokenNameInput.value) {
+        tokenSwitch.checked = true;
+        tokenFields.style.display = 'block';
+        tokenNameInput.required = true;
+        tokenAmountInput.required = true;
+    }
+});
+</script>
 {% endblock %} 

@@ -35,6 +35,10 @@ class Tally_Product(models.Model):
     cgst = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     sgst = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     total_price = models.DecimalField(max_digits=10, decimal_places=2, editable=False, default=0)
+    # Token configuration fields
+    token_name = models.CharField(max_length=255, null=True, blank=True)
+    token_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    installing_charges = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
 
     def save(self, *args, **kwargs):
         basic = self.basic_amount or 0
@@ -51,6 +55,10 @@ class Tally_Software_Service(models.Model):
     cgst = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     sgst = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     total_price = models.DecimalField(max_digits=10, decimal_places=2, editable=False, default=0)
+    # Token configuration fields
+    token_name = models.CharField(max_length=255, null=True, blank=True)
+    token_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    installing_charges = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
 
     def save(self, *args, **kwargs):
         basic = self.basic_amount or 0
@@ -67,6 +75,10 @@ class Tally_Upgrade(models.Model):
     cgst = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     sgst = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     total_price = models.DecimalField(max_digits=10, decimal_places=2, editable=False, default=0)
+    # Token configuration fields
+    token_name = models.CharField(max_length=255, null=True, blank=True)
+    token_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    installing_charges = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
 
     def save(self, *args, **kwargs):
         basic = self.basic_amount or 0
@@ -94,6 +106,10 @@ class TallyPriceListSubmission(models.Model):
     cgst = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     sgst = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     total_price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    # Token and installation charge fields
+    token_name = models.CharField(max_length=255, blank=True, null=True)
+    token_amount = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    installing_charges = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -117,6 +133,10 @@ class Emudhra_product(models.Model):
     cgst = models.DecimalField(max_digits=10, decimal_places=2, default=0, blank=True, null=True)
     sgst = models.DecimalField(max_digits=10, decimal_places=2, default=0, blank=True, null=True)
     total_price = models.DecimalField(max_digits=10, decimal_places=2, editable=False, default=0, blank=True, null=True)
+    # Token fields
+    token_name = models.CharField(max_length=255, null=True, blank=True)
+    token_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    installing_charges = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
 
     def save(self, *args, **kwargs):
         basic = self.basic_amount or 0
@@ -163,6 +183,10 @@ class Fusiontec_3(models.Model):
 class Fusiontec_product(models.Model):
     fusiontec_3 = models.ForeignKey(Fusiontec_3, on_delete=models.CASCADE)  
     fusiontec_product = models.CharField(max_length=255, null=True)
+    # Token fields
+    token_name = models.CharField(max_length=255, null=True, blank=True)
+    token_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    installing_charges = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
 
     def __str__(self):
         return self.fusiontec_product
@@ -175,6 +199,10 @@ class Fusiontec_Software(models.Model):
     cgst = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     sgst = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     total_price = models.DecimalField(max_digits=10, decimal_places=2, editable=False, default=0)
+    # Token fields
+    token_name = models.CharField(max_length=255, null=True, blank=True)
+    token_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    installing_charges = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
 
     def save(self, *args, **kwargs):
         basic = self.basic_amount or 0
@@ -192,6 +220,10 @@ class Fusiontec_Service(models.Model):
     cgst = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     sgst = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     total_price = models.DecimalField(max_digits=10, decimal_places=2, editable=False, default=0)
+    # Token fields
+    token_name = models.CharField(max_length=255, null=True, blank=True)
+    token_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    installing_charges = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
 
     def save(self, *args, **kwargs):
         basic = self.basic_amount or 0
@@ -240,6 +272,10 @@ class biz_product(models.Model):
     sgst = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     total_price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)  
     team_name = models.CharField(max_length=255, default="For Sales Team") 
+    # Token fields
+    token_name = models.CharField(max_length=255, null=True, blank=True)
+    token_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    installing_charges = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
 
     def save(self, *args, **kwargs):
         basic = self.new_price or 0
@@ -258,6 +294,10 @@ class Biz_Service(models.Model):
     sgst = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     total_price = models.DecimalField(max_digits=10, decimal_places=2, editable=False, default=0)
     billing_cycle = models.CharField(max_length=255, blank=True, null=True, default="Billed for 1 Year | Per Device")
+    # Token fields
+    token_name = models.CharField(max_length=255, null=True, blank=True)
+    token_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    installing_charges = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
 
     def save(self, *args, **kwargs):
         basic = self.basic_amount or 0
@@ -277,6 +317,10 @@ class Biz_Plan(models.Model):
     sgst = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     total_price = models.DecimalField(max_digits=10, decimal_places=2, editable=False, default=0)
     billing_cycle = models.CharField(max_length=255, blank=True, null=True, default="Billed for 1 Year | Per Device")
+    # Token fields
+    token_name = models.CharField(max_length=255, null=True, blank=True)
+    token_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    installing_charges = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
 
     def save(self, *args, **kwargs):
         basic = self.new_price or 0

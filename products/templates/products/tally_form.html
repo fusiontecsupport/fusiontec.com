@@ -149,6 +149,23 @@
         <div class="error-message" id="error-productTypeDetailSelector"></div>
       </div>
 
+      <!-- Token and Installation Charges Switches -->
+      <div class="form-section" id="tokenSection" style="display:none;">
+        <label>
+          <input type="checkbox" id="add_token" checked>
+          Add Token (<span id="tokenAmountLabel"></span>)
+        </label>
+      </div>
+      <div class="form-section" id="installSection" style="display:none;">
+        <label>
+          <input type="checkbox" id="add_installation" checked>
+          Add Installation Charges (<span id="installAmountLabel"></span>)
+        </label>
+      </div>
+      <div class="form-section">
+        <strong>Total: ₹<span id="totalAmount">0</span></strong>
+      </div>
+
       <!-- Price Breakdown -->
       <div class="form-section bg-light rounded p-3" id="productDetailsContainer" style="display: none;">
         <h6 class="text-secondary">Product Details </h6>
@@ -193,7 +210,7 @@ document.getElementById('razorpayBtn').addEventListener('click', async function 
   const form = document.getElementById('priceListForm');
   const formData = new FormData(form);
 
-  const basicAmount = parseFloat(document.getElementById('totalPrice').innerText || "0");
+  const basicAmount = parseFloat(document.getElementById('totalAmount').innerText || "0");
 
   if (isNaN(basicAmount) || basicAmount <= 0) {
     alert("Please select a valid product to get the price.");

@@ -7,15 +7,30 @@ from django.template.loader import render_to_string
 from .models import Tally_1, Emudhra_2, Fusiontec_3, Biz_4
 from .models import RazorpayInfo, CompanyPaymentInfoQR, BankTransferInfo
 from .models import Emudhra_product
-from django.contrib.auth import logout
+
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth.decorators import login_required
+from django.http import HttpResponseRedirect
+from functools import wraps
 from .models import EmudhraPriceListSubmission, biz_product, Fusiontec_product, Fusiontec_Software, Fusiontec_Service, Biz_Service, Biz_Plan
+
+def admin_required(view_func):
+    """Custom decorator to check if admin is logged in via session"""
+    @wraps(view_func)
+    def _wrapped_view(request, *args, **kwargs):
+        if request.session.get('admin_logged_in', False):
+            return view_func(request, *args, **kwargs)
+        else:
+            return HttpResponseRedirect('/admin-login/')
+    return _wrapped_view
 
 #for redirecting admin page to home page after logout
 def custom_admin_logout(request):
-    logout(request)
+    # Clear admin session
+    if 'admin_logged_in' in request.session:
+        del request.session['admin_logged_in']
+    if 'admin_username' in request.session:
+        del request.session['admin_username']
     messages.success(request, "Logout successfully")
     return redirect('/')
 
@@ -144,6 +159,9 @@ def fetch_tally_details(request):
         'cgst': str(item.cgst),
         'sgst': str(item.sgst),
         'total_price': str(item.total_price),
+        'token_name': item.token_name or '',
+        'token_amount': str(item.token_amount) if item.token_amount else '0',
+        'installing_charges': str(item.installing_charges) if item.installing_charges else '0',
     } for item in items]
 
     return JsonResponse({'items': data}, status=200)
@@ -175,6 +193,9 @@ def save_tally_form(request):
             cgst=data.get('cgst'),
             sgst=data.get('sgst'),
             total_price=data.get('total_price'),
+            token_name=data.get('token_name'),
+            token_amount=data.get('token_amount'),
+            installing_charges=data.get('installing_charges'),
         )
 
         return JsonResponse({"success": True, "pi_id": pi.id})
@@ -574,21 +595,23 @@ from .models import (
 )
 
 def custom_admin_login(request):
-    """Custom admin login view"""
+    """Custom admin login view with hardcoded credentials"""
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
-        user = authenticate(request, username=username, password=password)
         
-        if user is not None and user.is_staff:
-            login(request, user)
+        # Hardcoded credentials: username="admin", password="admin"
+        if username == "admin" and password == "admin":
+            # Create a session to track admin login
+            request.session['admin_logged_in'] = True
+            request.session['admin_username'] = username
             return redirect('custom_admin_dashboard')
         else:
-            messages.error(request, 'Invalid credentials or insufficient permissions.')
+            messages.error(request, 'Invalid credentials. Please use admin/admin to login.')
     
     return render(request, 'products/admin/login.html')
 
-@login_required
+@admin_required
 def custom_admin_dashboard(request):
     """Custom admin dashboard"""
     # Get counts for dashboard
@@ -617,7 +640,7 @@ def custom_admin_dashboard(request):
     }
     return render(request, 'products/admin/dashboard.html', context)
 
-@login_required
+@admin_required
 def custom_admin_contacts(request):
     """Custom admin for contact submissions"""
     search_query = request.GET.get('search', '')
@@ -641,7 +664,7 @@ def custom_admin_contacts(request):
     }
     return render(request, 'products/admin/contacts.html', context)
 
-@login_required
+@admin_required
 def custom_admin_tally_submissions(request):
     """Custom admin for Tally submissions"""
     search_query = request.GET.get('search', '')
@@ -665,7 +688,7 @@ def custom_admin_tally_submissions(request):
     }
     return render(request, 'products/admin/tally_submissions.html', context)
 
-@login_required
+@admin_required
 def custom_admin_emudhra_submissions(request):
     """Custom admin for e-Mudhra submissions"""
     search_query = request.GET.get('search', '')
@@ -689,7 +712,7 @@ def custom_admin_emudhra_submissions(request):
     }
     return render(request, 'products/admin/emudhra_submissions.html', context)
 
-@login_required
+@admin_required
 def custom_admin_fusiontec_submissions(request):
     """Custom admin for Fusiontec submissions"""
     search_query = request.GET.get('search', '')
@@ -713,7 +736,7 @@ def custom_admin_fusiontec_submissions(request):
     }
     return render(request, 'products/admin/fusiontec_submissions.html', context)
 
-@login_required
+@admin_required
 def custom_admin_biz_submissions(request):
     """Custom admin for Biz submissions"""
     search_query = request.GET.get('search', '')
@@ -737,7 +760,7 @@ def custom_admin_biz_submissions(request):
     }
     return render(request, 'products/admin/biz_submissions.html', context)
 
-@login_required
+@admin_required
 def custom_admin_payments(request):
     """Custom admin for payment transactions"""
     search_query = request.GET.get('search', '')
@@ -761,7 +784,7 @@ def custom_admin_payments(request):
     }
     return render(request, 'products/admin/payments.html', context)
 
-@login_required
+@admin_required
 def custom_admin_applicants(request):
     """Custom admin for applicant submissions"""
     search_query = request.GET.get('search', '')
@@ -785,7 +808,7 @@ def custom_admin_applicants(request):
     }
     return render(request, 'products/admin/applicants.html', context)
 
-@login_required
+@admin_required
 def custom_admin_products(request):
     """Custom admin for product management"""
     tally_products = Tally_1.objects.all()
@@ -801,7 +824,7 @@ def custom_admin_products(request):
     }
     return render(request, 'products/admin/products.html', context)
 
-@login_required
+@admin_required
 def custom_admin_settings(request):
     """Custom admin for payment settings"""
     razorpay_info = RazorpayInfo.objects.all()
@@ -816,7 +839,7 @@ def custom_admin_settings(request):
     return render(request, 'products/admin/settings.html', context)
 
 # Custom Edit Views for Products
-@login_required
+@admin_required
 def edit_tally_product(request, product_id):
     """Custom edit view for Tally_1 products"""
     product = get_object_or_404(Tally_1, id=product_id)
@@ -838,7 +861,7 @@ def edit_tally_product(request, product_id):
     }
     return render(request, 'products/admin/edit_tally_product.html', context)
 
-@login_required
+@admin_required
 def edit_emudhra_product(request, product_id):
     """Custom edit view for Emudhra_2 products"""
     product = get_object_or_404(Emudhra_2, id=product_id)
@@ -860,7 +883,7 @@ def edit_emudhra_product(request, product_id):
     }
     return render(request, 'products/admin/edit_emudhra_product.html', context)
 
-@login_required
+@admin_required
 def edit_fusiontec_product(request, product_id):
     """Custom edit view for Fusiontec_3 products"""
     product = get_object_or_404(Fusiontec_3, id=product_id)
@@ -882,7 +905,7 @@ def edit_fusiontec_product(request, product_id):
     }
     return render(request, 'products/admin/edit_fusiontec_product.html', context)
 
-@login_required
+@admin_required
 def edit_biz_product(request, product_id):
     """Custom edit view for Biz_4 products"""
     product = get_object_or_404(Biz_4, id=product_id)
@@ -905,7 +928,16 @@ def edit_biz_product(request, product_id):
     return render(request, 'products/admin/edit_biz_product.html', context)
 
 # Custom Add Views for Products
-@login_required
+def to_decimal(value, default=0):
+    if value is None or value == '':
+        return default
+    try:
+        from decimal import Decimal
+        return Decimal(str(value))
+    except (ValueError, TypeError):
+        return default
+
+@admin_required
 def add_tally_product(request):
     """Custom add view for Tally_1 products"""
     if request.method == 'POST':
@@ -913,17 +945,20 @@ def add_tally_product(request):
         product.tally_name = request.POST.get('tally_name')
         product.tally_description = request.POST.get('tally_description')
         product.tally_link = request.POST.get('tally_link')
-        
         if 'tally_image' in request.FILES:
             product.tally_image = request.FILES['tally_image']
-        
         product.save()
+        # Token fields
+        if request.POST.get('has_token'):
+            product.token_name = request.POST.get('token_name')
+            product.token_amount = to_decimal(request.POST.get('token_amount'))
+            product.installing_charges = to_decimal(request.POST.get('installing_charges'))
+            product.save()
         messages.success(request, 'Tally product added successfully!')
         return redirect('custom_admin_products')
-    
     return render(request, 'products/admin/add_tally_product.html')
 
-@login_required
+@admin_required
 def add_emudhra_product(request):
     """Custom add view for Emudhra_2 products"""
     if request.method == 'POST':
@@ -931,17 +966,20 @@ def add_emudhra_product(request):
         product.emudhra_name = request.POST.get('emudhra_name')
         product.emudhra_description = request.POST.get('emudhra_description')
         product.emudhra_link = request.POST.get('emudhra_link')
-        
         if 'emudhra_image' in request.FILES:
             product.emudhra_image = request.FILES['emudhra_image']
-        
         product.save()
+        # Token fields
+        if request.POST.get('has_token'):
+            product.token_name = request.POST.get('token_name')
+            product.token_amount = to_decimal(request.POST.get('token_amount'))
+            product.installing_charges = to_decimal(request.POST.get('installing_charges'))
+            product.save()
         messages.success(request, 'e-Mudhra product added successfully!')
         return redirect('custom_admin_products')
-    
     return render(request, 'products/admin/add_emudhra_product.html')
 
-@login_required
+@admin_required
 def add_fusiontec_product(request):
     """Custom add view for Fusiontec_3 products"""
     if request.method == 'POST':
@@ -949,17 +987,20 @@ def add_fusiontec_product(request):
         product.fusiontec_name = request.POST.get('fusiontec_name')
         product.fusiontec_description = request.POST.get('fusiontec_description')
         product.fusiontec_link = request.POST.get('fusiontec_link')
-        
         if 'fusiontec_image' in request.FILES:
             product.fusiontec_image = request.FILES['fusiontec_image']
-        
         product.save()
+        # Token fields
+        if request.POST.get('has_token'):
+            product.token_name = request.POST.get('token_name')
+            product.token_amount = to_decimal(request.POST.get('token_amount'))
+            product.installing_charges = to_decimal(request.POST.get('installing_charges'))
+            product.save()
         messages.success(request, 'FusionTec product added successfully!')
         return redirect('custom_admin_products')
-    
     return render(request, 'products/admin/add_fusiontec_product.html')
 
-@login_required
+@admin_required
 def add_biz_product(request):
     """Custom add view for Biz_4 products"""
     if request.method == 'POST':
@@ -968,18 +1009,21 @@ def add_biz_product(request):
             biz_description=request.POST.get('biz_description'),
             biz_link=request.POST.get('biz_link'),
         )
-        
         if 'biz_image' in request.FILES:
             product.biz_image = request.FILES['biz_image']
             product.save()
-        
+        # Token fields
+        if request.POST.get('has_token'):
+            product.token_name = request.POST.get('token_name')
+            product.token_amount = to_decimal(request.POST.get('token_amount'))
+            product.installing_charges = to_decimal(request.POST.get('installing_charges'))
+            product.save()
         messages.success(request, 'Business Analyst product added successfully!')
         return redirect('custom_admin_products')
-    
     return render(request, 'products/admin/add_biz_product.html')
 
 # Custom RazorpayInfo Admin Views
-@login_required
+@admin_required
 def edit_razorpay_info(request, info_id):
     """Custom edit view for RazorpayInfo"""
     razorpay_info = get_object_or_404(RazorpayInfo, id=info_id)
@@ -998,7 +1042,7 @@ def edit_razorpay_info(request, info_id):
     }
     return render(request, 'products/admin/edit_razorpay_info.html', context)
 
-@login_required
+@admin_required
 def add_razorpay_info(request):
     """Custom add view for RazorpayInfo"""
     if request.method == 'POST':
@@ -1014,7 +1058,7 @@ def add_razorpay_info(request):
     return render(request, 'products/admin/add_razorpay_info.html')
 
 # Custom CompanyPaymentInfoQR Admin Views
-@login_required
+@admin_required
 def edit_qr_info(request, info_id):
     """Custom edit view for CompanyPaymentInfoQR"""
     qr_info = get_object_or_404(CompanyPaymentInfoQR, id=info_id)
@@ -1035,7 +1079,7 @@ def edit_qr_info(request, info_id):
     }
     return render(request, 'products/admin/edit_qr_info.html', context)
 
-@login_required
+@admin_required
 def add_qr_info(request):
     """Custom add view for CompanyPaymentInfoQR"""
     if request.method == 'POST':
@@ -1054,7 +1098,7 @@ def add_qr_info(request):
     return render(request, 'products/admin/add_qr_info.html')
 
 # Custom BankTransferInfo Admin Views
-@login_required
+@admin_required
 def edit_bank_info(request, info_id):
     """Custom edit view for BankTransferInfo"""
     bank_info = get_object_or_404(BankTransferInfo, id=info_id)
@@ -1075,7 +1119,7 @@ def edit_bank_info(request, info_id):
     }
     return render(request, 'products/admin/edit_bank_info.html', context)
 
-@login_required
+@admin_required
 def add_bank_info(request):
     """Custom add view for BankTransferInfo"""
     if request.method == 'POST':
@@ -1093,7 +1137,7 @@ def add_bank_info(request):
     return render(request, 'products/admin/add_bank_info.html')
 
 # Custom Views for Managing Related Tally Items
-@login_required
+@admin_required
 def manage_tally_products(request, product_id):
     """Manage related products for a Tally product"""
     tally_product = get_object_or_404(Tally_1, id=product_id)
@@ -1117,7 +1161,7 @@ def manage_tally_products(request, product_id):
     }
     return render(request, 'products/admin/manage_tally_products.html', context)
 
-@login_required
+@admin_required
 def manage_tally_services(request, product_id):
     """Manage related services for a Tally product"""
     tally_product = get_object_or_404(Tally_1, id=product_id)
@@ -1141,7 +1185,7 @@ def manage_tally_services(request, product_id):
     }
     return render(request, 'products/admin/manage_tally_services.html', context)
 
-@login_required
+@admin_required
 def manage_tally_upgrades(request, product_id):
     """Manage related upgrades for a Tally product"""
     tally_product = get_object_or_404(Tally_1, id=product_id)
@@ -1166,7 +1210,7 @@ def manage_tally_upgrades(request, product_id):
     return render(request, 'products/admin/manage_tally_upgrades.html', context)
 
 # Delete related items
-@login_required
+@admin_required
 def delete_tally_product_item(request, item_id, item_type):
     """Delete a related product, service, or upgrade"""
     if item_type == 'product':
@@ -1189,7 +1233,7 @@ def delete_tally_product_item(request, item_id, item_type):
         return redirect('manage_tally_upgrades', product_id=product_id)
 
 # Unified Product Management System
-@login_required
+@admin_required
 def manage_product_items(request, product_type, product_id):
     """Unified view for managing related items for any product type"""
     
@@ -1370,7 +1414,7 @@ def manage_product_items(request, product_type, product_id):
     
     return render(request, 'products/admin/manage_product_items.html', context)
 
-@login_required
+@admin_required
 def delete_product_item(request, product_type, item_id, item_type):
     """Delete a related item for any product type"""
     
@@ -1416,7 +1460,7 @@ def delete_product_item(request, product_type, item_id, item_type):
     messages.success(request, f'{item_type.title().rstrip("s")} deleted successfully!')
     return redirect('manage_product_items', product_type=product_type, product_id=product_id)
 
-@login_required
+@admin_required
 def edit_product_item(request, product_type, item_id, item_type):
     """Edit a related item for any product type"""
     
@@ -1487,42 +1531,59 @@ def edit_product_item(request, product_type, item_id, item_type):
                 return default
 
         # Update item based on product type and item type
+        def handle_token_fields(item):
+            if request.POST.get('has_token'):
+                item.token_name = request.POST.get('token_name')
+                item.token_amount = to_decimal(request.POST.get('token_amount'))
+                item.installing_charges = to_decimal(request.POST.get('installing_charges'))
+            else:
+                item.token_name = None
+                item.token_amount = None
+                item.installing_charges = None
+
         if product_type == 'tally':
             if item_type == 'products':
                 item.type_name = request.POST.get('type_name')
                 item.basic_amount = to_decimal(request.POST.get('basic_amount'))
                 item.cgst = to_decimal(request.POST.get('cgst'))
                 item.sgst = to_decimal(request.POST.get('sgst'))
+                handle_token_fields(item)
             elif item_type == 'services':
                 item.type_name = request.POST.get('type_name')
                 item.basic_amount = to_decimal(request.POST.get('basic_amount'))
                 item.cgst = to_decimal(request.POST.get('cgst'))
                 item.sgst = to_decimal(request.POST.get('sgst'))
+                handle_token_fields(item)
             elif item_type == 'upgrades':
                 item.type_name = request.POST.get('type_name')
                 item.basic_amount = to_decimal(request.POST.get('basic_amount'))
                 item.cgst = to_decimal(request.POST.get('cgst'))
                 item.sgst = to_decimal(request.POST.get('sgst'))
+                handle_token_fields(item)
         elif product_type == 'emudhra':
             item.class_product = request.POST.get('type_name')
             item.basic_amount = to_decimal(request.POST.get('basic_amount'))
             item.cgst = to_decimal(request.POST.get('cgst'))
             item.sgst = to_decimal(request.POST.get('sgst'))
+            handle_token_fields(item)
         elif product_type == 'fusiontec':
             if item_type == 'products':
                 item.fusiontec_product = request.POST.get('type_name')
+                handle_token_fields(item)
             elif item_type == 'software':
                 item.software_name = request.POST.get('type_name')
                 item.software_description = request.POST.get('description', '')
                 item.basic_amount = to_decimal(request.POST.get('basic_amount'))
                 item.cgst = to_decimal(request.POST.get('cgst'))
                 item.sgst = to_decimal(request.POST.get('sgst'))
+                handle_token_fields(item)
             elif item_type == 'services':
                 item.service_name = request.POST.get('type_name')
                 item.service_description = request.POST.get('description', '')
                 item.basic_amount = to_decimal(request.POST.get('basic_amount'))
                 item.cgst = to_decimal(request.POST.get('cgst'))
                 item.sgst = to_decimal(request.POST.get('sgst'))
+                handle_token_fields(item)
         elif product_type == 'biz':
             if item_type == 'products':
                 item.team_name = request.POST.get('type_name')
@@ -1531,6 +1592,7 @@ def edit_product_item(request, product_type, item_id, item_type):
                 item.cgst = to_decimal(request.POST.get('cgst'))
                 item.sgst = to_decimal(request.POST.get('sgst'))
                 item.billing_cycle = request.POST.get('billing_cycle', 'Billed for 1 Year | Per Device')
+                handle_token_fields(item)
             elif item_type == 'services':
                 item.service_name = request.POST.get('type_name')
                 item.service_description = request.POST.get('description', '')
@@ -1538,6 +1600,7 @@ def edit_product_item(request, product_type, item_id, item_type):
                 item.cgst = to_decimal(request.POST.get('cgst'))
                 item.sgst = to_decimal(request.POST.get('sgst'))
                 item.billing_cycle = request.POST.get('billing_cycle', 'Billed for 1 Year | Per Device')
+                handle_token_fields(item)
             elif item_type == 'plans':
                 item.plan_name = request.POST.get('type_name')
                 item.plan_description = request.POST.get('description', '')
@@ -1546,6 +1609,7 @@ def edit_product_item(request, product_type, item_id, item_type):
                 item.cgst = to_decimal(request.POST.get('cgst'))
                 item.sgst = to_decimal(request.POST.get('sgst'))
                 item.billing_cycle = request.POST.get('billing_cycle', 'Billed for 1 Year | Per Device')
+                handle_token_fields(item)
         
         item.save()
         messages.success(request, f'{item_type.title().rstrip("s")} updated successfully!')

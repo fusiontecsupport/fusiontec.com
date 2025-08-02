@@ -111,22 +111,33 @@
       <div class="form-section" id="businessPlansContainer">
         <label for="businessPlanSelector" class="form-label">Business Plans <span style="color:red">*</span></label>
         <select name="business_plan" id="businessPlanSelector" class="form-select" required>
-          <option value="">Select Business Plan</option>
+          <option value="">Select Plan</option>
           {% for plan in bizz_products %}
-            <!--<option value="{{ plan.id }}" data-basic="{{ plan.new_price|default:"0" }}" data-original="{{ plan.old_price|default:"0" }}">
-              {{ plan.team_name }} , {{ plan.billing_cycle }}</option>-->
-               <option 
-                value="{{ plan.id }}" 
-                data-basic="{{ plan.new_price|default:"0" }}" 
-                data-original="{{ plan.old_price|default:"0" }}"
-                data-cgst="{{ plan.cgst|default:"0" }}"
-                data-sgst="{{ plan.sgst|default:"0" }}"
-                data-total="{{ plan.total_price|default:"0" }}">
-                {{ plan.team_name }} , {{ plan.billing_cycle }}
-              </option>
-
+            <option value="{{ plan.id }}"
+              data-basic="{{ plan.new_price|default:0 }}"
+              data-token="{{ plan.token_amount|default:0 }}"
+              data-install="{{ plan.installing_charges|default:0 }}">
+              {{ plan.team_name }}, {{ plan.billing_cycle }}
+            </option>
           {% endfor %}
         </select>
+      </div>
+
+      <!-- Token and Installation Charges Switches -->
+      <div class="form-section" id="tokenSection" style="display:none;">
+        <label>
+          <input type="checkbox" id="add_token" checked>
+          Add Token (<span id="tokenAmountLabel"></span>)
+        </label>
+      </div>
+      <div class="form-section" id="installSection" style="display:none;">
+        <label>
+          <input type="checkbox" id="add_installation" checked>
+          Add Installation Charges (<span id="installAmountLabel"></span>)
+        </label>
+      </div>
+      <div class="form-section">
+        <strong>Total: ₹<span id="totalAmount">0</span></strong>
       </div>
 
       <!-- Pricing details -->
@@ -180,7 +191,7 @@ document.getElementById('razorpayBtn').addEventListener('click', async function 
   const formData = new FormData(form);
 
   // ✅ Get price from total price span
-  const totalPriceText = document.getElementById('totalPrice')?.innerText?.replace(/[^\d.]/g, '') || "0";
+  const totalPriceText = document.getElementById('totalAmount')?.innerText?.replace(/[^\d.]/g, '') || "0";
   const totalPrice = parseFloat(totalPriceText);
 
   if (isNaN(totalPrice) || totalPrice <= 0) {
@@ -346,6 +357,62 @@ function getCookie(name) {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const productDropdown = document.getElementById('businessPlanSelector');
+  const tokenSection = document.getElementById('tokenSection');
+  const installSection = document.getElementById('installSection');
+  const tokenCheckbox = document.getElementById('add_token');
+  const installCheckbox = document.getElementById('add_installation');
+  const tokenAmountLabel = document.getElementById('tokenAmountLabel');
+  const installAmountLabel = document.getElementById('installAmountLabel');
+  const totalAmount = document.getElementById('totalAmount');
+
+  let basic = 0, token = 0, install = 0;
+
+  function updateSections() {
+    const selected = productDropdown.selectedOptions[0];
+    basic = parseFloat(selected.dataset.basic || 0);
+    token = parseFloat(selected.dataset.token || 0);
+    install = parseFloat(selected.dataset.install || 0);
+
+    if (token > 0) {
+      tokenSection.style.display = '';
+      tokenAmountLabel.textContent = `₹${token}`;
+      tokenCheckbox.checked = true;
+    } else {
+      tokenSection.style.display = 'none';
+      tokenCheckbox.checked = false;
+    }
+
+    if (install > 0) {
+      installSection.style.display = '';
+      installAmountLabel.textContent = `₹${install}`;
+      installCheckbox.checked = true;
+    } else {
+      installSection.style.display = 'none';
+      installCheckbox.checked = false;
+    }
+
+    updateTotal();
+  }
+
+  function updateTotal() {
+    let total = basic;
+    if (tokenSection.style.display !== 'none' && tokenCheckbox.checked) total += token;
+    if (installSection.style.display !== 'none' && installCheckbox.checked) total += install;
+    totalAmount.textContent = total.toFixed(2);
+  }
+
+  productDropdown.addEventListener('change', updateSections);
+  tokenCheckbox.addEventListener('change', updateTotal);
+  installCheckbox.addEventListener('change', updateTotal);
+
+  // Initialize on page load
+  updateSections();
+});
+</script>
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
