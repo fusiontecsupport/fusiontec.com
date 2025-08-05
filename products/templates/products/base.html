@@ -37,31 +37,158 @@
 
 </head>
 <body class="d-flex flex-column h-100" style="padding-top: 80px;">
-  <main class="flex-shrink-0">
-    <!-- Navigation -->
-    <nav class="navbar fixed-top navbar-expand-lg navbar-light bg-white py-3 shadow">
-      <div class="container px-5">
-        <a href="/admin/" target="_blank">
-          <img src="{% static 'products/img/logo.png' %}" class="logo" alt="Logo">
-        </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
-                aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-          <ul class="navbar-nav ms-auto mb-2 mb-lg-0 small fw-bolder">
-            <li class="nav-item"><a class="nav-link" href="#about">About</a></li>
-            <li class="nav-item"><a class="nav-link" href="#process">Process</a></li>
-            <li class="nav-item"><a class="nav-link" href="#products">Products</a></li>
-            <li class="nav-item"><a class="nav-link" href="#net_banking">Net Banking & Payment</a></li>
-            <li class="nav-item"><a class="nav-link" href="{% url 'dsc_form' %}">DSCForm</a></li>
-          </ul>
-        </div>
+  <div id="top"></div>
+  <!-- Top Dark Strip -->
+  <div class="top-strip"></div>
+  
+  <!-- Navigation -->
+  <nav class="navbar fixed-top navbar-expand-lg navbar-light bg-white py-3 shadow" style="top: 4px;">
+    <div class="container px-5">
+      <!-- Logo -->
+      <a href="/admin/" target="_blank" class="navbar-brand">
+        <img src="{% static 'products/img/logo.png' %}" class="logo" alt="Logo">
+      </a>
+      
+      <!-- Mobile Toggle Button -->
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+              aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      
+      <!-- Navigation Menu -->
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
+          <li class="nav-item"><a class="nav-link" href="#top">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="#about">About</a></li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              Services
+            </a>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="#process">Process</a></li>
+              <li><a class="dropdown-item" href="#products">Products</a></li>
+              <li><a class="dropdown-item" href="#net_banking">Net Banking & Payment</a></li>
+              <li><a class="dropdown-item" href="{% url 'dsc_form' %}">DSC Form</a></li>
+            </ul>
+          </li>
+          <li class="nav-item"><a class="nav-link" href="#footer">Contact</a></li>
+        </ul>
+        
+        <!-- Get a Free Quote Button -->
+        <a href="{% url 'dsc_form' %}" class="btn btn-primary quote-btn">Get a Free Quote</a>
       </div>
-    </nav>
-  </main>
+    </div>
+  </nav>
 
+  <!-- Navigation Styles -->
+  <style>
+    /* Top Dark Strip */
+    .top-strip {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background-color: #333;
+      z-index: 1031;
+    }
 
+    /* Logo Styling */
+    .logo {
+      height: 55px;
+      width: auto;
+    }
+
+    /* Navigation Links */
+    .navbar-nav .nav-link {
+      color: #1e3a8a !important;
+      font-weight: 500;
+      font-size: 0.95rem;
+      margin: 0 15px;
+      transition: color 0.3s ease;
+    }
+
+    .navbar-nav .nav-link:hover {
+      color: #3b82f6 !important;
+    }
+
+    /* Dropdown Styling */
+    .dropdown-toggle::after {
+      margin-left: 5px;
+      vertical-align: middle;
+    }
+
+    .dropdown-menu {
+      border: none;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      border-radius: 8px;
+    }
+
+    .dropdown-item {
+      color: #1e3a8a;
+      font-weight: 500;
+      padding: 8px 20px;
+    }
+
+    .dropdown-item:hover {
+      background-color: #f8fafc;
+      color: #3b82f6;
+    }
+
+    /* Get a Free Quote Button */
+    .quote-btn {
+      background-color: #1e3a8a !important;
+      border-color: #1e3a8a !important;
+      color: white !important;
+      font-weight: 600;
+      padding: 10px 24px;
+      border-radius: 25px;
+      font-size: 0.9rem;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .quote-btn:hover {
+      background-color: #1e40af !important;
+      border-color: #1e40af !important;
+      color: white !important;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(30, 58, 138, 0.3);
+    }
+
+    /* Navbar Container */
+    .navbar {
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 991.98px) {
+      .navbar-nav {
+        text-align: center;
+        margin: 1rem 0;
+      }
+      
+      .navbar-nav .nav-link {
+        margin: 5px 0;
+      }
+      
+      .quote-btn {
+        margin-top: 1rem;
+        width: 100%;
+        text-align: center;
+      }
+      
+      .logo {
+        height: 45px;
+      }
+    }
+
+    /* Adjust body padding for the top strip */
+    body {
+      padding-top: 84px !important;
+    }
+  </style>
 
     <main>
     {% block content %}
@@ -359,7 +486,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
   {% block footer %}
-      {% include 'products/footer.html' %}
+      <div id="footer">
+        {% include 'products/footer.html' %}
+      </div>
   {% endblock %}
 
   <!-- Your custom JS -->
