@@ -145,9 +145,12 @@
         <h6 class="text-secondary">Pricing Details</h6>
         <p>Original Price:<strong><s>₹<span id="pricingOriginalPrice"></span></s></strong></p>
         <p>Actual Price: <strong>₹<span id="pricingTotalPrice"></span></strong></p>
-        <p>CGST (9%): <strong><span id="cgst">-</span></strong></p>
-        <p>SGST (9%): <strong><span id="sgst">-</span></strong></p>
+        <p>CGST (9%): <strong>₹<span id="cgst">-</span></strong></p>
+        <p>SGST (9%): <strong>₹<span id="sgst">-</span></strong></p>
         <p>Total Price: <strong>₹<span id="totalPrice">-</span></strong></p>
+        <p id="tokenDetail" style="display: none;">Token Amount: <strong>₹<span id="tokenAmountDetail">-</span></strong></p>
+        <p id="installDetail" style="display: none;">Installation Charges: <strong>₹<span id="installAmountDetail">-</span></strong></p>
+        <p>Final Total: <strong>₹<span id="finalTotal">-</span></strong></p>
       </div>
       <input type="hidden" id="businessPlanNameInput" name="business_plan_name" />
       <input type="hidden" id="originalPriceInput" name="original_price" />
@@ -396,6 +399,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     updateTotal();
+    updateProductDetails();
   }
 
   function updateTotal() {
@@ -405,9 +409,52 @@ document.addEventListener('DOMContentLoaded', function() {
     totalAmount.textContent = total.toFixed(2);
   }
 
+  function updateProductDetails() {
+    const pricingDetailsContainer = document.getElementById('pricingDetailsContainer');
+    const tokenDetailEl = document.getElementById('tokenDetail');
+    const tokenAmountDetailEl = document.getElementById('tokenAmountDetail');
+    const installDetailEl = document.getElementById('installDetail');
+    const installAmountDetailEl = document.getElementById('installAmountDetail');
+    const finalTotalEl = document.getElementById('finalTotal');
+
+    if (basic > 0) {
+      // Show token details if available and checked
+      if (token > 0 && tokenCheckbox.checked) {
+        tokenDetailEl.style.display = 'block';
+        tokenAmountDetailEl.textContent = token.toFixed(2);
+      } else {
+        tokenDetailEl.style.display = 'none';
+      }
+
+      // Show installation details if available and checked
+      if (install > 0 && installCheckbox.checked) {
+        installDetailEl.style.display = 'block';
+        installAmountDetailEl.textContent = install.toFixed(2);
+      } else {
+        installDetailEl.style.display = 'none';
+      }
+
+      // Calculate final total (basic + token + install)
+      let finalTotal = basic;
+      if (token > 0 && tokenCheckbox.checked) finalTotal += token;
+      if (install > 0 && installCheckbox.checked) finalTotal += install;
+      finalTotalEl.textContent = finalTotal.toFixed(2);
+
+      pricingDetailsContainer.style.display = 'block';
+    } else {
+      pricingDetailsContainer.style.display = 'none';
+    }
+  }
+
   productDropdown.addEventListener('change', updateSections);
-  tokenCheckbox.addEventListener('change', updateTotal);
-  installCheckbox.addEventListener('change', updateTotal);
+  tokenCheckbox.addEventListener('change', () => {
+    updateTotal();
+    updateProductDetails();
+  });
+  installCheckbox.addEventListener('change', () => {
+    updateTotal();
+    updateProductDetails();
+  });
 
   // Initialize on page load
   updateSections();
@@ -662,6 +709,9 @@ document.addEventListener("DOMContentLoaded", function () {
             <tr><th>CGST (9%)</th><td>₹${parseFloat(data.cgst || 0).toFixed(2)}</td></tr>
             <tr><th>SGST (9%)</th><td>₹${parseFloat(data.sgst || 0).toFixed(2)}</td></tr>
             <tr><th>Total Price</th><td>₹${parseFloat(data.total_price || 0).toFixed(2)}</td></tr>
+            ${token > 0 && tokenCheckbox.checked ? `<tr><th>Token Amount</th><td>₹${token.toFixed(2)}</td></tr>` : ''}
+            ${install > 0 && installCheckbox.checked ? `<tr><th>Installation Charges</th><td>₹${install.toFixed(2)}</td></tr>` : ''}
+            <tr><th>Final Total</th><td>₹${totalAmount.textContent}</td></tr>
           </tbody>
         </table>
       `;
