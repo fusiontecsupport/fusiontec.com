@@ -4,32 +4,116 @@
 
 {% block title %}Fusiontec - Home{% endblock %}
 
-    <!-- Core theme CSS (includes Bootstrap)-->
-    <link rel="stylesheet" href="{% static 'products/css/styles.css' %}">
-    <link rel="stylesheet" href="{% static 'products/css/main.css' %}">
 {% block content %}
 
 <main>
+<!-- Hero Header Section with Team Image Background -->
+<section class="hero-header position-relative overflow-hidden" style="background: url('{% static 'products/img/6316.jpg' %}') center/cover no-repeat; min-height: 90vh; display: flex; align-items: center;">
+    <div class="container px-5">
+        <div class="row gx-5 justify-content-center align-items-center">
+            <div class="col-lg-6 text-white" data-aos="fade-right">
+                <h1 class="display-2 fw-bolder mb-4">
+                    Welcome to <span style="color: #FF9800;">Fusiontec</span>
+                </h1>
+                <p class="lead fw-light mb-4 fs-5">
+                    Bridging hardware and software with intelligent, end-to-end solutions—delivering seamless experiences from edge devices to the cloud.
+                </p>
+                <div class="d-flex flex-wrap gap-3 mb-4">
+                    <a href="#about" class="btn btn-primary btn-lg px-5 py-3 fw-semibold">
+                        <i class="bi bi-arrow-right me-2"></i>Learn More
+                    </a>
+                    <a href="#products" class="btn btn-outline-light btn-lg px-5 py-3 fw-semibold">
+                        <i class="bi bi-box me-2"></i>Our Products
+                    </a>
+                </div>
+                <div class="d-flex align-items-center gap-4">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-check-circle-fill text-success me-2"></i>
+                        <span class="small">Trusted by 500+ Clients</span>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-star-fill text-warning me-2"></i>
+                        <span class="small">5-Star Rated</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 text-center" data-aos="fade-left">
+                <div class="position-relative">
+                    <div class="bg-white bg-opacity-10 rounded-4 p-4 backdrop-blur">
+                        <img src="{% static 'products/img/2672335.jpg' %}" alt="Team Collaboration" class="img-fluid rounded-3 shadow-lg" style="max-width: 400px;">
+                    </div>
+                    <div class="position-absolute top-0 start-0 bg-primary rounded-circle p-3" style="width: 60px; height: 60px; transform: translate(-30px, -30px);">
+                        <i class="bi bi-lightning-fill text-white fs-4"></i>
+                    </div>
+                    <div class="position-absolute bottom-0 end-0 bg-success rounded-circle p-3" style="width: 60px; height: 60px; transform: translate(30px, 30px);">
+                        <i class="bi bi-gear-fill text-white fs-4"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Scroll indicator -->
+    <div class="position-absolute bottom-0 start-50 translate-middle-x mb-4">
+        <a href="#about" class="text-white text-decoration-none">
+            <div class="d-flex flex-column align-items-center">
+                <span class="small mb-2">Scroll Down</span>
+                <i class="bi bi-chevron-down fs-4 animate-bounce"></i>
+            </div>
+        </a>
+    </div>
+</section>
+
 <!-- About Section -->
 <section class="bg-light py-5" id="about">
     <div class="container px-5">
         <div class="row gx-5 justify-content-center">
             <div class="col-xxl-8">
                 <div class="text-center my-5">
-                    <h2 class="display-5 fw-bolder"><span class="text-gradient d-inline">About Us</span></h2>
-                    <p class="lead fw-light mb-4">Empowering Businesses with Smart IT Solutions</p>
-                    <p class="text-muted">Fusiontec Software is a Chennai-based IT and Management Consultancy firm dedicated to delivering practical, cost-effective solutions that drive business growth. We specialize in ready-to-use software packages and customized software solutions tailored to meet the specific needs of diverse industries. Our mission is to foster lasting client relationships by combining quality products with exceptional customer service.</p>
-                    <div class="d-flex justify-content-center fs-2 gap-4">
+                    <h2 class="display-5 fw-bolder mb-4" data-aos="fade-up">
+                        <span class="text-gradient d-inline">About Fusiontec</span>
+                    </h2>
+                    <p class="lead fw-light mb-4" data-aos="fade-up" data-aos-delay="200">
+                        Empowering Businesses with Smart IT Solutions
+                    </p>
+                    <p class="text-muted mb-5" data-aos="fade-up" data-aos-delay="300">
+                        Fusiontec Software is a Chennai-based IT and Management Consultancy firm dedicated to delivering practical, cost-effective solutions that drive business growth. We specialize in ready-to-use software packages and customized software solutions tailored to meet the specific needs of diverse industries. Our mission is to foster lasting client relationships by combining quality products with exceptional customer service.
+                    </p>
+                    
+                    <!-- Key Features -->
+                    <div class="row g-4 mt-5" data-aos="fade-up" data-aos-delay="400">
+                        <div class="col-md-4">
+                            <div class="text-center p-4">
+                                <i class="bi bi-gear-fill text-primary fs-1 mb-3"></i>
+                                <h5 class="fw-semibold">Deep Expertise</h5>
+                                <p class="text-muted small">Specialized knowledge in software development and business solutions</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center p-4">
+                                <i class="bi bi-layers-fill text-primary fs-1 mb-3"></i>
+                                <h5 class="fw-semibold">Full-Stack Capabilities</h5>
+                                <p class="text-muted small">End-to-end solutions from development to deployment</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center p-4">
+                                <i class="bi bi-people-fill text-primary fs-1 mb-3"></i>
+                                <h5 class="fw-semibold">Customer-Centric</h5>
+                                <p class="text-muted small">Agile, transparent, and focused on your success</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-center fs-2 gap-4 mt-5" data-aos="fade-up" data-aos-delay="500">
                         <div class="text-center text-lg-start">
                             <a href="https://fusiontecsoftware.com/" target="_blank"
-                                class="btn-read-more d-inline-flex align-items-center justify-content-center align-self-center"
-                                style="text-decoration: none;">
+                                class="btn btn-primary btn-lg d-inline-flex align-items-center justify-content-center align-self-center">
                                 <span>Know More</span>
-                                <i class="bi bi-arrow-right"></i>
+                                <i class="bi bi-arrow-right ms-2"></i>
                             </a>
                         </div>
                     </div>
-                    <div class="d-flex justify-content-center fs-2 gap-4">
+                    <div class="d-flex justify-content-center fs-2 gap-4 mt-3">
                         <a class="text-gradient" href="https://www.facebook.com/fusiontecsoftware/" target="_blank"><i class="bi bi-facebook"></i></a>
                         <a class="text-gradient" href="https://www.linkedin.com/company/fusiontec-software/" target="_blank"><i class="bi bi-linkedin"></i></a>
                     </div>
@@ -39,20 +123,95 @@
     </div>
 </section>
 
+<!-- Our Process Section -->
+<section class="py-5" id="process">
+    <div class="container px-5">
+        <div class="text-center mb-5">
+            <h2 class="display-5 fw-bolder" data-aos="fade-up">
+                <span class="text-gradient d-inline">Our Process</span>
+            </h2>
+            <p class="lead fw-light" data-aos="fade-up" data-aos-delay="200">From Idea to Execution</p>
+        </div>
+        
+        <div class="row g-4 justify-content-center">
+            <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="100">
+                <div class="text-center p-4">
+                    <div class="bg-primary bg-gradient text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                        <i class="bi bi-search fs-2"></i>
+                    </div>
+                    <h5 class="fw-semibold">1. Discover</h5>
+                    <p class="text-muted">We begin with a detailed consultation to understand your vision, technical requirements, and business goals.</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="200">
+                <div class="text-center p-4">
+                    <div class="bg-primary bg-gradient text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                        <i class="bi bi-pencil-square fs-2"></i>
+                    </div>
+                    <h5 class="fw-semibold">2. Plan & Design</h5>
+                    <p class="text-muted">Our team creates a tailored architecture built for performance and scalability.</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="300">
+                <div class="text-center p-4">
+                    <div class="bg-primary bg-gradient text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                        <i class="bi bi-tools fs-2"></i>
+                    </div>
+                    <h5 class="fw-semibold">3. Build & Integrate</h5>
+                    <p class="text-muted">We develop and integrate your solution with precision and attention to detail.</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="400">
+                <div class="text-center p-4">
+                    <div class="bg-primary bg-gradient text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                        <i class="bi bi-check-circle fs-2"></i>
+                    </div>
+                    <h5 class="fw-semibold">4. Test & Deliver</h5>
+                    <p class="text-muted">We validate your product with rigorous testing and deliver a reliable, production-ready solution.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Mission & Vision Section -->
+<section class="py-5 bg-light" id="mission">
+    <div class="container px-5">
+        <div class="row gx-5 justify-content-center">
+            <div class="col-lg-6" data-aos="fade-right">
+                <div class="text-center mb-5">
+                    <h3 class="fw-bolder mb-4">Our Mission</h3>
+                    <p class="text-muted">
+                        To engineer cutting-edge, scalable, and intelligent technology solutions that power innovation across industries. We are committed to delivering exceptional results in software development and business solutions—transforming complex ideas into real-world products with precision and purpose.
+                    </p>
+                </div>
+            </div>
+            <div class="col-lg-6" data-aos="fade-left">
+                <div class="text-center mb-5">
+                    <h3 class="fw-bolder mb-4">Our Vision</h3>
+                    <p class="text-muted">
+                        To be a globally recognized technology partner, redefining the standards of software development and digital product development. We envision a future where our solutions seamlessly connect technology and business to shape a smarter, more efficient world.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 
 <!-- Products Section -->
 <section class="py-5" id="products">
   <div class="container px-4 px-lg-5 mb-5">
     <div class="text-center mb-5">
-      <h1 class="display-5 fw-bolder mb-0">
-        <span class="text-gradient d-inline">Products</span>
+      <h1 class="display-5 fw-bolder mb-0" data-aos="fade-up">
+        <span class="text-gradient d-inline">Our Products</span>
       </h1>
+      <p class="lead fw-light mt-3" data-aos="fade-up" data-aos-delay="200">Comprehensive software solutions for your business needs</p>
     </div>
 
     <div class="row gx-5 justify-content-center">
       <div class="col-lg-11 col-xl-9 col-xxl-8">
         {% for product in products %}
-        <div class="card overflow-hidden shadow rounded-4 border-0 mb-5">
+        <div class="card overflow-hidden shadow rounded-4 border-0 mb-5" data-aos="fade-up">
           <div class="card-body p-0">
             <div class="d-flex flex-column flex-lg-row align-items-stretch">
 
@@ -67,11 +226,11 @@
               <div class="product-actions d-flex flex-column justify-content-center align-items-start p-3">
                 <div class="row g-2 w-100">
                   <div class="col-6">
-                    <button id="sendEnquiryBtn" class="btn btn-light w-100 px-4">Send Enquiry</button>
+                    <button id="sendEnquiryBtn" class="btn btn-primary w-100 px-4">Send Enquiry</button>
                   </div>
                   <div class="col-6">
                     <a href="{{ product.tally_link|default:'#' }}" target="_blank" rel="noopener noreferrer">
-                      <button class="btn btn-light w-100 px-4">More Details</button>
+                      <button class="btn btn-outline-primary w-100 px-4">More Details</button>
                     </a>
                   </div>
                   <div class="col-12">
@@ -93,7 +252,7 @@
     <div class="row gx-5 justify-content-center">
       <div class="col-lg-11 col-xl-9 col-xxl-8">
         {% for product in emudhra_products %}
-        <div class="card overflow-hidden shadow rounded-4 border-0 mb-5">
+        <div class="card overflow-hidden shadow rounded-4 border-0 mb-5" data-aos="fade-up">
           <div class="card-body p-0">
             <div class="d-flex flex-column flex-lg-row align-items-stretch">
 
@@ -108,11 +267,11 @@
               <div class="product-actions d-flex flex-column justify-content-center align-items-start p-3">
                 <div class="row g-2 w-100">
                   <div class="col-6">
-                    <button id="sendEnquiryBtn2" class="btn btn-light w-100 px-4">Send Enquiry</button>
+                    <button id="sendEnquiryBtn2" class="btn btn-primary w-100 px-4">Send Enquiry</button>
                   </div>
                   <div class="col-6">
                     <a href="{{ product.emudhra_link|default:'#' }}"target="_blank" rel="noopener noreferrer">
-                      <button class="btn btn-light w-100 px-4">More Details</button>
+                      <button class="btn btn-outline-primary w-100 px-4">More Details</button>
                     </a>  
                   </div>
                   <div class="col-12">
@@ -134,7 +293,7 @@
     <div class="row gx-5 justify-content-center">
       <div class="col-lg-11 col-xl-9 col-xxl-8">
         {% for product in fusiontec_products %}
-        <div class="card overflow-hidden shadow rounded-4 border-0 mb-5">
+        <div class="card overflow-hidden shadow rounded-4 border-0 mb-5" data-aos="fade-up">
           <div class="card-body p-0">
             <div class="d-flex flex-column flex-lg-row align-items-stretch">
 
@@ -149,11 +308,11 @@
               <div class="product-actions d-flex flex-column justify-content-center align-items-start p-3">
                 <div class="row g-2 w-100">
                   <div class="col-6">
-                    <button id="sendEnquiryBtn3" class="btn btn-light w-100 px-4">Send Enquiry</button>
+                    <button id="sendEnquiryBtn3" class="btn btn-primary w-100 px-4">Send Enquiry</button>
                   </div>
                   <div class="col-6">
                     <a href="{{ product.fusiontec_link|default:'#' }}"target="_blank" rel="noopener noreferrer">
-                      <button class="btn btn-light w-100 px-4">More Details</button>
+                      <button class="btn btn-outline-primary w-100 px-4">More Details</button>
                     </a>
                   </div>
                   <div class="col-12">
@@ -175,7 +334,7 @@
     <div class="row gx-5 justify-content-center">
       <div class="col-lg-11 col-xl-9 col-xxl-8">
         {% for product in biz_products %}
-        <div class="card overflow-hidden shadow rounded-4 border-0 mb-5">
+        <div class="card overflow-hidden shadow rounded-4 border-0 mb-5" data-aos="fade-up">
           <div class="card-body p-0">
             <div class="d-flex flex-column flex-lg-row align-items-stretch">
 
@@ -190,11 +349,11 @@
               <div class="product-actions d-flex flex-column justify-content-center align-items-start p-3">
                 <div class="row g-2 w-100">
                   <div class="col-6">
-                    <button id="sendEnquiryBtn4" class="btn btn-light w-100 px-4">Send Enquiry</button>
+                    <button id="sendEnquiryBtn4" class="btn btn-primary w-100 px-4">Send Enquiry</button>
                   </div>
                   <div class="col-6">
                     <a href="{{ product.biz_link|default:'#' }}"target="_blank" rel="noopener noreferrer">
-                      <button class="btn btn-light w-100 px-4">More Details</button>
+                      <button class="btn btn-outline-primary w-100 px-4">More Details</button>
                     </a>
                   </div>
                   <div class="col-12">
@@ -218,14 +377,14 @@
 <section class="py-5 bg-light" id="net_banking">
   <div class="container px-4 px-lg-5">
     <div class="text-center mb-5">
-      <h1 class="display-5 fw-bold text-dark"id="online_payment">Net Banking</h1>
-      <p class="text-muted">Choose your preferred method to make a payment</p>
+      <h1 class="display-5 fw-bold text-dark" id="online_payment" data-aos="fade-up">Net Banking</h1>
+      <p class="text-muted" data-aos="fade-up" data-aos-delay="200">Choose your preferred method to make a payment</p>
     </div>
     <div class="row g-4 justify-content-center">
 
       <!-- Razorpay Info Card -->
       {% for rp in razorpay_infos %}
-      <div class="col-md-6">
+      <div class="col-md-6" data-aos="fade-up">
         <div class="card border-0 shadow-sm h-100">
           <div class="card-body text-center">
             <div class="mb-3">
@@ -245,7 +404,7 @@
       
       <!-- QR Code -->
       {% for info in payment_infos %}
-      <div class="col-md-6">
+      <div class="col-md-6" data-aos="fade-up">
         <div class="card border-0 shadow-sm h-100">
           <div class="card-body text-center">
             <div class="mb-3">
@@ -263,7 +422,7 @@
 
       <!-- Bank Transfer -->
       {% for bank_info in bank_infos %}
-      <div class="col-md-10">
+      <div class="col-md-10" data-aos="fade-up">
         <div class="card border-0 shadow-sm h-100">
           <div class="card-body text-center">
             <div class="mb-3">
@@ -293,7 +452,34 @@
   </div>
 </section>
 
+<!-- CTA Section -->
+<section class="py-5 bg-primary text-white">
+    <div class="container px-5">
+        <div class="row gx-5 justify-content-center">
+            <div class="col-xxl-8 text-center">
+                <h2 class="fw-bolder mb-4" data-aos="fade-up">Have a project in mind?</h2>
+                <p class="lead mb-5" data-aos="fade-up" data-aos-delay="200">
+                    Contact us today to schedule a consultation or to learn more about our services.
+                </p>
+                <div class="d-flex justify-content-center gap-3" data-aos="fade-up" data-aos-delay="400">
+                    <button class="btn btn-light btn-lg px-4" onclick="showEnquiryForm()">Get A Free Quote</button>
+                    <a href="#contact" class="btn btn-outline-light btn-lg px-4">Contact Us</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
 <script>
+  // Initialize AOS
+  document.addEventListener('DOMContentLoaded', function() {
+    AOS.init({
+      duration: 1000,
+      easing: 'ease-in-out',
+      once: true
+    });
+  });
+
   // code for opening floating form using send enquiry button 
 document.addEventListener("DOMContentLoaded", function () {
   const form = document.getElementById('enquiryForm');
@@ -355,8 +541,18 @@ document.addEventListener("DOMContentLoaded", function () {
     hideForm();
   }
 });
-</script>
 
+// Global function to show enquiry form
+function showEnquiryForm() {
+  const form = document.getElementById('enquiryForm');
+  const icon = document.getElementById('enquiryIcon');
+  if (form && icon) {
+    form.classList.remove('hide');
+    icon.style.display = 'none';
+    form.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+}
+</script>
 
 </main>
   <script src="{% static 'products/js/scripts.js' %}"></script>
