@@ -136,7 +136,7 @@
     <label for="productTypeDetailSelector" class="form-label">Product Type Details <span style="color:red">*</span></label>
     <select name="product_type_detail" id="productTypeDetailSelector" class="form-select" required>
       <option value="">Select Product</option>
-      {% for product in product_types %}
+      {% for product in emudhra_products %}
         <option value="{{ product.id }}"
           data-basic="{{ product.basic_amount|default:0 }}"
           data-token="{{ product.token_amount|default:0 }}"
