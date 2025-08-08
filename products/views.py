@@ -1344,6 +1344,9 @@ def manage_product_items(request, product_type, product_id):
             if item_type == 'products':
                 item_data.update({
                     'fusiontec_product': request.POST.get('type_name'),
+                    'basic_amount': to_decimal(request.POST.get('basic_amount')),
+                    'cgst': to_decimal(request.POST.get('cgst')),
+                    'sgst': to_decimal(request.POST.get('sgst')),
                 })
             elif item_type == 'software':
                 item_data.update({
@@ -1569,6 +1572,9 @@ def edit_product_item(request, product_type, item_id, item_type):
         elif product_type == 'fusiontec':
             if item_type == 'products':
                 item.fusiontec_product = request.POST.get('type_name')
+                item.basic_amount = to_decimal(request.POST.get('basic_amount'))
+                item.cgst = to_decimal(request.POST.get('cgst'))
+                item.sgst = to_decimal(request.POST.get('sgst'))
                 handle_token_fields(item)
             elif item_type == 'software':
                 item.software_name = request.POST.get('type_name')

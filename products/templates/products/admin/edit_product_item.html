@@ -158,6 +158,29 @@
                                     <input type="text" class="form-control" id="type_name" name="type_name" 
                                            value="{{ item.fusiontec_product }}" required>
                                 </div>
+                                <div class="mb-3">
+                                    <label for="basic_amount" class="form-label">
+                                        <i class="fas fa-rupee-sign text-success"></i> Basic Amount
+                                    </label>
+                                    <input type="number" step="0.01" class="form-control" id="basic_amount" name="basic_amount" 
+                                           value="{{ item.basic_amount|default:'' }}">
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="cgst" class="form-label">CGST</label>
+                                            <input type="number" step="0.01" class="form-control" id="cgst" name="cgst" 
+                                                   value="{{ item.cgst|default:0 }}">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="sgst" class="form-label">SGST</label>
+                                            <input type="number" step="0.01" class="form-control" id="sgst" name="sgst" 
+                                                   value="{{ item.sgst|default:0 }}">
+                                        </div>
+                                    </div>
+                                </div>
                             {% elif item_type == 'software' %}
                                 <div class="mb-3">
                                     <label for="type_name" class="form-label">

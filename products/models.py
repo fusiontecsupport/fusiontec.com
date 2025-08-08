@@ -183,10 +183,19 @@ class Fusiontec_3(models.Model):
 class Fusiontec_product(models.Model):
     fusiontec_3 = models.ForeignKey(Fusiontec_3, on_delete=models.CASCADE)  
     fusiontec_product = models.CharField(max_length=255, null=True)
+    basic_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    cgst = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    sgst = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    total_price = models.DecimalField(max_digits=10, decimal_places=2, editable=False, default=0)
     # Token fields
     token_name = models.CharField(max_length=255, null=True, blank=True)
     token_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     installing_charges = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        basic = self.basic_amount or 0
+        self.total_price = basic + self.cgst + self.sgst
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.fusiontec_product

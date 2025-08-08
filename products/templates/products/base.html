@@ -196,103 +196,291 @@
     {% endblock %}
   </main>
 
- <!-- Floating Enquiry Form -->
+ <!-- Modern Floating Enquiry Form -->
 <div id="enquiryForm" class="floating-form">
-  <div class="d-flex justify-content-between align-items-center mb-2">
-    <strong>Enquiry Form</strong>
-    <button id="closeEnquiry" class="close-btn" aria-label="Close enquiry form"style="font-size: 1.5rem;">&times;</button>
+  <div class="enquiry-header">
+    <div class="enquiry-title">
+      <i class="bi bi-chat-dots-fill me-2"></i>
+      <span>Get In Touch</span>
+    </div>
+    <button id="closeEnquiry" class="close-btn" aria-label="Close enquiry form">
+      <i class="bi bi-x-lg"></i>
+    </button>
   </div>
-  <form method="POST" enctype="multipart/form-data" class="php-email-forms flex-fill d-flex flex-column justify-content-between">
-    {% csrf_token %}
-    {% if messages %}
-    <div id="message-container">
-      {% for message in messages %}
-      <div class="alert alert-{{ message.tags }}">{{ message }}</div>
-      {% endfor %}
-    </div>
-    <script>
-      setTimeout(() => {
-        const msg = document.getElementById('message-container');
-        if (msg) msg.style.display = 'none';
-      }, 3000);
-    </script>
-    {% endif %}
+  
+  <div class="enquiry-body">
+    <form method="POST" enctype="multipart/form-data" class="enquiry-form">
+      {% csrf_token %}
+      {% if messages %}
+      <div id="message-container">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+      </div>
+      <script>
+        setTimeout(() => {
+          const msg = document.getElementById('message-container');
+          if (msg) msg.style.display = 'none';
+        }, 5000);
+      </script>
+      {% endif %}
 
-    <div class="mb-2">
-      <label for="name" class="form-label">Name</label>
-      <input id="name" name="name" type="text" class="form-control" placeholder="Enter your name" required>
-    </div>
-    <div class="mb-2">
-      <label for="phone" class="form-label">Phone Number</label>
-      <input id="phone" name="phone" type="tel" class="form-control" placeholder="Enter your phone number" pattern="[0-9]{10}" required>
-    </div>
-    <div class="mb-2">
-      <label for="subject" class="form-label">Subject</label>
-      <input id="subject" name="subject" type="text" class="form-control" placeholder="Enter the subject" required maxlength="50">
-    </div>
-    <div class="mb-2">
-      <label for="email" class="form-label">Email</label>
-      <input id="email" name="email" type="email" class="form-control" placeholder="Enter your email" required>
-    </div>
-    <div class="mb-2">
-      <label for="message" class="form-label">Message</label>
-      <textarea id="message" name="message" class="form-control" placeholder="Enter your message" rows="3" required></textarea>
-    </div>
-    <button type="submit" class="btn btn-primary w-100">Send</button>
-  </form>
+      <div class="form-row">
+        <div class="form-group">
+          <div class="input-icon-wrapper">
+            <i class="bi bi-person-fill input-icon"></i>
+            <input id="name" name="name" type="text" class="form-control modern-input" placeholder="Name" required>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <div class="input-icon-wrapper">
+            <i class="bi bi-telephone-fill input-icon"></i>
+            <input id="phone" name="phone" type="tel" class="form-control modern-input" placeholder="Phone" pattern="[0-9]{10}" required>
+          </div>
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <div class="input-icon-wrapper">
+          <i class="bi bi-envelope-fill input-icon"></i>
+          <input id="email" name="email" type="email" class="form-control modern-input" placeholder="Email" required>
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <div class="input-icon-wrapper">
+          <i class="bi bi-tag-fill input-icon"></i>
+          <input id="subject" name="subject" type="text" class="form-control modern-input" placeholder="Subject" required maxlength="50">
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <div class="input-icon-wrapper">
+          <i class="bi bi-chat-text-fill input-icon"></i>
+          <textarea id="message" name="message" class="form-control modern-input" placeholder="Message" rows="2" required></textarea>
+        </div>
+      </div>
+      
+      <button type="submit" class="btn btn-primary submit-btn">
+        <i class="bi bi-send-fill me-1"></i>
+        Send
+      </button>
+    </form>
+  </div>
 </div>
 
-<!-- Minimized Enquiry Icon with Hover Tooltip -->
+<!-- Modern Enquiry Icon with Hover Tooltip -->
 <div id="enquiryIcon" class="enquiry-icon" role="button" aria-label="Open enquiry form" tabindex="0">
-  <span class="tooltip-text">Enquiry Form</span>
-  <i class="bi bi-chat-dots fs-4"></i>
+  <span class="tooltip-text">Get In Touch</span>
+  <i class="bi bi-chat-dots-fill fs-5"></i>
 </div>
 
-<!-- Styles -->
+<!-- Modern Enquiry Form Styles -->
 <style>
   .floating-form {
     position: fixed;
     bottom: 20px;
     left: 20px;
-    width: 260px; /* your preferred width */
-    max-width: 280px;
-    background: #fff;
-    border: 1px solid #ddd;
-    border-radius: 10px;
-    padding: 10px 12px;
-    box-shadow: 0 0 15px rgba(0,0,0,0.15);
+    width: 300px;
+    max-width: 320px;
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    border: none;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15), 0 8px 25px rgba(0, 0, 0, 0.1);
     z-index: 1050;
-    transition: transform 0.4s ease;
-    overflow-y: auto;
-    max-height: 350px; /* reduced height for desktop */
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+    height: auto;
     transform: translateX(0);
+    backdrop-filter: blur(10px);
   }
 
   .floating-form.hide {
-    transform: translateX(-110%);
+    transform: translateX(-120%);
   }
 
-  .floating-form .form-label {
+  .enquiry-header {
+    background: linear-gradient(135deg, #4154f1 0%, #012970 100%);
+    color: white;
+    padding: 16px 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+  }
+
+  .enquiry-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+    opacity: 0.3;
+  }
+
+  .enquiry-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+  }
+
+  .enquiry-title i {
+    font-size: 1.2rem;
+    margin-right: 8px;
+  }
+
+  .close-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    z-index: 1;
+  }
+
+  .close-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1);
+  }
+
+  .enquiry-body {
+    padding: 18px;
+  }
+
+  .enquiry-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .form-row {
+    display: flex;
+    gap: 8px;
+  }
+
+  .form-row .form-group {
+    flex: 1;
+  }
+
+  .form-group {
+    position: relative;
+  }
+
+  .input-icon-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .input-icon {
+    position: absolute;
+    left: 10px;
+    color: #6c757d;
+    font-size: 0.8rem;
+    z-index: 2;
+    transition: color 0.3s ease;
+  }
+
+  .modern-input {
+    width: 100%;
+    padding: 10px 10px 10px 35px;
+    border: 2px solid #e9ecef;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    transition: all 0.3s ease;
+    background: white;
+  }
+
+  .modern-input:focus {
+    outline: none;
+    border-color: #4154f1;
+    box-shadow: 0 0 0 3px rgba(65, 84, 241, 0.1);
+    transform: translateY(-1px);
+  }
+
+  .modern-input:focus + .input-icon {
+    color: #4154f1;
+  }
+
+  .modern-input::placeholder {
+    color: #adb5bd;
     font-size: 0.85rem;
   }
 
-  .floating-form input,
-  .floating-form textarea,
-  .floating-form button {
-    font-size: 0.8rem;
+  textarea.modern-input {
+    resize: none;
+    min-height: 60px;
+    max-height: 60px;
   }
 
-  .floating-form button {
-    padding: 6px 0;
+  .submit-btn {
+    background: linear-gradient(135deg, #4154f1 0%, #012970 100%);
+    border: none;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 4px;
+  }
+
+  .submit-btn:hover {
+    background: linear-gradient(135deg, #012970 0%, #4154f1 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(65, 84, 241, 0.3);
+  }
+
+  .submit-btn:active {
+    transform: translateY(0);
+  }
+
+  .alert {
+    border-radius: 8px;
+    border: none;
+    font-size: 0.8rem;
+    margin-bottom: 12px;
+    padding: 8px 12px;
+  }
+
+  .alert-success {
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+    color: #155724;
+  }
+
+  .alert-danger {
+    background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+    color: #721c24;
   }
 
   .enquiry-icon {
     position: fixed;
     bottom: 20px;
     left: 20px;
-    width: 50px;
-    height: 50px;
-    background: #007bff;
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #4154f1 0%, #012970 100%);
     color: white;
     border-radius: 50%;
     display: none;
@@ -301,74 +489,98 @@
     cursor: pointer;
     z-index: 1050;
     animation: floatUpDown 3s ease-in-out infinite alternate;
+    box-shadow: 0 8px 25px rgba(65, 84, 241, 0.3);
+    transition: all 0.3s ease;
   }
 
-  /* Tooltip label positioned above the icon */
+  .enquiry-icon:hover {
+    transform: scale(1.1);
+    box-shadow: 0 12px 35px rgba(65, 84, 241, 0.4);
+  }
+
   .enquiry-icon .tooltip-text {
     position: absolute;
-    bottom: 60px;
+    bottom: 70px;
     left: 50%;
     transform: translateX(-50%);
-    background-color: #333;
-    color: #fff;
-    padding: 3px 10px;
-    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 8px;
     font-size: 12px;
     white-space: nowrap;
     z-index: 1060;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
   }
 
-  .close-btn {
-    background: none;
-    border: none;
-    font-size: 18px;
-    color: #888;
-    cursor: pointer;
-    padding: 0 4px;
+  .enquiry-icon:hover .tooltip-text {
+    opacity: 1;
   }
 
   @keyframes floatUpDown {
     0% { transform: translateY(0); }
-    100% { transform: translateY(-10px); }
+    100% { transform: translateY(-8px); }
   }
 
-   .floating-form {
-    transition: transform 0.4s ease;
-    transform: translateX(0);
-  }
-  .floating-form.hide {
-    transform: translateX(-120%);
-  }
-  
-  /* Responsive for tablets and phones */
+  /* Responsive Design */
   @media (max-width: 992px) {
     .floating-form {
       width: 90vw;
+      max-width: 350px;
       left: 5vw;
-      max-height: 300px; /* reduced height for tablets */
-      padding: 12px 15px;
-      border-radius: 8px;
     }
   }
 
   @media (max-width: 576px) {
     .floating-form {
-      max-height: 380px; /* reduced height for mobiles */
+      width: 95vw;
+      left: 2.5vw;
+      border-radius: 12px;
+    }
+    
+    .enquiry-header {
+      padding: 14px 16px;
+    }
+    
+    .enquiry-body {
+      padding: 16px;
+    }
+    
+    .enquiry-title {
+      font-size: 0.95rem;
+    }
+
+    .form-row {
+      flex-direction: column;
+      gap: 12px;
     }
   }
 
-  .floating-form.hide {
-    transform: translateX(-110%);
-  }
-
   .enquiry-icon {
-    display: none; /* initially hidden */
+    display: none;
   }
 
   @media (max-width: 768px) {
     .enquiry-icon {
       display: flex;
     }
+  }
+
+  /* Loading state for submit button */
+  .submit-btn.loading {
+    pointer-events: none;
+    opacity: 0.7;
+  }
+
+  .submit-btn.loading i {
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
   }
 </style>
 

@@ -116,7 +116,10 @@
             <option value="{{ plan.id }}"
               data-basic="{{ plan.new_price|default:0 }}"
               data-token="{{ plan.token_amount|default:0 }}"
-              data-install="{{ plan.installing_charges|default:0 }}">
+              data-install="{{ plan.installing_charges|default:0 }}"
+              data-cgst="{{ plan.cgst|default:0 }}"
+              data-sgst="{{ plan.sgst|default:0 }}"
+              data-old-price="{{ plan.old_price|default:0 }}">
               {{ plan.team_name }}, {{ plan.billing_cycle }}
             </option>
           {% endfor %}
@@ -379,6 +382,9 @@ document.addEventListener('DOMContentLoaded', function() {
     basic = parseFloat(selected.dataset.basic || 0);
     token = parseFloat(selected.dataset.token || 0);
     install = parseFloat(selected.dataset.install || 0);
+    const cgst = parseFloat(selected.dataset.cgst || 0);
+    const sgst = parseFloat(selected.dataset.sgst || 0);
+    const oldPrice = parseFloat(selected.dataset.oldPrice || 0);
 
     if (token > 0) {
       tokenSection.style.display = '';
@@ -416,8 +422,25 @@ document.addEventListener('DOMContentLoaded', function() {
     const installDetailEl = document.getElementById('installDetail');
     const installAmountDetailEl = document.getElementById('installAmountDetail');
     const finalTotalEl = document.getElementById('finalTotal');
+    const cgstEl = document.getElementById('cgst');
+    const sgstEl = document.getElementById('sgst');
+    const pricingOriginalPriceEl = document.getElementById('pricingOriginalPrice');
+    const pricingTotalPriceEl = document.getElementById('pricingTotalPrice');
+    const totalPriceEl = document.getElementById('totalPrice');
 
     if (basic > 0) {
+      const selected = productDropdown.selectedOptions[0];
+      const cgst = parseFloat(selected.dataset.cgst || 0);
+      const sgst = parseFloat(selected.dataset.sgst || 0);
+      const oldPrice = parseFloat(selected.dataset.oldPrice || 0);
+
+      // Update pricing details
+      pricingOriginalPriceEl.textContent = oldPrice.toFixed(2);
+      pricingTotalPriceEl.textContent = basic.toFixed(2);
+      cgstEl.textContent = cgst.toFixed(2);
+      sgstEl.textContent = sgst.toFixed(2);
+      totalPriceEl.textContent = (basic + cgst + sgst).toFixed(2);
+
       // Show token details if available and checked
       if (token > 0 && tokenCheckbox.checked) {
         tokenDetailEl.style.display = 'block';
@@ -434,8 +457,8 @@ document.addEventListener('DOMContentLoaded', function() {
         installDetailEl.style.display = 'none';
       }
 
-      // Calculate final total (basic + token + install)
-      let finalTotal = basic;
+      // Calculate final total (basic + cgst + sgst + token + install)
+      let finalTotal = basic + cgst + sgst;
       if (token > 0 && tokenCheckbox.checked) finalTotal += token;
       if (install > 0 && installCheckbox.checked) finalTotal += install;
       finalTotalEl.textContent = finalTotal.toFixed(2);
@@ -693,6 +716,10 @@ document.addEventListener("DOMContentLoaded", function () {
            <tr><th>District</th><td>${data.district || '-'}</td></tr>
            <tr><th>Pincode</th><td>${data.pincode || '-'}</td></tr>`;
 
+      const selected = businessDropdown.selectedOptions[0];
+      const tokenAmount = parseFloat(selected.dataset.token || 0);
+      const installAmount = parseFloat(selected.dataset.install || 0);
+      
       const previewHTML = `
         <table class="table table-bordered">
           <caption><strong>Proforma Invoice (PI)</strong></caption>
@@ -709,8 +736,8 @@ document.addEventListener("DOMContentLoaded", function () {
             <tr><th>CGST (9%)</th><td>₹${parseFloat(data.cgst || 0).toFixed(2)}</td></tr>
             <tr><th>SGST (9%)</th><td>₹${parseFloat(data.sgst || 0).toFixed(2)}</td></tr>
             <tr><th>Total Price</th><td>₹${parseFloat(data.total_price || 0).toFixed(2)}</td></tr>
-            ${token > 0 && tokenCheckbox.checked ? `<tr><th>Token Amount</th><td>₹${token.toFixed(2)}</td></tr>` : ''}
-            ${install > 0 && installCheckbox.checked ? `<tr><th>Installation Charges</th><td>₹${install.toFixed(2)}</td></tr>` : ''}
+            ${tokenAmount > 0 && tokenCheckbox.checked ? `<tr><th>Token Amount</th><td>₹${tokenAmount.toFixed(2)}</td></tr>` : ''}
+            ${installAmount > 0 && installCheckbox.checked ? `<tr><th>Installation Charges</th><td>₹${installAmount.toFixed(2)}</td></tr>` : ''}
             <tr><th>Final Total</th><td>₹${totalAmount.textContent}</td></tr>
           </tbody>
         </table>
