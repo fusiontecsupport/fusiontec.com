@@ -218,7 +218,13 @@
               <!-- Left -->
               <div class="product-image d-flex flex-column justify-content-center align-items-center p-3">
                 <a href="{{ product.tally_link|default:'#' }}" target="_blank" rel="noopener noreferrer">
-                  <img class="img-fluid mb-2" src="{{ product.tally_image.url }}" alt="{{ product.tally_name }}" />
+                  {% if product.tally_image %}
+                    <img class="img-fluid mb-2" src="{{ product.tally_image.url }}" alt="{{ product.tally_name }}" />
+                  {% else %}
+                    <div class="img-fluid mb-2 d-flex align-items-center justify-content-center" style="width: 200px; height: 150px; background-color: #f8f9fa; border: 1px solid #dee2e6;">
+                      <i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
+                    </div>
+                  {% endif %}
                 </a>
               </div>
 
@@ -259,7 +265,13 @@
               <!-- Left -->
               <div class="product-image d-flex flex-column justify-content-center align-items-center p-3">
                 <a href="{{ product.emudhra_link|default:'#' }}" target="_blank" rel="noopener noreferrer">
-                  <img class="img-fluid mb-2" src="{{ product.emudhra_image.url }}" alt="{{ product.emudhra_name }}" />
+                  {% if product.emudhra_image %}
+                    <img class="img-fluid mb-2" src="{{ product.emudhra_image.url }}" alt="{{ product.emudhra_name }}" />
+                  {% else %}
+                    <div class="img-fluid mb-2 d-flex align-items-center justify-content-center" style="width: 200px; height: 150px; background-color: #f8f9fa; border: 1px solid #dee2e6;">
+                      <i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
+                    </div>
+                  {% endif %}
                 </a>
               </div>
 
@@ -300,7 +312,13 @@
               <!-- Left -->
               <div class="product-image d-flex flex-column justify-content-center align-items-center p-3">
                 <a href="{{ product.fusiontec_link|default:'#' }}" target="_blank" rel="noopener noreferrer">
-                  <img class="img-fluid mb-2" src="{{ product.fusiontec_image.url }}" alt="{{ product.fusiontec_name }}" />
+                  {% if product.fusiontec_image %}
+                    <img class="img-fluid mb-2" src="{{ product.fusiontec_image.url }}" alt="{{ product.fusiontec_name }}" />
+                  {% else %}
+                    <div class="img-fluid mb-2 d-flex align-items-center justify-content-center" style="width: 200px; height: 150px; background-color: #f8f9fa; border: 1px solid #dee2e6;">
+                      <i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
+                    </div>
+                  {% endif %}
                 </a>
               </div>
 
@@ -341,7 +359,13 @@
               <!-- Left -->
               <div class="product-image d-flex flex-column justify-content-center align-items-center p-3">
                 <a href="{{ product.biz_link|default:'#' }}" target="_blank" rel="noopener noreferrer">
-                  <img class="img-fluid mb-2" src="{{ product.biz_image.url }}" alt="{{ product.biz_name }}" />
+                  {% if product.biz_image %}
+                    <img class="img-fluid mb-2" src="{{ product.biz_image.url }}" alt="{{ product.biz_name }}" />
+                  {% else %}
+                    <div class="img-fluid mb-2 d-flex align-items-center justify-content-center" style="width: 200px; height: 150px; background-color: #f8f9fa; border: 1px solid #dee2e6;">
+                      <i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
+                    </div>
+                  {% endif %}
                 </a>
               </div>
 

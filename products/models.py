@@ -120,7 +120,7 @@ class TallyPriceListSubmission(models.Model):
 class Emudhra_2(models.Model):
     emudhra_name = models.CharField(max_length=255)
     emudhra_description = models.TextField(blank=True, null=True)
-    emudhra_image = models.ImageField(upload_to='products/')
+    emudhra_image = models.ImageField(upload_to='products/', blank=True, null=True)
     emudhra_link = models.URLField(blank=True, null=True)
 
     def __str__(self):
@@ -174,7 +174,7 @@ class EmudhraPriceListSubmission(models.Model):
 class Fusiontec_3(models.Model):
     fusiontec_name = models.CharField(max_length=255)
     fusiontec_description = models.TextField(blank=True, null=True)
-    fusiontec_image = models.ImageField(upload_to='products/')
+    fusiontec_image = models.ImageField(upload_to='products/', blank=True, null=True)
     fusiontec_link = models.URLField(blank=True, null=True)
 
     def __str__(self):
