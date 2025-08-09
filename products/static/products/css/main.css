@@ -161,9 +161,11 @@
 /* Base styling */
   #products .card-body > .d-flex {
     min-height: 250px;
+    flex-direction: column;
+    align-items: stretch;
   }
   .product-image, .product-actions {
-    width: 50% !important;
+    width: 100% !important;
   }
   .product-image img.img-fluid {
     max-width: 300px;
@@ -173,13 +175,39 @@
     padding: 0.5rem 1.25rem;
   }
 
+  /* Modal fine-tuning */
+  .modal .list-group-item {
+    border: 0;
+    border-bottom: 1px solid #eef0f4;
+  }
+
+  /* Product modal styling */
+  .product-modal .modal-content {
+    border: 0;
+  }
+  .product-modal-header {
+    background: linear-gradient(135deg, #4154f1 0%, #012970 100%);
+    color: #fff;
+    border-radius: 0.8rem 0.8rem 0 0;
+  }
+  .product-modal .modal-title {
+    font-weight: 600;
+  }
+  .product-modal-image {
+    background: #fff;
+  }
+  .product-modal .product-list .list-group-item {
+    background: transparent;
+  }
+
   /* Laptop and larger (≥992px) */
   @media (min-width: 992px) {
     #products .card-body > .d-flex {
-      flex-direction: row;
+      flex-direction: column;
+      align-items: stretch;
     }
     .product-image, .product-actions {
-      width: 50% !important;
+      width: 100% !important;
     }
   }
 
