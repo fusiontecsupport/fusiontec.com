@@ -1,0 +1,590 @@
+{% extends 'products/admin/base.html' %}
+
+{% block title %}Rate Cards - {{ simple_product.prdt_desc }}{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Total Amount Column Styling */
+.total-amount-display {
+    text-align: center;
+}
+
+.total-amount-display .badge {
+    font-size: 1.1rem !important;
+    padding: 0.75rem 1rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%) !important;
+    border: none;
+    box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+    border-radius: 8px;
+}
+
+/* Enhanced table styling */
+.table th {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: none;
+    font-weight: 600;
+    color: #495057;
+    padding: 1rem 0.75rem;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.table tbody td {
+    padding: 1rem 0.75rem;
+    border-bottom: 1px solid #f1f3f4;
+    vertical-align: middle;
+}
+
+.table tbody tr:hover {
+    background: linear-gradient(135deg, #f8f9ff 0%, #f0f4ff 100%);
+    transform: scale(1.001);
+    transition: all 0.2s ease;
+}
+
+/* Current rate highlighting */
+.table-success {
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%) !important;
+    border-left: 4px solid #28a745;
+}
+
+.table-success .badge {
+    background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%) !important;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .total-amount-display .badge {
+        font-size: 0.875rem !important;
+        padding: 0.375rem 0.5rem;
+    }
+    
+    .breakdown {
+        font-size: 0.7rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+  <div class="col-12 d-flex justify-content-between align-items-center">
+    <div>
+      <h2 class="mb-1"><i class="fas fa-receipt text-primary"></i> Rate Cards</h2>
+      <p class="text-muted mb-0">
+        {{ simple_product.product_type.prdt_desc }} → {{ simple_product.prdt_desc }}
+      </p>
+    </div>
+    <div>
+      <a href="{% url 'custom_admin_products' %}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left"></i> Back to Items
+      </a>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-lg-4">
+    <div class="card shadow-sm border-0">
+      <div class="card-header">
+        <h5 class="mb-0"><i class="fas fa-plus"></i> Add Rate Card</h5>
+      </div>
+      <div class="card-body">
+        <form method="post">
+          {% csrf_token %}
+          {# Rate code not present in new schema - removed #}
+          <div class="mb-3">
+            <label class="form-label">Rate Date *</label>
+            <input type="date" class="form-control" name="rate_date" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Base Amount *</label>
+            <input type="number" step="0.01" class="form-control" name="base_amount" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">GST %</label>
+            <input type="number" step="0.01" class="form-control" name="gst_percent" value="18">
+          </div>
+          <div class="row">
+            <div class="col-6">
+              <div class="mb-3">
+                <label class="form-label">CGST Amount</label>
+                <input type="number" step="0.01" class="form-control" name="cgst" value="0" readonly>
+                <small class="text-muted">Auto-calculated as 50% of total GST</small>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="mb-3">
+                <label class="form-label">SGST Amount</label>
+                <input type="number" step="0.01" class="form-control" name="sgst" value="0" readonly>
+                <small class="text-muted">Auto-calculated as 50% of total GST</small>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Token Details Section -->
+          <div class="card mt-3">
+            <div class="card-header">
+              <h6 class="mb-0"><i class="fas fa-key"></i> Token Details (Optional)</h6>
+            </div>
+            <div class="card-body">
+              <div class="mb-3">
+                <label class="form-label">Token Description</label>
+                <input type="text" class="form-control" name="token_desc" placeholder="e.g., License Key, Activation Token">
+              </div>
+              <div class="row">
+                <div class="col-6">
+                  <div class="mb-3">
+                    <label class="form-label">Token Amount</label>
+                    <input type="number" step="0.01" class="form-control" name="token_amount" value="0">
+                  </div>
+                </div>
+                <div class="col-6">
+                  <div class="mb-3">
+                    <label class="form-label">Token GST %</label>
+                    <input type="number" step="0.01" class="form-control" name="token_gst_percent" value="18">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Installation Details Section -->
+          <div class="card mt-3">
+            <div class="card-header">
+              <h6 class="mb-0"><i class="fas fa-tools"></i> Installation Details (Optional)</h6>
+            </div>
+            <div class="card-body">
+              <div class="row">
+                <div class="col-6">
+                  <div class="mb-3">
+                    <label class="form-label">Installation Charge</label>
+                    <input type="number" step="0.01" class="form-control" name="installation_charge" value="0">
+                  </div>
+                </div>
+                <div class="col-6">
+                  <div class="mb-3">
+                    <label class="form-label">Installation GST %</label>
+                    <input type="number" step="0.01" class="form-control" name="installation_gst_percent" value="18">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary w-100">
+            <i class="fas fa-plus"></i> Add Rate
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-8">
+    <div class="card shadow-sm border-0">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="fas fa-list"></i> Rate History ({{ cards.count }})</h5>
+        <span class="badge bg-info">
+          <i class="fas fa-clock"></i> History Maintained
+        </span>
+      </div>
+      <div class="card-body">
+        {% if cards %}
+        <div class="alert alert-info mb-3">
+          <i class="fas fa-lightbulb"></i>
+          <strong>Smart Rate Management System:</strong> 
+          <ul class="mb-0 mt-2">
+            <li><strong>Same Date:</strong> Editing with the same date updates the existing rate</li>
+            <li><strong>Different Date:</strong> Editing with a new date creates a new rate entry for history</li>
+            <li>The most recent rate (highlighted in green) is the current active rate</li>
+          </ul>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead class="table-light">
+              <tr>
+                <th>ID</th>
+                <th>Date</th>
+                <th>Base</th>
+                <th>GST %</th>
+                <th>Net</th>
+                <th>Token</th>
+                <th>Installation</th>
+                <th>Total Amount</th>
+                <th>Created</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for c in cards %}
+              <tr {% if forloop.first %}class="table-success"{% endif %}>
+                <td>
+                  {{ c.id }}
+                  {% if forloop.first %}
+                    <span class="badge bg-success ms-1">Current</span>
+                  {% endif %}
+                </td>
+                <td>{{ c.rate_date }}</td>
+                <td>₹{{ c.base_amt }}</td>
+                <td>{{ c.gst_percent }}%</td>
+                <td><span class="badge bg-success">₹{{ c.nett_amt }}</span></td>
+                <td>
+                  {% if c.token_amount > 0 %}
+                    <div><strong>₹{{ c.token_amount }}</strong></div>
+                    <small class="text-muted">{{ c.token_desc|default:"Token" }}</small>
+                  {% else %}
+                    <span class="text-muted">-</span>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if c.installation_charge > 0 %}
+                    <div><strong>₹{{ c.installation_charge }}</strong></div>
+                  {% else %}
+                    <span class="text-muted">-</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <div class="total-amount-display">
+                    <span class="badge bg-primary fs-6">₹{{ c.t_amount }}</span>
+                  </div>
+                </td>
+                <td><small class="text-muted">{{ c.created_at|date:"M d, Y" }}</small></td>
+                <td>
+                  <div class="btn-group" role="group">
+                    <button class="btn btn-sm btn-outline-primary" 
+                            onclick="editRate('{{ c.id }}', '{{ c.rate_date|date:'Y-m-d' }}', '{{ c.base_amt }}', '{{ c.gst_percent }}', '{{ c.token_desc|default:'' }}', '{{ c.token_amount }}', '{{ c.token_gst_percent }}', '{{ c.installation_charge }}', '{{ c.installation_gst_percent }}')"
+                            title="Edit Rate (Creates New Entry)">
+                      <i class="fas fa-edit"></i>
+                    </button>
+
+                    <button class="btn btn-sm btn-outline-danger" onclick="deleteRate('{{ c.id }}')" title="Delete Rate">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          <div class="mt-3">
+            <small class="text-muted">
+              <i class="fas fa-info-circle"></i> 
+              <strong>Smart Rate Management:</strong> Same date = update existing, Different date = create new entry. 
+              The most recent rate (highlighted in green) is the current active rate.
+            </small>
+          </div>
+        </div>
+        {% else %}
+        <div class="text-center text-muted py-4">No rates yet.</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Rate Modal -->
+<div class="modal fade" id="editRateModal" tabindex="-1" aria-labelledby="editRateModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editRateModalLabel">
+          <i class="fas fa-edit"></i> Edit Rate Card
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form id="editRateForm" method="post">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="edit_rate">
+        <input type="hidden" id="edit_rate_id" name="rate_id">
+        <div class="modal-body">
+          <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i> 
+            <strong>Smart Editing:</strong> 
+            <ul class="mb-0 mt-2">
+              <li><strong>Keep same date:</strong> Updates the existing rate entry</li>
+              <li><strong>Change date:</strong> Creates a new rate entry for history</li>
+            </ul>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Rate Date *</label>
+            <input type="date" class="form-control" id="edit_rate_date" name="rate_date" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Base Amount *</label>
+            <input type="number" step="0.01" class="form-control" id="edit_base_amount" name="base_amount" required onchange="calculateGST()" onkeyup="calculateGST()">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">GST %</label>
+            <input type="number" step="0.01" class="form-control" id="edit_gst_percent" name="gst_percent" value="18" onchange="calculateGST()" onkeyup="calculateGST()">
+          </div>
+          <div class="row">
+            <div class="col-6">
+              <div class="mb-3">
+                <label class="form-label">CGST Amount</label>
+                <input type="number" step="0.01" class="form-control" id="edit_cgst" name="cgst" value="0" readonly>
+                <small class="text-muted">Auto-calculated as 50% of total GST</small>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="mb-3">
+                <label class="form-label">SGST Amount</label>
+                <input type="number" step="0.01" class="form-control" id="edit_sgst" name="sgst" value="0" readonly>
+                <small class="text-muted">Auto-calculated as 50% of total GST</small>
+              </div>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Net Amount</label>
+            <input type="number" step="0.01" class="form-control" id="edit_net_amount" name="net_amount" value="0" readonly>
+            <small class="text-muted">Base Amount + Total GST</small>
+          </div>
+          
+          <!-- Token Details Section -->
+          <div class="card mt-3">
+            <div class="card-header">
+              <h6 class="mb-0"><i class="fas fa-key"></i> Token Details (Optional)</h6>
+            </div>
+            <div class="card-body">
+              <div class="mb-3">
+                <label class="form-label">Token Description</label>
+                <input type="text" class="form-control" id="edit_token_desc" name="token_desc" placeholder="e.g., License Key, Activation Token">
+              </div>
+              <div class="row">
+                <div class="col-6">
+                  <div class="mb-3">
+                    <label class="form-label">Token Amount</label>
+                    <input type="number" step="0.01" class="form-control" id="edit_token_amount" name="token_amount" value="0" onchange="calculateTokenGST()" onkeyup="calculateTokenGST()">
+                  </div>
+                </div>
+                <div class="col-6">
+                  <div class="mb-3">
+                    <label class="form-label">Token GST %</label>
+                    <input type="number" step="0.01" class="form-control" id="edit_token_gst_percent" name="token_gst_percent" value="18" onchange="calculateTokenGST()" onkeyup="calculateTokenGST()">
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-4">
+                  <div class="mb-3">
+                    <label class="form-label">Token CGST</label>
+                    <input type="number" step="0.01" class="form-control" id="edit_token_cgst" name="token_cgst" value="0" readonly>
+                  </div>
+                </div>
+                <div class="col-4">
+                  <div class="mb-3">
+                    <label class="form-label">Token SGST</label>
+                    <input type="number" step="0.01" class="form-control" id="edit_token_sgst" name="token_sgst" value="0" readonly>
+                  </div>
+                </div>
+                <div class="col-4">
+                  <div class="mb-3">
+                    <label class="form-label">Token Total</label>
+                    <input type="number" step="0.01" class="form-control" id="edit_token_total" name="token_total" value="0" readonly>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Installation Details Section -->
+          <div class="card mt-3">
+            <div class="card-header">
+              <h6 class="mb-0"><i class="fas fa-tools"></i> Installation Details (Optional)</h6>
+            </div>
+            <div class="card-body">
+              <div class="row">
+                <div class="col-6">
+                  <div class="mb-3">
+                    <label class="form-label">Installation Charge</label>
+                    <input type="number" step="0.01" class="form-control" id="edit_installation_charge" name="installation_charge" value="0" onchange="calculateInstallationGST()" onkeyup="calculateInstallationGST()">
+                  </div>
+                </div>
+                <div class="col-6">
+                  <div class="mb-3">
+                    <label class="form-label">Installation GST %</label>
+                    <input type="number" step="0.01" class="form-control" id="edit_installation_gst_percent" name="installation_gst_percent" value="18" onchange="calculateInstallationGST()" onkeyup="calculateInstallationGST()">
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-4">
+                  <div class="mb-3">
+                    <label class="form-label">Installation CGST</label>
+                    <input type="number" step="0.01" class="form-control" id="edit_installation_cgst" name="installation_cgst" value="0" readonly>
+                  </div>
+                </div>
+                <div class="col-4">
+                  <div class="mb-3">
+                    <label class="form-label">Installation SGST</label>
+                    <input type="number" step="0.01" class="form-control" id="edit_installation_sgst" name="installation_sgst" value="0" readonly>
+                  </div>
+                </div>
+                <div class="col-4">
+                  <div class="mb-3">
+                    <label class="form-label">Installation Total</label>
+                    <input type="number" step="0.01" class="form-control" id="edit_installation_total" name="installation_total" value="0" readonly>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary" onclick="submitEdit()">
+            <i class="fas fa-save"></i> Update Rate
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function deleteRate(rateId) {
+    if (confirm('Are you sure you want to delete this rate card?')) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.innerHTML = `
+            {% csrf_token %}
+            <input type="hidden" name="action" value="delete_rate">
+            <input type="hidden" name="rate_id" value="${rateId}">
+        `;
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+// Simple test function
+function testEdit() {
+    alert('Edit button clicked!');
+}
+
+function calculateGST() {
+    const baseAmount = parseFloat(document.getElementById('edit_base_amount').value) || 0;
+    const gstPercent = parseFloat(document.getElementById('edit_gst_percent').value) || 0;
+    
+    // Calculate total GST
+    const totalGST = baseAmount * (gstPercent / 100);
+    
+    // Calculate CGST and SGST (50% each)
+    const cgst = totalGST / 2;
+    const sgst = totalGST / 2;
+    
+    // Calculate net amount
+    const netAmount = baseAmount + totalGST;
+    
+    // Update the fields
+    document.getElementById('edit_cgst').value = cgst.toFixed(2);
+    document.getElementById('edit_sgst').value = sgst.toFixed(2);
+    document.getElementById('edit_net_amount').value = netAmount.toFixed(2);
+}
+
+function calculateTokenGST() {
+    const tokenAmount = parseFloat(document.getElementById('edit_token_amount').value) || 0;
+    const tokenGstPercent = parseFloat(document.getElementById('edit_token_gst_percent').value) || 0;
+    
+    // Calculate total GST for token
+    const totalTokenGST = tokenAmount * (tokenGstPercent / 100);
+    
+    // Calculate CGST and SGST (50% each)
+    const tokenCgst = totalTokenGST / 2;
+    const tokenSgst = totalTokenGST / 2;
+    
+    // Calculate token total
+    const tokenTotal = tokenAmount + totalTokenGST;
+    
+    // Update the fields
+    document.getElementById('edit_token_cgst').value = tokenCgst.toFixed(2);
+    document.getElementById('edit_token_sgst').value = tokenSgst.toFixed(2);
+    document.getElementById('edit_token_total').value = tokenTotal.toFixed(2);
+}
+
+function calculateInstallationGST() {
+    const installationCharge = parseFloat(document.getElementById('edit_installation_charge').value) || 0;
+    const installationGstPercent = parseFloat(document.getElementById('edit_installation_gst_percent').value) || 0;
+    
+    // Calculate total GST for installation
+    const totalInstallationGST = installationCharge * (installationGstPercent / 100);
+    
+    // Calculate CGST and SGST (50% each)
+    const installationCgst = totalInstallationGST / 2;
+    const installationSgst = totalInstallationGST / 2;
+    
+    // Calculate installation total
+    const installationTotal = installationCharge + totalInstallationGST;
+    
+    // Update the fields
+    document.getElementById('edit_installation_cgst').value = installationCgst.toFixed(2);
+    document.getElementById('edit_installation_sgst').value = installationSgst.toFixed(2);
+    document.getElementById('edit_installation_total').value = installationTotal.toFixed(2);
+}
+
+function editRate(rateId, rateDate, baseAmt, gstPercent, tokenDesc, tokenAmount, tokenGstPercent, installationCharge, installationGstPercent) {
+    console.log('Edit rate called:', rateId, rateDate, baseAmt, gstPercent);
+    
+    // First, let's test if the modal exists
+    const modal = document.getElementById('editRateModal');
+    if (!modal) {
+        alert('Modal not found!');
+        return;
+    }
+    
+    try {
+        // Populate the edit modal with existing data
+        const rateIdField = document.getElementById('edit_rate_id');
+        const rateDateField = document.getElementById('edit_rate_date');
+        const baseAmountField = document.getElementById('edit_base_amount');
+        const gstPercentField = document.getElementById('edit_gst_percent');
+        const tokenDescField = document.getElementById('edit_token_desc');
+        const tokenAmountField = document.getElementById('edit_token_amount');
+        const tokenGstPercentField = document.getElementById('edit_token_gst_percent');
+        const installationChargeField = document.getElementById('edit_installation_charge');
+        const installationGstPercentField = document.getElementById('edit_installation_gst_percent');
+        
+        if (rateIdField) rateIdField.value = rateId;
+        if (rateDateField) rateDateField.value = rateDate; // Use the original rate's date
+        if (baseAmountField) baseAmountField.value = baseAmt;
+        if (gstPercentField) gstPercentField.value = gstPercent;
+        if (tokenDescField) tokenDescField.value = tokenDesc || '';
+        if (tokenAmountField) tokenAmountField.value = tokenAmount || 0;
+        if (tokenGstPercentField) tokenGstPercentField.value = tokenGstPercent || 18;
+        if (installationChargeField) installationChargeField.value = installationCharge || 0;
+        if (installationGstPercentField) installationGstPercentField.value = installationGstPercent || 18;
+        
+        console.log('Fields populated successfully');
+        
+        // Calculate GST after populating fields
+        calculateGST();
+        calculateTokenGST();
+        calculateInstallationGST();
+        
+        // Show the edit modal
+        const editModal = new bootstrap.Modal(modal);
+        editModal.show();
+        console.log('Modal should be shown now');
+    } catch (error) {
+        console.error('Error in editRate function:', error);
+        alert('Error opening edit modal: ' + error.message);
+    }
+}
+
+function submitEdit() {
+    try {
+        const form = document.getElementById('editRateForm');
+        if (form) {
+            console.log('Submitting edit form...');
+            form.submit();
+        } else {
+            alert('Edit form not found. Please try again.');
+        }
+    } catch (error) {
+        console.error('Error submitting edit form:', error);
+        alert('Error submitting form. Please try again.');
+    }
+}
+</script>
+{% endblock %}
+
+

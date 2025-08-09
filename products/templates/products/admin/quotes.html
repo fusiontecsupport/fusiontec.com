@@ -1,0 +1,391 @@
+{% extends 'products/admin/base.html' %}
+
+{% block title %}Quote Submissions - FusionTec Admin{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-file-invoice-dollar"></i> Quote Submissions</h2>
+            <span class="badge bg-primary fs-6">{{ page_obj.paginator.count }} Total</span>
+        </div>
+    </div>
+</div>
+
+<!-- Search Bar -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <form method="GET" class="row g-3">
+                    <div class="col-md-6">
+                        <input type="text" name="search" class="form-control search-box" 
+                               placeholder="Search by customer name, mobile, or product..." 
+                               value="{{ search_query }}">
+                    </div>
+                    <div class="col-md-3">
+                        <select name="status_filter" class="form-select">
+                            <option value="">All Statuses</option>
+                            <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pending</option>
+                            <option value="approved" {% if status_filter == 'approved' %}selected{% endif %}>Approved</option>
+                            <option value="rejected" {% if status_filter == 'rejected' %}selected{% endif %}>Rejected</option>
+                            <option value="expired" {% if status_filter == 'expired' %}selected{% endif %}>Expired</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <button type="submit" class="btn btn-primary me-2">
+                            <i class="fas fa-search"></i> Search
+                        </button>
+                        <a href="{% url 'custom_admin_quotes' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times"></i> Clear
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quotes Table -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-list me-2"></i>Quote Submissions</h5>
+            </div>
+            <div class="card-body">
+                {% if page_obj %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Quote ID</th>
+                                    <th>Customer Info</th>
+                                    <th>Product Details</th>
+                                    <th>Pricing</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for quote in page_obj %}
+                                <tr>
+                                    <td>
+                                        <strong>#{{ quote.id }}</strong>
+                                    </td>
+                                    <td>
+                                        <div><strong>{{ quote.customer.name }}</strong></div>
+                                        {% if quote.customer.company_name %}
+                                            <div class="text-muted">{{ quote.customer.company_name }}</div>
+                                        {% endif %}
+                                        <div>
+                                            <a href="tel:{{ quote.customer.mobile }}" class="text-decoration-none">
+                                                <i class="fas fa-phone"></i> {{ quote.customer.mobile }}
+                                            </a>
+                                        </div>
+                                        {% if quote.customer.email %}
+                                            <div>
+                                                <a href="mailto:{{ quote.customer.email }}" class="text-decoration-none">
+                                                    <i class="fas fa-envelope"></i> {{ quote.customer.email }}
+                                                </a>
+                                            </div>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div><strong>{{ quote.product_item.item_name }}</strong></div>
+                                        <div class="text-muted">{{ quote.product_item.product_type.type_name }}</div>
+                                        <div class="text-muted">{{ quote.product_item.product_type.product_master.product_name }}</div>
+                                        {% if quote.quantity > 1 %}
+                                            <div class="text-muted">Qty: {{ quote.quantity }}</div>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="text-success fw-bold">₹{{ quote.grand_total }}</div>
+                                        <small class="text-muted">
+                                            Base: ₹{{ quote.basic_amount }}
+                                            {% if quote.cgst or quote.sgst %}
+                                                <br>CGST: ₹{{ quote.cgst|default:0 }}, SGST: ₹{{ quote.sgst|default:0 }}
+                                            {% endif %}
+                                            {% if quote.token_amount %}
+                                                <br>Token: ₹{{ quote.token_amount }}
+                                            {% endif %}
+                                            {% if quote.installing_charges %}
+                                                <br>Installation: ₹{{ quote.installing_charges }}
+                                            {% endif %}
+                                        </small>
+                                    </td>
+                                    <td>
+                                        {% if quote.status == 'pending' %}
+                                            <span class="badge bg-warning">Pending</span>
+                                        {% elif quote.status == 'approved' %}
+                                            <span class="badge bg-success">Approved</span>
+                                        {% elif quote.status == 'rejected' %}
+                                            <span class="badge bg-danger">Rejected</span>
+                                        {% elif quote.status == 'expired' %}
+                                            <span class="badge bg-secondary">Expired</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ quote.created_at|date:"M d, Y H:i" }}</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary" 
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#quoteModal{{ quote.id }}">
+                                            <i class="fas fa-eye"></i> View
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-success" 
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#statusModal{{ quote.id }}">
+                                            <i class="fas fa-edit"></i> Status
+                                        </button>
+                                    </td>
+                                </tr>
+                                
+                                <!-- Modal for each quote -->
+                                <div class="modal fade" id="quoteModal{{ quote.id }}" tabindex="-1">
+                                    <div class="modal-dialog modal-lg">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Quote #{{ quote.id }} Details</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <div class="row">
+                                                    <div class="col-md-6">
+                                                        <h6><i class="fas fa-user"></i> Customer Information</h6>
+                                                        <p><strong>Name:</strong> {{ quote.customer.name }}</p>
+                                                        {% if quote.customer.company_name %}
+                                                            <p><strong>Company:</strong> {{ quote.customer.company_name }}</p>
+                                                        {% endif %}
+                                                        <p><strong>Mobile:</strong> {{ quote.customer.mobile }}</p>
+                                                        {% if quote.customer.email %}
+                                                            <p><strong>Email:</strong> {{ quote.customer.email }}</p>
+                                                        {% endif %}
+                                                        {% if quote.customer.has_gst %}
+                                                            <p><strong>GST Number:</strong> {{ quote.customer.gst_number|default:"Not provided" }}</p>
+                                                        {% endif %}
+                                                        {% if quote.customer.address %}
+                                                            <p><strong>Address:</strong> {{ quote.customer.address }}</p>
+                                                            {% if quote.customer.state or quote.customer.district %}
+                                                                <p><strong>Location:</strong> {{ quote.customer.state }}{% if quote.customer.district %}, {{ quote.customer.district }}{% endif %}{% if quote.customer.pincode %} - {{ quote.customer.pincode }}{% endif %}</p>
+                                                            {% endif %}
+                                                        {% endif %}
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <h6><i class="fas fa-box"></i> Product Information</h6>
+                                                        <p><strong>Product:</strong> {{ quote.product_item.item_name }}</p>
+                                                        <p><strong>Type:</strong> {{ quote.product_item.product_type.type_name }}</p>
+                                                        <p><strong>Category:</strong> {{ quote.product_item.product_type.product_master.product_name }}</p>
+                                                        <p><strong>Quantity:</strong> {{ quote.quantity }}</p>
+                                                        {% if quote.product_item.description %}
+                                                            <p><strong>Description:</strong> {{ quote.product_item.description }}</p>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                                
+                                                <hr>
+                                                <h6><i class="fas fa-money-bill"></i> Pricing Details</h6>
+                                                <div class="row">
+                                                    <div class="col-md-3">
+                                                        <p><strong>Basic Amount:</strong><br>₹{{ quote.basic_amount }}</p>
+                                                    </div>
+                                                    {% if quote.cgst %}
+                                                        <div class="col-md-3">
+                                                            <p><strong>CGST:</strong><br>₹{{ quote.cgst }}</p>
+                                                        </div>
+                                                    {% endif %}
+                                                    {% if quote.sgst %}
+                                                        <div class="col-md-3">
+                                                            <p><strong>SGST:</strong><br>₹{{ quote.sgst }}</p>
+                                                        </div>
+                                                    {% endif %}
+                                                    <div class="col-md-3">
+                                                        <p><strong>Total Amount:</strong><br>₹{{ quote.total_amount }}</p>
+                                                    </div>
+                                                    {% if quote.token_amount %}
+                                                        <div class="col-md-3">
+                                                            <p><strong>Token Amount:</strong><br>₹{{ quote.token_amount }}</p>
+                                                        </div>
+                                                    {% endif %}
+                                                    {% if quote.installing_charges %}
+                                                        <div class="col-md-3">
+                                                            <p><strong>Installation:</strong><br>₹{{ quote.installing_charges }}</p>
+                                                        </div>
+                                                    {% endif %}
+                                                    <div class="col-md-3">
+                                                        <p><strong>Grand Total:</strong><br><span class="text-success fw-bold">₹{{ quote.grand_total }}</span></p>
+                                                    </div>
+                                                </div>
+                                                
+                                                {% if quote.notes %}
+                                                    <hr>
+                                                    <h6><i class="fas fa-sticky-note"></i> Notes</h6>
+                                                    <p>{{ quote.notes }}</p>
+                                                {% endif %}
+                                                
+                                                <hr>
+                                                <div class="row">
+                                                    <div class="col-md-6">
+                                                        <p><strong>Status:</strong> 
+                                                            {% if quote.status == 'pending' %}
+                                                                <span class="badge bg-warning">Pending</span>
+                                                            {% elif quote.status == 'approved' %}
+                                                                <span class="badge bg-success">Approved</span>
+                                                            {% elif quote.status == 'rejected' %}
+                                                                <span class="badge bg-danger">Rejected</span>
+                                                            {% elif quote.status == 'expired' %}
+                                                                <span class="badge bg-secondary">Expired</span>
+                                                            {% endif %}
+                                                        </p>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <p><strong>Created:</strong> {{ quote.created_at|date:"F d, Y \a\t H:i" }}</p>
+                                                        <p><strong>Updated:</strong> {{ quote.updated_at|date:"F d, Y \a\t H:i" }}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Status Update Modal -->
+                                <div class="modal fade" id="statusModal{{ quote.id }}" tabindex="-1">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Update Quote Status</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <form method="POST" action="{% url 'custom_admin_quotes' %}">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="quote_id" value="{{ quote.id }}">
+                                                <input type="hidden" name="action" value="update_status">
+                                                <div class="modal-body">
+                                                    <div class="mb-3">
+                                                        <label for="status{{ quote.id }}" class="form-label">Status</label>
+                                                        <select name="status" id="status{{ quote.id }}" class="form-select" required>
+                                                            <option value="pending" {% if quote.status == 'pending' %}selected{% endif %}>Pending</option>
+                                                            <option value="approved" {% if quote.status == 'approved' %}selected{% endif %}>Approved</option>
+                                                            <option value="rejected" {% if quote.status == 'rejected' %}selected{% endif %}>Rejected</option>
+                                                            <option value="expired" {% if quote.status == 'expired' %}selected{% endif %}>Expired</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label for="notes{{ quote.id }}" class="form-label">Admin Notes</label>
+                                                        <textarea name="notes" id="notes{{ quote.id }}" class="form-control" rows="3" placeholder="Add any notes about this quote...">{{ quote.notes }}</textarea>
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                    <button type="submit" class="btn btn-primary">Update Status</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Pagination -->
+                    {% if page_obj.has_other_pages %}
+                        <nav aria-label="Page navigation" class="mt-4">
+                            <ul class="pagination justify-content-center">
+                                {% if page_obj.has_previous %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status_filter={{ status_filter }}{% endif %}">
+                                            <i class="fas fa-angle-double-left"></i>
+                                        </a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status_filter={{ status_filter }}{% endif %}">
+                                            <i class="fas fa-angle-left"></i>
+                                        </a>
+                                    </li>
+                                {% endif %}
+                                
+                                {% for num in page_obj.paginator.page_range %}
+                                    {% if page_obj.number == num %}
+                                        <li class="page-item active">
+                                            <span class="page-link">{{ num }}</span>
+                                        </li>
+                                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status_filter={{ status_filter }}{% endif %}">{{ num }}</a>
+                                        </li>
+                                    {% endif %}
+                                {% endfor %}
+                                
+                                {% if page_obj.has_next %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status_filter={{ status_filter }}{% endif %}">
+                                            <i class="fas fa-angle-right"></i>
+                                        </a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status_filter={{ status_filter }}{% endif %}">
+                                            <i class="fas fa-angle-double-right"></i>
+                                        </a>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                    {% endif %}
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-file-invoice-dollar fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No quote submissions found.</p>
+                        {% if search_query or status_filter %}
+                            <a href="{% url 'custom_admin_quotes' %}" class="btn btn-outline-primary">
+                                <i class="fas fa-times"></i> Clear Search
+                            </a>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Export Options -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-download"></i> Export Options</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <a href="{% url 'custom_admin_quotes' %}?export=csv{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status_filter={{ status_filter }}{% endif %}" 
+                           class="btn btn-outline-success w-100 mb-2">
+                            <i class="fas fa-file-csv"></i> Export CSV
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{% url 'custom_admin_quotes' %}?export=excel{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status_filter={{ status_filter }}{% endif %}" 
+                           class="btn btn-outline-success w-100 mb-2">
+                            <i class="fas fa-file-excel"></i> Export Excel
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{% url 'custom_admin_quotes' %}?export=pdf{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status_filter={{ status_filter }}{% endif %}" 
+                           class="btn btn-outline-danger w-100 mb-2">
+                            <i class="fas fa-file-pdf"></i> Export PDF
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <button class="btn btn-outline-info w-100 mb-2" onclick="window.print()">
+                            <i class="fas fa-print"></i> Print View
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

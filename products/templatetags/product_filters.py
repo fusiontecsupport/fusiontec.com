@@ -11,4 +11,15 @@ def get_attribute(obj, attr):
     try:
         return getattr(obj, attr)
     except (AttributeError, TypeError):
-        return "" 
+        return ""
+
+@register.filter
+def abs(value):
+    """
+    Template filter to get the absolute value of a number.
+    Usage: {{ value|abs }}
+    """
+    try:
+        return abs(float(value))
+    except (ValueError, TypeError):
+        return value 

@@ -1,0 +1,193 @@
+{% extends 'products/base.html' %}
+
+{% load static %}
+
+{% block title %}Get Quote - {{ product_item.item_name }}{% endblock %}
+
+{% block content %}
+
+<main>
+    <!-- Quote Form Section -->
+    <section class="py-5">
+        <div class="container px-4 px-lg-5">
+            <div class="row gx-5 justify-content-center">
+                <div class="col-lg-8">
+                    <div class="text-center mb-5">
+                        <h1 class="display-5 fw-bolder mb-0">
+                            <span class="text-gradient d-inline">Get Quote</span>
+                        </h1>
+                        <p class="lead fw-light mt-3">Request a quote for {{ product_item.item_name }}</p>
+                    </div>
+
+                    <!-- Product Summary Card -->
+                    <div class="card border-0 shadow rounded-4 mb-5">
+                        <div class="card-body p-4">
+                            <div class="row align-items-center">
+                                <div class="col-md-3 text-center">
+                                    {% if product_item.product_type.product_master.image %}
+                                    <img src="{{ product_item.product_type.product_master.image.url }}" 
+                                         alt="{{ product_item.product_type.product_master.product_name }}" 
+                                         class="img-fluid mb-3" style="max-width: 80px;">
+                                    {% else %}
+                                    <div class="d-flex align-items-center justify-content-center mb-3" 
+                                         style="width: 80px; height: 60px; background-color: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px;">
+                                        <i class="bi bi-box text-muted" style="font-size: 1.5rem;"></i>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-9">
+                                    <h5 class="fw-bold mb-2">{{ product_item.item_name }}</h5>
+                                    <p class="text-muted mb-2">{{ product_item.product_type.product_master.product_name }} - {{ product_item.product_type.type_name }}</p>
+                                    {% if product_item.description %}
+                                    <p class="text-muted small mb-2">{{ product_item.description }}</p>
+                                    {% endif %}
+                                    {% if product_item.basic_amount %}
+                                    <div class="d-flex align-items-center gap-3">
+                                        <span class="h5 fw-bold text-primary mb-0">₹{{ product_item.total_price }}</span>
+                                        {% if product_item.old_price %}
+                                        <span class="text-muted text-decoration-line-through">₹{{ product_item.old_price }}</span>
+                                        <span class="badge bg-success">{{ product_item.get_discount_percentage }}% OFF</span>
+                                        {% endif %}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quote Form -->
+                    <div class="card border-0 shadow rounded-4">
+                        <div class="card-body p-4">
+                            <form method="post">
+                                {% csrf_token %}
+                                
+                                <!-- Customer Information -->
+                                <h5 class="fw-bold mb-3">Customer Information</h5>
+                                <div class="row g-3 mb-4">
+                                    <div class="col-md-6">
+                                        <label for="customer_name" class="form-label">Full Name *</label>
+                                        <input type="text" class="form-control" id="customer_name" name="customer_name" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="company_name" class="form-label">Company Name</label>
+                                        <input type="text" class="form-control" id="company_name" name="company_name">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="email" class="form-label">Email Address *</label>
+                                        <input type="email" class="form-control" id="email" name="email" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="mobile" class="form-label">Mobile Number *</label>
+                                        <input type="tel" class="form-control" id="mobile" name="mobile" required>
+                                    </div>
+                                </div>
+
+                                <!-- Quantity -->
+                                <h5 class="fw-bold mb-3">Order Details</h5>
+                                <div class="row g-3 mb-4">
+                                    <div class="col-md-6">
+                                        <label for="quantity" class="form-label">Quantity *</label>
+                                        <input type="number" class="form-control" id="quantity" name="quantity" value="1" min="1" required>
+                                    </div>
+                                </div>
+
+                                <!-- Pricing Summary -->
+                                {% if product_item.basic_amount %}
+                                <div class="bg-light rounded-3 p-4 mb-4">
+                                    <h6 class="fw-bold mb-3">Pricing Summary</h6>
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <div class="d-flex justify-content-between">
+                                                <span>Base Price:</span>
+                                                <span>₹{{ product_item.basic_amount }}</span>
+                                            </div>
+                                            <div class="d-flex justify-content-between">
+                                                <span>CGST ({{ product_item.cgst|floatformat:0 }}%):</span>
+                                                <span>₹{{ product_item.cgst }}</span>
+                                            </div>
+                                            <div class="d-flex justify-content-between">
+                                                <span>SGST ({{ product_item.sgst|floatformat:0 }}%):</span>
+                                                <span>₹{{ product_item.sgst }}</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="d-flex justify-content-between">
+                                                <span>Subtotal:</span>
+                                                <span>₹{{ product_item.total_price }}</span>
+                                            </div>
+                                            {% if product_item.token_amount %}
+                                            <div class="d-flex justify-content-between">
+                                                <span>Token/License:</span>
+                                                <span>₹{{ product_item.token_amount }}</span>
+                                            </div>
+                                            {% endif %}
+                                            {% if product_item.installing_charges %}
+                                            <div class="d-flex justify-content-between">
+                                                <span>Installation:</span>
+                                                <span>₹{{ product_item.installing_charges }}</span>
+                                            </div>
+                                            {% endif %}
+                                            <hr>
+                                            <div class="d-flex justify-content-between fw-bold">
+                                                <span>Total:</span>
+                                                <span class="text-primary">₹{{ product_item.total_price|add:product_item.token_amount|add:product_item.installing_charges }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endif %}
+
+                                <!-- Submit Button -->
+                                <div class="text-center">
+                                    <button type="submit" class="btn btn-primary btn-lg px-5 py-3 fw-semibold">
+                                        <i class="bi bi-send me-2"></i>Submit Quote Request
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Additional Information -->
+                    <div class="text-center mt-4">
+                        <p class="text-muted">
+                            Need help? <a href="#contact" class="text-decoration-none">Contact our sales team</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const quantityInput = document.getElementById('quantity');
+    const pricingSummary = document.querySelector('.bg-light');
+    
+    if (quantityInput && pricingSummary) {
+        quantityInput.addEventListener('change', function() {
+            const quantity = parseInt(this.value) || 1;
+            const basePrice = {{ product_item.basic_amount|default:0 }};
+            const cgst = {{ product_item.cgst|default:0 }};
+            const sgst = {{ product_item.sgst|default:0 }};
+            const tokenAmount = {{ product_item.token_amount|default:0 }};
+            const installingCharges = {{ product_item.installing_charges|default:0 }};
+            
+            // Update pricing display
+            const basePriceElement = pricingSummary.querySelector('.d-flex:first-child .d-flex:last-child span:last-child');
+            const cgstElement = pricingSummary.querySelector('.d-flex:nth-child(2) .d-flex:last-child span:last-child');
+            const sgstElement = pricingSummary.querySelector('.d-flex:nth-child(3) .d-flex:last-child span:last-child');
+            const subtotalElement = pricingSummary.querySelector('.d-flex:nth-child(4) .d-flex:last-child span:last-child');
+            const totalElement = pricingSummary.querySelector('.d-flex:last-child .d-flex:last-child span:last-child');
+            
+            if (basePriceElement) basePriceElement.textContent = '₹' + (basePrice * quantity).toFixed(2);
+            if (cgstElement) cgstElement.textContent = '₹' + (cgst * quantity).toFixed(2);
+            if (sgstElement) sgstElement.textContent = '₹' + (sgst * quantity).toFixed(2);
+            if (subtotalElement) subtotalElement.textContent = '₹' + ((basePrice + cgst + sgst) * quantity).toFixed(2);
+            if (totalElement) totalElement.textContent = '₹' + (((basePrice + cgst + sgst) * quantity) + tokenAmount + installingCharges).toFixed(2);
+        });
+    }
+});
+</script>
+
+{% endblock %}

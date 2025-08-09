@@ -63,9 +63,18 @@
                                 {% for payment in page_obj %}
                                 <tr>
                                     <td>
-                                        <strong>{{ payment.customer_name }}</strong>
+                                        <strong>{{ payment.customer.name }}</strong>
+                                        {% if payment.customer.email %}
+                                            <br><small class="text-muted">{{ payment.customer.email }}</small>
+                                        {% endif %}
                                     </td>
-                                    <td>{{ payment.product_name }}</td>
+                                    <td>
+                                        {% if payment.quote %}
+                                            {{ payment.quote.product_item.item_name }}
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
                                     <td>
                                         <span class="fw-bold">₹{{ payment.amount }}</span>
                                     </td>
@@ -76,12 +85,14 @@
                                         <code>{{ payment.razorpay_order_id|default:"-" }}</code>
                                     </td>
                                     <td>
-                                        {% if payment.status == 'paid' %}
-                                            <span class="badge bg-success">Paid</span>
+                                        {% if payment.status == 'success' %}
+                                            <span class="badge bg-success">Success</span>
                                         {% elif payment.status == 'failed' %}
                                             <span class="badge bg-danger">Failed</span>
-                                        {% elif payment.status == 'created' %}
-                                            <span class="badge bg-warning">Created</span>
+                                        {% elif payment.status == 'pending' %}
+                                            <span class="badge bg-warning">Pending</span>
+                                        {% elif payment.status == 'refunded' %}
+                                            <span class="badge bg-info">Refunded</span>
                                         {% else %}
                                             <span class="badge bg-secondary">{{ payment.status|title }}</span>
                                         {% endif %}

@@ -582,7 +582,7 @@ progress {
   color: #6c757d;
 }
 .blockquote-footer::before {
-  content: "— ";
+  content: "— ";
 }
 
 .img-fluid {
@@ -647,6 +647,81 @@ progress {
 @media (min-width: 1200px) {
   .container-xl, .container-lg, .container-md, .container-sm, .container {
     max-width: 1140px;
+  }
+}
+
+/* Product Type Master Cards Styling */
+.product-type-card {
+  transition: all 0.3s ease;
+  border-radius: 15px;
+  overflow: hidden;
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+}
+
+.product-type-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
+
+.product-type-card .card-body {
+  padding: 2rem 1.5rem;
+}
+
+.product-type-card .card-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 1rem;
+}
+
+.product-type-card .card-text {
+  color: #6c757d;
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+}
+
+.product-type-card .btn {
+  border-radius: 25px;
+  padding: 0.5rem 1.5rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.product-type-card .btn:hover {
+  transform: scale(1.05);
+}
+
+.product-type-card .icon-placeholder {
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1rem;
+  color: white;
+  font-size: 1.5rem;
+}
+
+.product-type-card .icon-placeholder i {
+  color: white;
+}
+
+/* Responsive adjustments for product type cards */
+@media (max-width: 768px) {
+  .product-type-card .card-body {
+    padding: 1.5rem 1rem;
+  }
+  
+  .product-type-card .card-title {
+    font-size: 1.1rem;
+  }
+  
+  .product-type-card .icon-placeholder {
+    width: 50px;
+    height: 50px;
+    font-size: 1.25rem;
   }
 }
 @media (min-width: 1400px) {

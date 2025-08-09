@@ -1,180 +1,381 @@
 from django.contrib import admin
+from django.utils.html import format_html
+from django.urls import reverse
+from django.utils.safestring import mark_safe
+from .models import (
+    ProductMaster, ProductType, ProductItem, RateCardMaster, Customer, QuoteSubmission,
+    ContactSubmission, PaymentTransaction, PaymentSettings, Applicant,
+    ProductTypeMaster, ProductMasterV2, RateCardEntry,
+)
 
-# contact form submission admin
-from .models import ContactSubmission
+# ============================================================================
+# PRODUCT MASTER ADMIN
+# ============================================================================
+
+@admin.register(ProductMaster)
+class ProductMasterAdmin(admin.ModelAdmin):
+    list_display = ['product_code', 'product_name', 'is_active', 'display_order', 'get_types_count', 'get_items_count']
+    list_filter = ['is_active', 'product_code']
+    search_fields = ['product_name', 'description']
+    ordering = ['display_order', 'product_name']
+    readonly_fields = ['get_types_count', 'get_items_count']
+    
+    fieldsets = (
+        ('Basic Information', {
+            'fields': ('product_code', 'product_name', 'description', 'is_active', 'display_order')
+        }),
+        ('Media & Links', {
+            'fields': ('image', 'website_link'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    def get_types_count(self, obj):
+        return obj.get_product_types_count()
+    get_types_count.short_description = 'Product Types'
+    
+    def get_items_count(self, obj):
+        total = sum(pt.get_items_count() for pt in obj.product_types.all())
+        return total
+    get_items_count.short_description = 'Total Items'
+
+# ============================================================================
+# PRODUCT TYPE ADMIN
+# ============================================================================
+
+@admin.register(ProductType)
+class ProductTypeAdmin(admin.ModelAdmin):
+    list_display = ['type_name', 'product_master', 'is_active', 'display_order', 'get_items_count']
+    list_filter = ['product_master', 'is_active']
+    search_fields = ['type_name', 'description']
+    ordering = ['product_master', 'display_order', 'type_name']
+    readonly_fields = ['get_items_count']
+    
+    fieldsets = (
+        ('Basic Information', {
+            'fields': ('product_master', 'type_code', 'type_name', 'description', 'is_active', 'display_order')
+        }),
+    )
+    
+    def get_items_count(self, obj):
+        return obj.get_items_count()
+    get_items_count.short_description = 'Items Count'
+
+# ============================================================================
+# PRODUCT ITEM ADMIN
+# ============================================================================
+
+@admin.register(ProductItem)
+class ProductItemAdmin(admin.ModelAdmin):
+    list_display = [
+        'item_name', 'product_type', 'product_master', 'item_category', 
+        'basic_amount', 'total_price', 'is_active', 'display_order'
+    ]
+    list_filter = [
+        'product_type__product_master', 'product_type', 'item_category', 'is_active'
+    ]
+    search_fields = ['item_name', 'description', 'features']
+    ordering = ['product_type', 'display_order', 'item_name']
+    readonly_fields = ['total_price', 'get_discount_display']
+    
+    fieldsets = (
+        ('Basic Information', {
+            'fields': ('product_type', 'item_code', 'item_name', 'item_category', 'is_active', 'display_order')
+        }),
+        ('Description & Features', {
+            'fields': ('description', 'features'),
+            'classes': ('collapse',)
+        }),
+        ('Pricing', {
+            'fields': ('basic_amount', 'cgst', 'sgst', 'total_price', 'old_price', 'get_discount_display'),
+            'classes': ('collapse',)
+        }),
+        ('Token & Installation', {
+            'fields': ('token_name', 'token_amount', 'installing_charges'),
+            'classes': ('collapse',)
+        }),
+        ('Special Fields', {
+            'fields': ('billing_cycle', 'team_name'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    def product_master(self, obj):
+        return obj.product_type.product_master.product_name
+    product_master.short_description = 'Product'
+    
+    def get_discount_display(self, obj):
+        discount = obj.get_discount_percentage()
+        if discount > 0:
+            return format_html('<span style="color: green;">{}% OFF</span>', discount)
+        return 'No Discount'
+    get_discount_display.short_description = 'Discount'
+
+# ============================================================================
+# RATE CARD ADMIN
+# ============================================================================
+
+@admin.register(RateCardMaster)
+class RateCardAdmin(admin.ModelAdmin):
+    list_display = ['product_item', 'rate_code', 'rate_date', 'base_amount', 'gst_percent', 'net_amount']
+    list_filter = ['rate_date', 'product_item__product_type__product_master']
+    search_fields = ['product_item__item_name', 'rate_code']
+    ordering = ['-rate_date']
+    readonly_fields = ['net_amount']
+
+# ============================================================================
+# CUSTOMER ADMIN
+# ============================================================================
+
+@admin.register(Customer)
+class CustomerAdmin(admin.ModelAdmin):
+    list_display = ['name', 'company_name', 'email', 'mobile', 'has_gst', 'state', 'created_at']
+    list_filter = ['has_gst', 'state', 'created_at']
+    search_fields = ['name', 'company_name', 'email', 'mobile', 'gst_number']
+    ordering = ['-created_at']
+    readonly_fields = ['created_at', 'updated_at']
+    
+    fieldsets = (
+        ('Personal Information', {
+            'fields': ('name', 'company_name', 'email', 'mobile')
+        }),
+        ('Business Information', {
+            'fields': ('has_gst', 'gst_number')
+        }),
+        ('Address', {
+            'fields': ('address', 'state', 'district', 'pincode'),
+            'classes': ('collapse',)
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+
+# ============================================================================
+# QUOTE SUBMISSION ADMIN
+# ============================================================================
+
+@admin.register(QuoteSubmission)
+class QuoteSubmissionAdmin(admin.ModelAdmin):
+    list_display = [
+        'id', 'customer_name', 'product_item_name', 'product_master', 
+        'basic_amount', 'grand_total', 'status', 'created_at'
+    ]
+    list_filter = ['status', 'created_at', 'product_item__product_type__product_master']
+    search_fields = ['customer__name', 'customer__email', 'customer__mobile']
+    ordering = ['-created_at']
+    readonly_fields = ['grand_total', 'created_at', 'updated_at']
+    
+    fieldsets = (
+        ('Customer Information', {
+            'fields': ('customer',)
+        }),
+        ('Product Information', {
+            'fields': ('product_item', 'quantity')
+        }),
+        ('Pricing Details', {
+            'fields': ('basic_amount', 'cgst', 'sgst', 'total_amount', 'token_amount', 'installing_charges', 'grand_total'),
+            'classes': ('collapse',)
+        }),
+        ('Status & Notes', {
+            'fields': ('status', 'notes'),
+            'classes': ('collapse',)
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    def customer_name(self, obj):
+        return obj.customer.name
+    customer_name.short_description = 'Customer'
+    
+    def product_item_name(self, obj):
+        return obj.product_item.item_name
+    product_item_name.short_description = 'Product'
+    
+    def product_master(self, obj):
+        return obj.product_item.product_type.product_master.product_name
+    product_master.short_description = 'Product Category'
+
+# ============================================================================
+# CONTACT SUBMISSION ADMIN
+# ============================================================================
 
 @admin.register(ContactSubmission)
 class ContactSubmissionAdmin(admin.ModelAdmin):
-    list_display = ('name', 'email', 'phone', 'subject', 'submitted_at')
-    list_filter = ('submitted_at',)
-    search_fields = ('name', 'email', 'subject', 'message')
-    ordering = ('-submitted_at',)
+    list_display = ['name', 'email', 'phone', 'subject', 'status', 'created_at']
+    list_filter = ['status', 'created_at']
+    search_fields = ['name', 'email', 'phone', 'subject', 'message']
+    ordering = ['-created_at']
+    readonly_fields = ['created_at', 'updated_at']
+    
+    fieldsets = (
+        ('Contact Information', {
+            'fields': ('name', 'email', 'phone', 'subject', 'message')
+        }),
+        ('Status & Notes', {
+            'fields': ('status', 'admin_notes'),
+            'classes': ('collapse',)
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
 
-# ----------------------------------------------------------------------------------------
-# Tally section admin
-from .models import Tally_1,Tally_Product,Tally_Software_Service, Tally_Upgrade
+# ============================================================================
+# PAYMENT TRANSACTION ADMIN
+# ============================================================================
 
-class Tally_Product_Inline(admin.TabularInline):
-    model = Tally_Product
-    extra = 1
+@admin.register(PaymentTransaction)
+class PaymentTransactionAdmin(admin.ModelAdmin):
+    list_display = [
+        'id', 'customer_name', 'amount', 'payment_method', 'status', 'created_at'
+    ]
+    list_filter = ['status', 'payment_method', 'created_at']
+    search_fields = ['customer__name', 'customer__email', 'razorpay_payment_id']
+    ordering = ['-created_at']
+    readonly_fields = ['created_at', 'updated_at']
+    
+    fieldsets = (
+        ('Transaction Information', {
+            'fields': ('customer', 'quote', 'amount', 'payment_method')
+        }),
+        ('Razorpay Details', {
+            'fields': ('razorpay_payment_id', 'razorpay_order_id'),
+            'classes': ('collapse',)
+        }),
+        ('Status', {
+            'fields': ('status',),
+            'classes': ('collapse',)
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    def customer_name(self, obj):
+        return obj.customer.name
+    customer_name.short_description = 'Customer'
 
-class Tally_Software_Service_Inline(admin.TabularInline):
-    model = Tally_Software_Service
-    extra = 1
+# ============================================================================
+# PAYMENT SETTINGS ADMIN
+# ============================================================================
 
-class Tally_Upgrade_Inline(admin.TabularInline):
-    model = Tally_Upgrade
-    extra = 1
+@admin.register(PaymentSettings)
+class PaymentSettingsAdmin(admin.ModelAdmin):
+    list_display = ['setting_type', 'title', 'is_active']
+    list_filter = ['setting_type', 'is_active']
+    search_fields = ['title', 'description']
+    
+    fieldsets = (
+        ('Basic Information', {
+            'fields': ('setting_type', 'title', 'description', 'is_active')
+        }),
+        ('Razorpay Configuration', {
+            'fields': ('razorpay_key_id', 'razorpay_key_secret', 'payment_button_id'),
+            'classes': ('collapse',)
+        }),
+        ('UPI QR Configuration', {
+            'fields': ('upi_id', 'qr_image'),
+            'classes': ('collapse',)
+        }),
+        ('Bank Transfer Configuration', {
+            'fields': ('account_name', 'account_number', 'ifsc_code', 'bank_name'),
+            'classes': ('collapse',)
+        }),
+    )
 
-@admin.register(Tally_1)
-class ProductAdmin(admin.ModelAdmin):
-    list_display = ('tally_name', 'tally_link')
-    inlines = [Tally_Product_Inline,Tally_Software_Service_Inline, Tally_Upgrade_Inline]
+# ============================================================================
+# APPLICANT ADMIN
+# ============================================================================
 
-from .models import TallyPriceListSubmission
-
-@admin.register(TallyPriceListSubmission)
-class TallyPriceListSubmissionAdmin(admin.ModelAdmin):
-    list_display = ('customer_name', 'mobile', 'product_name', 'product_type', 'total_price', 'created_at')
-    search_fields = ('customer_name', 'mobile', 'product_name')
-    list_filter = ('product_type', 'created_at')
-
-# ----------------------------------------------------------------------------------------
-# e-mudhra section admin
-
-from .models import Emudhra_2, Emudhra_product,EmudhraPriceListSubmission
-
-class EmudhraProductInline(admin.TabularInline):
-    model = Emudhra_product
-    extra = 1
-    fields = ('class_product', 'basic_amount', 'cgst', 'sgst')  # Exclude total_price from here
-    readonly_fields = ('total_price',)  # Add this
-
-
-@admin.register(Emudhra_2)
-class Emudhra2Admin(admin.ModelAdmin):
-    list_display = ('emudhra_name', 'emudhra_link')
-    inlines = [EmudhraProductInline]
-
-@admin.register(EmudhraPriceListSubmission)
-class EmudhraPriceListSubmissionAdmin(admin.ModelAdmin):
-    list_display = ('customer_name', 'product_name', 'mobile', 'total_price','created_at')
-    search_fields = ('customer_name', 'product_name', 'mobile', 'email')
-    list_filter = ('has_gst', 'created_at')
-
-# ----------------------------------------------------------------------------------------
-# fusiontec section admin
-
-from .models import Fusiontec_3, Fusiontec_product, Fusiontec_Software, Fusiontec_Service, FusiontecPriceListSubmission
-
-class FusiontecProductInline(admin.TabularInline):
-    model = Fusiontec_product
-    extra = 1
-    fields = ('fusiontec_product',)
-
-class FusiontecSoftwareInline(admin.TabularInline):
-    model = Fusiontec_Software
-    extra = 1
-    fields = ('software_name', 'software_description', 'basic_amount', 'cgst', 'sgst')
-    readonly_fields = ('total_price',)
-
-class FusiontecServiceInline(admin.TabularInline):
-    model = Fusiontec_Service
-    extra = 1
-    fields = ('service_name', 'service_description', 'basic_amount', 'cgst', 'sgst')
-    readonly_fields = ('total_price',)
-
-@admin.register(Fusiontec_3)
-class Fusiontec3Admin(admin.ModelAdmin):
-    list_display = ('fusiontec_name', 'fusiontec_link')
-    inlines = [FusiontecProductInline, FusiontecSoftwareInline, FusiontecServiceInline]
-
-@admin.register(FusiontecPriceListSubmission)
-class PriceListSubmissionAdmin(admin.ModelAdmin):
-    list_display = ('customer_name', 'product_name', 'product_type_detail', 'mobile', 'submitted_at')
-    search_fields = ('customer_name', 'mobile', 'email')
-
-# ----------------------------------------------------------------------------------------
-# biz section admin
-
-from .models import Biz_4, biz_product, Biz_Service, Biz_Plan, BizPriceListSubmission
-
-class BizProductInline(admin.TabularInline):
-    model = biz_product
-    extra = 0
-    fields = ('team_name', 'old_price', 'new_price', 'cgst', 'sgst', 'billing_cycle')
-    readonly_fields = ('total_price',) 
-
-class BizServiceInline(admin.TabularInline):
-    model = Biz_Service
-    extra = 1
-    fields = ('service_name', 'service_description', 'basic_amount', 'cgst', 'sgst', 'billing_cycle')
-    readonly_fields = ('total_price',)
-
-class BizPlanInline(admin.TabularInline):
-    model = Biz_Plan
-    extra = 1
-    fields = ('plan_name', 'plan_description', 'old_price', 'new_price', 'cgst', 'sgst', 'billing_cycle')
-    readonly_fields = ('total_price',)
-
-@admin.register(Biz_4)
-class Biz4Admin(admin.ModelAdmin):
-    list_display = ('biz_name', 'biz_link')
-    inlines = [BizProductInline, BizServiceInline, BizPlanInline]
-
-
-@admin.register(BizPriceListSubmission)
-class BizPriceListSubmissionAdmin(admin.ModelAdmin):
-    list_display = ('customer_name', 'product_name', 'business_plan_name', 'total_price', 'created_at')
-    list_filter = ('created_at', 'business_plan_name')
-    search_fields = ('customer_name', 'product_name', 'business_plan_name')
-
-# ----------------------------------------------------------------------------------------
-# razorpay admin for form
-
-from .models import RazorpayTransactionForm
-
-@admin.register(RazorpayTransactionForm)
-class RazorpayTransactionAdmin(admin.ModelAdmin):
-    list_display = ('customer_name','product_name','razorpay_payment_id','razorpay_order_id','amount','status','created_at',)
-    search_fields = ('customer_name', 'razorpay_payment_id', 'razorpay_order_id')
-    list_filter = ('status', 'created_at')
-
-
-#----------------------------------------------------------------
-# netbanking section for razorpay button
-# Note: RazorpayInfo is now managed through custom admin views
-# from .models import RazorpayInfo
-
-# @admin.register(RazorpayInfo)
-# class RazorpayInfoAdmin(admin.ModelAdmin):
-#     list_display = ['title', 'payment_button_id']
-
-#----------------------------------------------------------------
-# netbanking section for QR editing section
-# Note: CompanyPaymentInfoQR is now managed through custom admin views
-# from .models import CompanyPaymentInfoQR
-
-# @admin.register(CompanyPaymentInfoQR)
-# class CompanyPaymentInfoQRAdmin(admin.ModelAdmin):
-#     list_display = ['company_name', 'upi_id']
-#     search_fields = ['company_name', 'upi_id']
-
-#----------------------------------------------------------------
-# netbanking section for Banking details
-# Note: BankTransferInfo is now managed through custom admin views
-# from .models import BankTransferInfo
-
-# @admin.register(BankTransferInfo)
-# class BankTransferInfoAdmin(admin.ModelAdmin):
-#     list_display = ['account_name', 'account_number', 'ifsc_code', 'bank_name']
-#     search_fields = ['account_name', 'bank_name', 'ifsc_code']
-
-
-from .models import Applicant
 @admin.register(Applicant)
 class ApplicantAdmin(admin.ModelAdmin):
-    list_display = ['name', 'mobile_number', 'email', 'reference', 'reference_contact', 'submitted_at']
-    search_fields = ['name', 'mobile_number', 'email', 'reference']
-    list_filter = ['submitted_at']
-    readonly_fields = ['submitted_at']
+    list_display = ['customer_name', 'reference', 'status', 'created_at']
+    list_filter = ['status', 'created_at']
+    search_fields = ['customer__name', 'customer__email', 'reference']
+    ordering = ['-created_at']
+    readonly_fields = ['created_at', 'updated_at']
+    
+    fieldsets = (
+        ('Customer Information', {
+            'fields': ('customer', 'reference', 'reference_contact')
+        }),
+        ('Documents', {
+            'fields': ('pan_copy', 'aadhar_copy', 'photo', 'gst_certificate', 'authorization_letter', 'company_pan'),
+            'classes': ('collapse',)
+        }),
+        ('Status & Notes', {
+            'fields': ('status', 'admin_notes'),
+            'classes': ('collapse',)
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    def customer_name(self, obj):
+        return obj.customer.name
+    customer_name.short_description = 'Customer'
+
+# ============================================================================
+# ADMIN SITE CONFIGURATION
+# ============================================================================
+
+# Customize admin site
+admin.site.site_header = "FusionTec Admin Panel"
+admin.site.site_title = "FusionTec Admin"
+admin.site.index_title = "Welcome to FusionTec Administration"
+
+# ============================================================================
+# SIMPLE PRODUCT TABLES ADMIN (matches requested schema)
+# ============================================================================
+
+@admin.register(ProductTypeMaster)
+class ProductTypeMasterAdmin(admin.ModelAdmin):
+    list_display = ['id', 'prdt_desc', 'created_at']
+    search_fields = ['prdt_desc']
+    readonly_fields = ['created_at', 'updated_at']
+
+
+@admin.register(ProductMasterV2)
+class ProductMasterV2Admin(admin.ModelAdmin):
+    list_display = ['id', 'product_type', 'prdt_desc', 'created_at']
+    list_filter = ['product_type']
+    search_fields = ['prdt_desc']
+    readonly_fields = ['created_at', 'updated_at']
+
+
+@admin.register(RateCardEntry)
+class RateCardEntryAdmin(admin.ModelAdmin):
+    list_display = ['id', 'product', 'rate_date', 'base_amt', 'gst_percent', 'nett_amt', 'token_amount', 'installation_charge', 't_amount', 'created_at']
+    list_filter = ['rate_date', 'product__product_type']
+    search_fields = ['product__prdt_desc', 'token_desc']
+    readonly_fields = ['nett_amt', 'cgst', 'sgst', 'token_total', 'token_cgst', 'token_sgst', 'installation_total', 'installation_cgst', 'installation_sgst', 't_amount', 'created_at', 'updated_at']
+    fieldsets = (
+        ('Basic Information', {
+            'fields': ('product', 'rate_date', 'base_amt', 'gst_percent', 'cgst', 'sgst', 'nett_amt')
+        }),
+        ('Token Details', {
+            'fields': ('token_desc', 'token_amount', 'token_gst_percent', 'token_cgst', 'token_sgst', 'token_total'),
+            'classes': ('collapse',)
+        }),
+        ('Installation Details', {
+            'fields': ('installation_charge', 'installation_gst_percent', 'installation_cgst', 'installation_sgst', 'installation_total'),
+            'classes': ('collapse',)
+        }),
+        ('Total Amount', {
+            'fields': ('t_amount',),
+            'classes': ('collapse',)
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        })
+    )

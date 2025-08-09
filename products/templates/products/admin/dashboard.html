@@ -1,165 +1,341 @@
 {% extends 'products/admin/base.html' %}
+{% load static %}
+{% load product_filters %}
 
 {% block title %}Dashboard - FusionTec Admin{% endblock %}
 
 {% block content %}
-<div class="row">
+<!-- Header Section -->
+<div class="row mb-4">
     <div class="col-12">
-        <h2 class="mb-4"><i class="fas fa-tachometer-alt"></i> Admin Dashboard</h2>
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="h2 mb-1"><i class="fas fa-tachometer-alt text-primary"></i> Admin Dashboard</h1>
+                <p class="text-muted mb-0">Welcome back! Here's what's happening with FusionTec today.</p>
+            </div>
+            <div class="text-end">
+                <div class="text-muted small">{{ today }}</div>
+                <div class="text-muted small">{{ this_month }}</div>
+                <button class="btn btn-sm btn-outline-primary mt-2" onclick="refreshDashboard()">
+                    <i class="fas fa-sync-alt"></i> Refresh
+                </button>
+            </div>
+        </div>
     </div>
 </div>
 
-<!-- Statistics Cards -->
+<!-- Key Metrics Cards -->
 <div class="row mb-4">
-    <div class="col-md-3 col-sm-6 mb-3">
-        <div class="stats-card">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h3 class="mb-0">{{ contact_count }}</h3>
-                    <p class="mb-0">Contact Submissions</p>
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <div class="bg-primary bg-gradient rounded-circle p-3">
+                            <i class="fas fa-users text-white fa-2x"></i>
+                        </div>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h4 class="mb-1">{{ total_customers|floatformat:0 }}</h4>
+                        <p class="text-muted mb-0">Total Customers</p>
+                        <div class="d-flex align-items-center mt-2">
+                            {% if customer_growth >= 0 %}
+                                <span class="text-success small">
+                                    <i class="fas fa-arrow-up"></i> {{ customer_growth }}%
+                                </span>
+                            {% else %}
+                                <span class="text-danger small">
+                                    <i class="fas fa-arrow-down"></i> {{ customer_growth|slice:"1:" }}%
+                                </span>
+                            {% endif %}
+                            <span class="text-muted small ms-2">vs last month</span>
+                        </div>
+                    </div>
                 </div>
-                <i class="fas fa-envelope fa-2x"></i>
             </div>
         </div>
     </div>
     
-    <div class="col-md-3 col-sm-6 mb-3">
-        <div class="stats-card">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h3 class="mb-0">{{ tally_count }}</h3>
-                    <p class="mb-0">Tally Submissions</p>
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <div class="bg-success bg-gradient rounded-circle p-3">
+                            <i class="fas fa-file-invoice-dollar text-white fa-2x"></i>
+                        </div>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h4 class="mb-1">{{ total_quotes|floatformat:0 }}</h4>
+                        <p class="text-muted mb-0">Total Quotes</p>
+                        <div class="d-flex align-items-center mt-2">
+                            {% if quote_growth >= 0 %}
+                                <span class="text-success small">
+                                    <i class="fas fa-arrow-up"></i> {{ quote_growth }}%
+                                </span>
+                            {% else %}
+                                <span class="text-danger small">
+                                    <i class="fas fa-arrow-down"></i> {{ quote_growth|slice:"1:" }}%
+                                </span>
+                            {% endif %}
+                            <span class="text-muted small ms-2">vs last month</span>
+                        </div>
+                    </div>
                 </div>
-                <i class="fas fa-calculator fa-2x"></i>
             </div>
         </div>
     </div>
     
-    <div class="col-md-3 col-sm-6 mb-3">
-        <div class="stats-card">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h3 class="mb-0">{{ emudhra_count }}</h3>
-                    <p class="mb-0">e-Mudhra Submissions</p>
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <div class="bg-info bg-gradient rounded-circle p-3">
+                            <i class="fas fa-envelope text-white fa-2x"></i>
+                        </div>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h4 class="mb-1">{{ total_contacts|floatformat:0 }}</h4>
+                        <p class="text-muted mb-0">Contact Inquiries</p>
+                        <div class="d-flex align-items-center mt-2">
+                            {% if contact_growth >= 0 %}
+                                <span class="text-success small">
+                                    <i class="fas fa-arrow-up"></i> {{ contact_growth }}%
+                                </span>
+                            {% else %}
+                                <span class="text-danger small">
+                                    <i class="fas fa-arrow-down"></i> {{ contact_growth|slice:"1:" }}%
+                                </span>
+                            {% endif %}
+                            <span class="text-muted small ms-2">vs last month</span>
+                        </div>
+                    </div>
                 </div>
-                <i class="fas fa-signature fa-2x"></i>
             </div>
         </div>
     </div>
     
-    <div class="col-md-3 col-sm-6 mb-3">
-        <div class="stats-card">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h3 class="mb-0">{{ fusiontec_count }}</h3>
-                    <p class="mb-0">FusionTec Submissions</p>
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <div class="bg-warning bg-gradient rounded-circle p-3">
+                            <i class="fas fa-indian-rupee-sign text-white fa-2x"></i>
+                        </div>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h4 class="mb-1">₹{{ total_revenue|floatformat:0 }}</h4>
+                        <p class="text-muted mb-0">Total Revenue</p>
+                        <div class="d-flex align-items-center mt-2">
+                            {% if revenue_growth >= 0 %}
+                                <span class="text-success small">
+                                    <i class="fas fa-arrow-up"></i> {{ revenue_growth }}%
+                                </span>
+                            {% else %}
+                                <span class="text-danger small">
+                                    <i class="fas fa-arrow-down"></i> {{ revenue_growth|slice:"1:" }}%
+                                </span>
+                            {% endif %}
+                            <span class="text-muted small ms-2">vs last month</span>
+                        </div>
+                    </div>
                 </div>
-                <i class="fas fa-building fa-2x"></i>
             </div>
         </div>
     </div>
 </div>
 
+<!-- Today's Activity & Monthly Overview -->
 <div class="row mb-4">
-    <div class="col-md-3 col-sm-6 mb-3">
-        <div class="stats-card">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h3 class="mb-0">{{ biz_count }}</h3>
-                    <p class="mb-0">Biz Submissions</p>
-                </div>
-                <i class="fas fa-briefcase fa-2x"></i>
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-md-3 col-sm-6 mb-3">
-        <div class="stats-card">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h3 class="mb-0">{{ payment_count }}</h3>
-                    <p class="mb-0">Payment Transactions</p>
-                </div>
-                <i class="fas fa-credit-card fa-2x"></i>
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-md-3 col-sm-6 mb-3">
-        <div class="stats-card">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h3 class="mb-0">{{ applicant_count }}</h3>
-                    <p class="mb-0">Applicants</p>
-                </div>
-                <i class="fas fa-user-plus fa-2x"></i>
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-md-3 col-sm-6 mb-3">
-        <div class="stats-card">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h3 class="mb-0">{{ contact_count|add:tally_count|add:emudhra_count|add:fusiontec_count|add:biz_count }}</h3>
-                    <p class="mb-0">Total Submissions</p>
-                </div>
-                <i class="fas fa-chart-line fa-2x"></i>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Recent Activity -->
-<div class="row">
-    <div class="col-md-6 mb-4">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0"><i class="fas fa-envelope me-2"></i>Recent Contact Submissions</h5>
+    <div class="col-lg-8 mb-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white border-0">
+                <h5 class="mb-0"><i class="fas fa-chart-line text-primary me-2"></i>Weekly Activity Trends</h5>
             </div>
             <div class="card-body">
-                {% if recent_contacts %}
+                <canvas id="weeklyChart" height="100"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4 mb-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white border-0">
+                <h5 class="mb-0"><i class="fas fa-calendar-day text-success me-2"></i>Today's Activity</h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-4">
+                        <div class="border-end">
+                            <h3 class="text-primary mb-1">{{ today_quotes }}</h3>
+                            <small class="text-muted">New Quotes</small>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="border-end">
+                            <h3 class="text-success mb-1">{{ today_contacts }}</h3>
+                            <small class="text-muted">Inquiries</small>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <h3 class="text-info mb-1">{{ today_customers }}</h3>
+                        <small class="text-muted">New Customers</small>
+                    </div>
+                </div>
+                
+                <hr class="my-3">
+                
+                <div class="text-center">
+                    <h6 class="text-muted mb-2">This Month's Performance</h6>
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="mb-2">
+                                <small class="text-muted d-block">Quotes</small>
+                                <span class="fw-bold">{{ this_month_quotes }}</span>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="mb-2">
+                                <small class="text-muted d-block">Revenue</small>
+                                <span class="fw-bold text-success">₹{{ this_month_revenue|floatformat:0 }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Section -->
+<div class="row mb-4">
+    <div class="col-lg-8 mb-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white border-0">
+                <h5 class="mb-0"><i class="fas fa-chart-line text-primary me-2"></i>Monthly Submissions Trend</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="monthlyChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4 mb-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white border-0">
+                <h5 class="mb-0"><i class="fas fa-chart-pie text-warning me-2"></i>Product Distribution</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="productChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Weekly Activity Chart -->
+<div class="row mb-4">
+    <div class="col-12 mb-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white border-0">
+                <h5 class="mb-0"><i class="fas fa-chart-area text-info me-2"></i>Weekly Activity</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="weeklyChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Revenue Chart -->
+<div class="row mb-4">
+    <div class="col-12 mb-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white border-0">
+                <h5 class="mb-0"><i class="fas fa-chart-bar text-success me-2"></i>Monthly Revenue</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="revenueChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quote Status & Top Products -->
+<div class="row mb-4">
+    <div class="col-lg-6 mb-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white border-0">
+                <h5 class="mb-0"><i class="fas fa-pie-chart text-warning me-2"></i>Quote Status Distribution</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="statusChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-6 mb-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white border-0">
+                <h5 class="mb-0"><i class="fas fa-trophy text-info me-2"></i>Top Performing Products</h5>
+            </div>
+            <div class="card-body">
+                {% if top_products %}
                     <div class="table-responsive">
-                        <table class="table table-hover">
+                        <table class="table table-sm">
                             <thead>
                                 <tr>
-                                    <th>Name</th>
-                                    <th>Email</th>
-                                    <th>Subject</th>
-                                    <th>Date</th>
+                                    <th>Product</th>
+                                    <th>Quotes</th>
+                                    <th>Revenue</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for contact in recent_contacts %}
+                                {% for product in top_products %}
                                 <tr>
-                                    <td>{{ contact.name }}</td>
-                                    <td>{{ contact.email }}</td>
-                                    <td>{{ contact.subject|truncatechars:30 }}</td>
-                                    <td>{{ contact.submitted_at|date:"M d, Y" }}</td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="bg-light rounded-circle p-2 me-2">
+                                                <i class="fas fa-box text-primary"></i>
+                                            </div>
+                                            <span class="fw-medium">{{ product.product_item__item_name|truncatechars:25 }}</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-primary">{{ product.quote_count }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="text-success fw-bold">₹{{ product.total_amount|floatformat:0 }}</span>
+                                    </td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
                         </table>
                     </div>
-                    <div class="text-center mt-3">
-                        <a href="{% url 'custom_admin_contacts' %}" class="btn btn-primary">View All Contacts</a>
-                    </div>
                 {% else %}
-                    <p class="text-muted text-center">No recent contact submissions</p>
+                    <div class="text-center py-4">
+                        <i class="fas fa-box fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No product data available</p>
+                    </div>
                 {% endif %}
             </div>
         </div>
     </div>
-    
-    <div class="col-md-6 mb-4">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0"><i class="fas fa-credit-card me-2"></i>Recent Payments</h5>
+</div>
+
+<!-- Recent Activities -->
+<div class="row mb-4">
+    <div class="col-lg-6 mb-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-file-invoice-dollar text-success me-2"></i>Recent Quote Submissions</h5>
+                <a href="{% url 'custom_admin_quotes' %}" class="btn btn-sm btn-outline-primary">View All</a>
             </div>
             <div class="card-body">
-                {% if recent_payments %}
+                {% if recent_quotes %}
                     <div class="table-responsive">
-                        <table class="table table-hover">
+                        <table class="table table-sm">
                             <thead>
                                 <tr>
                                     <th>Customer</th>
@@ -169,18 +345,34 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for payment in recent_payments %}
+                                {% for quote in recent_quotes %}
                                 <tr>
-                                    <td>{{ payment.customer_name }}</td>
-                                    <td>{{ payment.product_name|truncatechars:20 }}</td>
-                                    <td>₹{{ payment.amount }}</td>
                                     <td>
-                                        {% if payment.status == 'paid' %}
-                                            <span class="badge bg-success">Paid</span>
-                                        {% elif payment.status == 'failed' %}
-                                            <span class="badge bg-danger">Failed</span>
+                                        <div class="d-flex align-items-center">
+                                            <div class="bg-light rounded-circle p-2 me-2">
+                                                <i class="fas fa-user text-primary"></i>
+                                            </div>
+                                            <div>
+                                                <div class="fw-medium">{{ quote.customer.name|truncatechars:15 }}</div>
+                                                <small class="text-muted">{{ quote.created_at|date:"M d, H:i" }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="text-muted">{{ quote.product_item.item_name|truncatechars:20 }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="fw-bold text-success">₹{{ quote.grand_total|floatformat:0 }}</span>
+                                    </td>
+                                    <td>
+                                        {% if quote.status == 'approved' %}
+                                            <span class="badge bg-success">Approved</span>
+                                        {% elif quote.status == 'rejected' %}
+                                            <span class="badge bg-danger">Rejected</span>
+                                        {% elif quote.status == 'pending' %}
+                                            <span class="badge bg-warning">Pending</span>
                                         {% else %}
-                                            <span class="badge bg-warning">{{ payment.status|title }}</span>
+                                            <span class="badge bg-secondary">{{ quote.status|title }}</span>
                                         {% endif %}
                                     </td>
                                 </tr>
@@ -188,44 +380,138 @@
                             </tbody>
                         </table>
                     </div>
-                    <div class="text-center mt-3">
-                        <a href="{% url 'custom_admin_payments' %}" class="btn btn-primary">View All Payments</a>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-file-invoice-dollar fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No recent quote submissions</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-6 mb-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-envelope text-info me-2"></i>Recent Contact Inquiries</h5>
+                <a href="{% url 'custom_admin_contacts' %}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body">
+                {% if recent_contacts %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Subject</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for contact in recent_contacts %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="bg-light rounded-circle p-2 me-2">
+                                                <i class="fas fa-user text-info"></i>
+                                            </div>
+                                            <div>
+                                                <div class="fw-medium">{{ contact.name|truncatechars:15 }}</div>
+                                                <small class="text-muted">{{ contact.email|truncatechars:20 }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="text-muted">{{ contact.subject|truncatechars:30 }}</span>
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">{{ contact.created_at|date:"M d, H:i" }}</small>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
                     </div>
                 {% else %}
-                    <p class="text-muted text-center">No recent payments</p>
+                    <div class="text-center py-4">
+                        <i class="fas fa-envelope fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No recent contact inquiries</p>
+                    </div>
                 {% endif %}
             </div>
         </div>
     </div>
 </div>
 
-<!-- Quick Actions -->
-<div class="row">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0"><i class="fas fa-bolt me-2"></i>Quick Actions</h5>
+<!-- Customer Location & Quick Actions -->
+<div class="row mb-4">
+    <div class="col-lg-4 mb-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white border-0">
+                <h5 class="mb-0"><i class="fas fa-map-marker-alt text-danger me-2"></i>Customer Locations</h5>
+            </div>
+            <div class="card-body">
+                {% if top_states %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <tbody>
+                                {% for state in top_states %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="bg-light rounded-circle p-2 me-2">
+                                                <i class="fas fa-map-marker-alt text-danger"></i>
+                                            </div>
+                                            <span class="fw-medium">{{ state.state }}</span>
+                                        </div>
+                                    </td>
+                                    <td class="text-end">
+                                        <span class="badge bg-primary">{{ state.count }}</span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-map-marker-alt fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No location data available</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-8 mb-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white border-0">
+                <h5 class="mb-0"><i class="fas fa-bolt text-warning me-2"></i>Quick Actions</h5>
             </div>
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-3 col-sm-6 mb-3">
-                        <a href="{% url 'custom_admin_contacts' %}" class="btn btn-outline-primary w-100">
-                            <i class="fas fa-envelope me-2"></i>View Contacts
+                        <a href="{% url 'custom_admin_contacts' %}" class="btn btn-outline-primary w-100 h-100 d-flex flex-column align-items-center justify-content-center p-3">
+                            <i class="fas fa-envelope fa-2x mb-2"></i>
+                            <span>View Contacts</span>
                         </a>
                     </div>
                     <div class="col-md-3 col-sm-6 mb-3">
-                        <a href="{% url 'custom_admin_payments' %}" class="btn btn-outline-success w-100">
-                            <i class="fas fa-credit-card me-2"></i>View Payments
+                        <a href="{% url 'custom_admin_quotes' %}" class="btn btn-outline-success w-100 h-100 d-flex flex-column align-items-center justify-content-center p-3">
+                            <i class="fas fa-file-invoice-dollar fa-2x mb-2"></i>
+                            <span>View Quotes</span>
                         </a>
                     </div>
                     <div class="col-md-3 col-sm-6 mb-3">
-                        <a href="{% url 'custom_admin_applicants' %}" class="btn btn-outline-info w-100">
-                            <i class="fas fa-user-plus me-2"></i>View Applicants
+                        <a href="{% url 'custom_admin_products' %}" class="btn btn-outline-warning w-100 h-100 d-flex flex-column align-items-center justify-content-center p-3">
+                            <i class="fas fa-box fa-2x mb-2"></i>
+                            <span>Manage Products</span>
                         </a>
                     </div>
                     <div class="col-md-3 col-sm-6 mb-3">
-                        <a href="{% url 'custom_admin_products' %}" class="btn btn-outline-warning w-100">
-                            <i class="fas fa-box me-2"></i>Manage Products
+                        <a href="{% url 'index' %}" class="btn btn-outline-info w-100 h-100 d-flex flex-column align-items-center justify-content-center p-3">
+                            <i class="fas fa-home fa-2x mb-2"></i>
+                            <span>View Website</span>
                         </a>
                     </div>
                 </div>
@@ -233,4 +519,39 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'products/js/dashboard.js' %}"></script>
+<script>
+// Chart data for the dashboard
+const monthlyChartData = {
+    labels: {{ monthly_labels|safe }},
+    quotes: {{ monthly_quotes|safe }},
+    contacts: {{ monthly_contacts|safe }}
+};
+
+const productChartData = {
+    labels: {{ product_labels|safe }},
+    data: {{ product_data|safe }}
+};
+
+const revenueChartData = {
+    labels: {{ revenue_labels|safe }},
+    data: {{ revenue_data|safe }}
+};
+
+const weeklyChartData = {
+    labels: [{% for item in weekly_data %}'{{ item.date }}'{% if not forloop.last %}, {% endif %}{% endfor %}],
+    quotes: [{% for item in weekly_data %}{{ item.quotes }}{% if not forloop.last %}, {% endif %}{% endfor %}],
+    contacts: [{% for item in weekly_data %}{{ item.contacts }}{% if not forloop.last %}, {% endif %}{% endfor %}]
+};
+
+// Initialize charts when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    if (window.dashboardUtils) {
+        window.dashboardUtils.initializeCharts();
+    }
+});
+</script>
 {% endblock %} 

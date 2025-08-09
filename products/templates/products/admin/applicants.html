@@ -128,7 +128,7 @@
                                             </a>
                                         </div>
                                     </td>
-                                    <td>{{ applicant.submitted_at|date:"M d, Y H:i" }}</td>
+                                    <td>{{ applicant.created_at|date:"M d, Y H:i" }}</td>
                                     <td>
                                         <button class="btn btn-sm btn-outline-primary" 
                                                 data-bs-toggle="modal" 
@@ -258,7 +258,7 @@
                                                 <div class="row">
                                                     <div class="col-md-6">
                                                         <h6><i class="fas fa-calendar"></i> Submission Details</h6>
-                                                        <p><strong>Submitted:</strong> {{ applicant.submitted_at|date:"F d, Y at H:i" }}</p>
+                                                        <p><strong>Submitted:</strong> {{ applicant.created_at|date:"F d, Y at H:i" }}</p>
                                                     </div>
                                                 </div>
                                             </div>

@@ -1,0 +1,186 @@
+{% extends 'products/admin/base.html' %}
+
+{% block title %}Manage Items - {{ ptype.product_master.product_name }} / {{ ptype.type_name }}{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+  <div class="col-12 d-flex justify-content-between align-items-center">
+    <div>
+      <h2 class="mb-1"><i class="fas fa-boxes text-primary"></i> Manage Items</h2>
+      <p class="text-muted mb-0">{{ ptype.product_master.product_name }} → {{ ptype.type_name }}</p>
+    </div>
+    <div>
+      <a href="{% url 'admin_product_types' ptype.product_master.id %}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left"></i> Back to Types
+      </a>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-lg-4">
+    <div class="card shadow-sm border-0">
+      <div class="card-header">
+        <h5 class="mb-0"><i class="fas fa-plus"></i> Add New Item</h5>
+      </div>
+      <div class="card-body">
+        <form method="post">
+          {% csrf_token %}
+          <div class="mb-3">
+            <label class="form-label">Item Code *</label>
+            <input type="text" class="form-control" name="item_code" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Item Name *</label>
+            <input type="text" class="form-control" name="item_name" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Category</label>
+            <select name="item_category" class="form-select">
+              <option value="product">Product</option>
+              <option value="service">Service</option>
+              <option value="upgrade">Upgrade</option>
+              <option value="plan">Subscription Plan</option>
+              <option value="addon">Add-on</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Description</label>
+            <textarea class="form-control" name="description" rows="2"></textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Features</label>
+            <textarea class="form-control" name="features" rows="2"></textarea>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">Basic Amount</label>
+                <input type="number" step="0.01" class="form-control" name="basic_amount">
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="mb-3">
+                <label class="form-label">CGST</label>
+                <input type="number" step="0.01" class="form-control" name="cgst" value="0">
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="mb-3">
+                <label class="form-label">SGST</label>
+                <input type="number" step="0.01" class="form-control" name="sgst" value="0">
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">Token Name</label>
+                <input type="text" class="form-control" name="token_name">
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">Token Amount</label>
+                <input type="number" step="0.01" class="form-control" name="token_amount">
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">Install Charges</label>
+                <input type="number" step="0.01" class="form-control" name="installing_charges">
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">Old Price</label>
+                <input type="number" step="0.01" class="form-control" name="old_price">
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">Billing Cycle</label>
+                <input type="text" class="form-control" name="billing_cycle" placeholder="Billed for 1 Year | Per Device">
+              </div>
+            </div>
+            <div class="col-md-6 d-flex align-items-end">
+              <div class="form-check mb-3">
+                <input class="form-check-input" type="checkbox" name="is_active" id="is_active" checked>
+                <label class="form-check-label" for="is_active">Active</label>
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Display Order</label>
+            <input type="number" class="form-control" name="display_order" value="0">
+          </div>
+
+          <button type="submit" class="btn btn-primary w-100">
+            <i class="fas fa-plus"></i> Add Item
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-8">
+    <div class="card shadow-sm border-0">
+      <div class="card-header">
+        <h5 class="mb-0"><i class="fas fa-list"></i> Items ({{ items.count }})</h5>
+      </div>
+      <div class="card-body">
+        {% if items %}
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead class="table-light">
+              <tr>
+                <th>Code</th>
+                <th>Name</th>
+                <th>Category</th>
+                <th>Price</th>
+                <th>Taxes</th>
+                <th>Total</th>
+                <th>Status</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for it in items %}
+              <tr>
+                <td><span class="badge bg-secondary">{{ it.item_code }}</span></td>
+                <td>{{ it.item_name }}</td>
+                <td>{{ it.get_item_category_display }}</td>
+                <td>₹{{ it.basic_amount|default:'0.00' }}</td>
+                <td>
+                  <small>CGST: ₹{{ it.cgst|default:'0.00' }}<br>SGST: ₹{{ it.sgst|default:'0.00' }}</small>
+                </td>
+                <td><span class="badge bg-success">₹{{ it.total_price|default:'0.00' }}</span></td>
+                <td>{% if it.is_active %}<span class="badge bg-success">Active</span>{% else %}<span class="badge bg-danger">Inactive</span>{% endif %}</td>
+                <td width="140">
+                  <a class="btn btn-sm btn-outline-primary" href="{% url 'admin_rate_cards' it.id %}">
+                    <i class="fas fa-receipt"></i> Rate Cards
+                  </a>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+          <div class="text-center text-muted py-4">No items yet.</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+

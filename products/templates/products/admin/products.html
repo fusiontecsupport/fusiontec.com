@@ -2,6 +2,465 @@
 
 {% block title %}Product Management - FusionTec Admin{% endblock %}
 
+{% block extra_css %}
+<style>
+/* Professional Filter Section Styles */
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+}
+
+.filter-section {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 1.5rem;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.filter-controls {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.filter-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.9);
+    margin: 0;
+}
+
+.select-wrapper {
+    position: relative;
+    min-width: 200px;
+}
+
+.filter-select {
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 6px;
+    padding: 0.5rem 2rem 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.filter-select:focus {
+    background: white;
+    border-color: rgba(255, 255, 255, 0.8);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    outline: none;
+}
+
+.select-arrow {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6c757d;
+    pointer-events: none;
+    font-size: 0.75rem;
+}
+
+.filter-actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: flex-end;
+}
+
+.filter-actions .btn {
+    border-radius: 6px;
+    font-size: 0.875rem;
+    padding: 0.5rem 1rem;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.filter-actions .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.filter-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.stat-item i {
+    font-size: 0.75rem;
+    width: 16px;
+    text-align: center;
+}
+
+.stat-text {
+    font-weight: 500;
+}
+
+/* Enhanced Table Styles */
+.table {
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.table thead th {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: none;
+    font-weight: 600;
+    color: #495057;
+    padding: 1rem 0.75rem;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.table tbody td {
+    padding: 1rem 0.75rem;
+    border-bottom: 1px solid #f1f3f4;
+    vertical-align: middle;
+}
+
+.table tbody tr:hover {
+    background: linear-gradient(135deg, #f8f9ff 0%, #f0f4ff 100%);
+    transform: scale(1.001);
+    transition: all 0.2s ease;
+}
+
+/* Filter Indicator Row */
+.table-info {
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%) !important;
+    border-left: 4px solid #2196f3;
+}
+
+.table-info td {
+    padding: 0.75rem;
+    font-weight: 500;
+    color: #1565c0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .filter-controls {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+    }
+    
+    .filter-actions {
+        justify-content: center;
+    }
+    
+    .filter-stats {
+        margin-top: 1rem;
+        text-align: center;
+    }
+    
+    .stat-item {
+        justify-content: center;
+    }
+}
+
+/* Animation for filter changes */
+.filter-section {
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Badge enhancements */
+.badge {
+    font-weight: 600;
+    padding: 0.5rem 0.75rem;
+    border-radius: 20px;
+}
+
+/* Button enhancements */
+.btn-light {
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: #495057;
+    font-weight: 500;
+}
+
+.btn-light:hover {
+    background: white;
+    border-color: rgba(255, 255, 255, 0.5);
+    color: #212529;
+}
+
+.btn-outline-light {
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    color: white;
+    font-weight: 500;
+}
+
+.btn-outline-light:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: white;
+    color: white;
+}
+
+/* Enhanced Table Row Styles */
+.product-row {
+    transition: all 0.3s ease;
+}
+
+.product-row:hover {
+    background: linear-gradient(135deg, #f8f9ff 0%, #f0f4ff 100%);
+    transform: translateX(4px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.product-id {
+    font-family: 'Courier New', monospace;
+    font-weight: 600;
+    color: #6c757d;
+    background: #f8f9fa;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.875rem;
+}
+
+.product-type-badge {
+    display: inline-flex;
+    align-items: center;
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+    color: #1565c0;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border: 1px solid #90caf9;
+}
+
+.product-name {
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.product-date {
+    display: flex;
+    align-items: center;
+    color: #6c757d;
+}
+
+.rate-cards-count .badge {
+    background: linear-gradient(135deg, #4fc3f7 0%, #29b6f6 100%);
+    border: none;
+    font-weight: 500;
+    padding: 0.5rem 0.75rem;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.action-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    padding: 0.5rem 0.75rem;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    border-width: 2px;
+}
+
+.action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.action-btn .btn-text {
+    font-size: 0.75rem;
+}
+
+/* Gradient badges */
+.bg-gradient-info {
+    background: linear-gradient(135deg, #4fc3f7 0%, #29b6f6 100%);
+    border: none;
+}
+
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+}
+
+/* Enhanced filter indicator */
+.table-info {
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%) !important;
+    border-left: 4px solid #2196f3;
+}
+
+.table-info td {
+    padding: 1rem;
+    font-weight: 500;
+    color: #1565c0;
+}
+
+.table-info .badge {
+    background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%);
+    border: none;
+    font-weight: 600;
+}
+
+/* Responsive improvements */
+@media (max-width: 768px) {
+    .action-buttons {
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+    
+    .action-btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .btn-text {
+        display: none;
+    }
+    
+    .product-type-badge {
+        font-size: 0.75rem;
+        padding: 0.2rem 0.5rem;
+    }
+}
+</style>
+{% endblock %}
+
+<script>
+function deleteType(typeId) {
+    if (confirm('Are you sure you want to delete this product type? This will also delete all associated products and rate cards.')) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.innerHTML = `
+            {% csrf_token %}
+            <input type="hidden" name="action" value="delete_type">
+            <input type="hidden" name="type_id" value="${typeId}">
+        `;
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+function deleteProduct(productId) {
+    if (confirm('Are you sure you want to delete this product? This will also delete all associated rate cards.')) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.innerHTML = `
+            {% csrf_token %}
+            <input type="hidden" name="action" value="delete_product">
+            <input type="hidden" name="product_id" value="${productId}">
+        `;
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+// Enhanced Filter functionality
+function applyFilter() {
+    const filterSelect = document.getElementById('type-filter');
+    const filterSection = document.querySelector('.filter-section');
+    
+    // Add loading animation
+    filterSection.style.opacity = '0.7';
+    filterSection.style.transform = 'scale(0.98)';
+    
+    console.log('Filter value:', filterSelect.value);
+    
+    const currentUrl = new URL(window.location);
+    
+    if (filterSelect.value) {
+        currentUrl.searchParams.set('type_filter', filterSelect.value);
+    } else {
+        currentUrl.searchParams.delete('type_filter');
+    }
+    
+    console.log('Redirecting to:', currentUrl.toString());
+    
+    // Smooth transition
+    setTimeout(() => {
+        window.location.href = currentUrl.toString();
+    }, 200);
+}
+
+
+
+// Add smooth animations on page load
+document.addEventListener('DOMContentLoaded', function() {
+    const filterSection = document.querySelector('.filter-section');
+    const productRows = document.querySelectorAll('.product-row');
+    
+    // Animate filter section
+    if (filterSection) {
+        filterSection.style.opacity = '0';
+        filterSection.style.transform = 'translateY(-20px)';
+        
+        setTimeout(() => {
+            filterSection.style.transition = 'all 0.5s ease';
+            filterSection.style.opacity = '1';
+            filterSection.style.transform = 'translateY(0)';
+        }, 100);
+    }
+    
+    // Animate product rows with stagger
+    productRows.forEach((row, index) => {
+        row.style.opacity = '0';
+        row.style.transform = 'translateX(-20px)';
+        
+        setTimeout(() => {
+            row.style.transition = 'all 0.4s ease';
+            row.style.opacity = '1';
+            row.style.transform = 'translateX(0)';
+        }, 200 + (index * 50));
+    });
+});
+
+// Enhanced hover effects
+document.addEventListener('DOMContentLoaded', function() {
+    const productRows = document.querySelectorAll('.product-row');
+    
+    productRows.forEach(row => {
+        row.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateX(8px) scale(1.01)';
+        });
+        
+        row.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateX(0) scale(1)';
+        });
+    });
+});
+</script>
+
 {% block content %}
 <div class="row">
     <div class="col-12">
@@ -11,303 +470,267 @@
     </div>
 </div>
 
-<!-- Product Categories Tabs -->
+<!-- Products List -->
 <div class="row">
-    <div class="col-12">
+    <div class="col-lg-4">
         <div class="card">
             <div class="card-header">
-                <ul class="nav nav-tabs card-header-tabs" id="productTabs" role="tablist">
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link active" id="tally-tab" data-bs-toggle="tab" data-bs-target="#tally" type="button" role="tab">
-                            <i class="fas fa-calculator"></i> Tally Products
-                        </button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="emudhra-tab" data-bs-toggle="tab" data-bs-target="#emudhra" type="button" role="tab">
-                            <i class="fas fa-signature"></i> e-Mudhra Products
-                        </button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="fusiontec-tab" data-bs-toggle="tab" data-bs-target="#fusiontec" type="button" role="tab">
-                            <i class="fas fa-cogs"></i> FusionTec Products
-                        </button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="biz-tab" data-bs-toggle="tab" data-bs-target="#biz" type="button" role="tab">
-                            <i class="fas fa-chart-line"></i> Business Analyst
-                        </button>
-                    </li>
-                </ul>
+                <h5 class="mb-0"><i class="fas fa-plus"></i> Add Product Master</h5>
             </div>
             <div class="card-body">
-                <div class="tab-content" id="productTabsContent">
-                    <!-- Tally Products Tab -->
-                    <div class="tab-pane fade show active" id="tally" role="tabpanel">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h5><i class="fas fa-calculator"></i> Tally Products</h5>
-                            <span class="badge bg-primary">{{ tally_products.count }} Products</span>
-                        </div>
-                        {% if tally_products %}
-                            <div class="table-responsive">
-                                <table class="table table-hover">
-                                    <thead>
-                                        <tr>
-                                            <th>Product Name</th>
-                                            <th>Description</th>
-                                            <th>Link</th>
-                                            <th>Products/Services</th>
-                                            <th>Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for product in tally_products %}
-                                        <tr>
-                                            <td><strong>{{ product.tally_name }}</strong></td>
-                                            <td>{{ product.tally_description|truncatechars:100 }}</td>
-                                            <td>
-                                                {% if product.tally_link %}
-                                                    <a href="{{ product.tally_link }}" target="_blank" class="btn btn-sm btn-outline-primary">
-                                                        <i class="fas fa-external-link-alt"></i> View
-                                                    </a>
-                                                {% else %}
-                                                    <span class="text-muted">No link</span>
-                                                {% endif %}
-                                            </td>
-                                            <td>
-                                                <span class="badge bg-info">{{ product.products.count }} Products</span>
-                                                <span class="badge bg-success">{{ product.services.count }} Services</span>
-                                                <span class="badge bg-warning">{{ product.upgrades.count }} Upgrades</span>
-                                            </td>
-                                            <td>
-                                                <div class="d-flex flex-column gap-2">
-                                                    <a href="{% url 'edit_tally_product' product.id %}" class="btn btn-sm btn-primary">
-                                                        <i class="fas fa-edit"></i> Edit
-                                                    </a>
-                                                    <a href="{% url 'manage_product_items' 'tally' product.id %}" class="btn btn-sm btn-outline-primary">
-                                                        <i class="fas fa-cogs"></i> Manage Items
-                                                    </a>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
-                            </div>
-                        {% else %}
-                            <div class="text-center py-4">
-                                <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
-                                <p class="text-muted">No Tally products found.</p>
-                            </div>
-                        {% endif %}
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <input type="hidden" name="form_type" value="type">
+                    <div class="mb-3">
+                        <label class="form-label">Add Product Type (PrdtTDesc) *</label>
+                        <input type="text" class="form-control" name="prdt_desc" placeholder="e.g., Tally" required>
                     </div>
-
-                    <!-- e-Mudhra Products Tab -->
-                    <div class="tab-pane fade" id="emudhra" role="tabpanel">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h5><i class="fas fa-signature"></i> e-Mudhra Products</h5>
-                            <span class="badge bg-primary">{{ emudhra_products.count }} Products</span>
-                        </div>
-                        {% if emudhra_products %}
-                            <div class="table-responsive">
-                                <table class="table table-hover">
-                                    <thead>
-                                        <tr>
-                                            <th>Product Name</th>
-                                            <th>Description</th>
-                                            <th>Link</th>
-                                            <th>Products</th>
-                                            <th>Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for product in emudhra_products %}
-                                        <tr>
-                                            <td><strong>{{ product.emudhra_name }}</strong></td>
-                                            <td>{{ product.emudhra_description|truncatechars:100 }}</td>
-                                            <td>
-                                                {% if product.emudhra_link %}
-                                                    <a href="{{ product.emudhra_link }}" target="_blank" class="btn btn-sm btn-outline-primary">
-                                                        <i class="fas fa-external-link-alt"></i> View
-                                                    </a>
-                                                {% else %}
-                                                    <span class="text-muted">No link</span>
-                                                {% endif %}
-                                            </td>
-                                            <td>
-                                                <span class="badge bg-info">{{ product.emudhra_product_set.count }} Products</span>
-                                            </td>
-                                            <td>
-                                                <div class="d-flex flex-column gap-2">
-                                                    <a href="{% url 'edit_emudhra_product' product.id %}" class="btn btn-sm btn-primary">
-                                                        <i class="fas fa-edit"></i> Edit
-                                                    </a>
-                                                    <a href="{% url 'manage_product_items' 'emudhra' product.id %}" class="btn btn-sm btn-outline-primary">
-                                                        <i class="fas fa-cogs"></i> Manage Items
-                                                    </a>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
-                            </div>
-                        {% else %}
-                            <div class="text-center py-4">
-                                <i class="fas fa-signature fa-3x text-muted mb-3"></i>
-                                <p class="text-muted">No e-Mudhra products found.</p>
-                            </div>
-                        {% endif %}
+                    <div class="mb-3">
+                        <label class="form-label">Type Image</label>
+                        <input type="file" class="form-control" name="image" accept="image/*">
                     </div>
-
-                    <!-- FusionTec Products Tab -->
-                    <div class="tab-pane fade" id="fusiontec" role="tabpanel">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h5><i class="fas fa-cogs"></i> FusionTec Products</h5>
-                            <span class="badge bg-primary">{{ fusiontec_products.count }} Products</span>
-                        </div>
-                        {% if fusiontec_products %}
-                            <div class="table-responsive">
-                                <table class="table table-hover">
-                                    <thead>
-                                        <tr>
-                                            <th>Product Name</th>
-                                            <th>Description</th>
-                                            <th>Link</th>
-                                            <th>Products</th>
-                                            <th>Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for product in fusiontec_products %}
-                                        <tr>
-                                            <td><strong>{{ product.fusiontec_name }}</strong></td>
-                                            <td>{{ product.fusiontec_description|truncatechars:100 }}</td>
-                                            <td>
-                                                {% if product.fusiontec_link %}
-                                                    <a href="{{ product.fusiontec_link }}" target="_blank" class="btn btn-sm btn-outline-primary">
-                                                        <i class="fas fa-external-link-alt"></i> View
-                                                    </a>
-                                                {% else %}
-                                                    <span class="text-muted">No link</span>
-                                                {% endif %}
-                                            </td>
-                                            <td>
-                                                <span class="badge bg-info">{{ product.fusiontec_product_set.count }} Products</span>
-                                            </td>
-                                            <td>
-                                                <div class="d-flex flex-column gap-2">
-                                                    <a href="{% url 'edit_fusiontec_product' product.id %}" class="btn btn-sm btn-primary">
-                                                        <i class="fas fa-edit"></i> Edit
-                                                    </a>
-                                                    <a href="{% url 'manage_product_items' 'fusiontec' product.id %}" class="btn btn-sm btn-outline-primary">
-                                                        <i class="fas fa-cogs"></i> Manage Items
-                                                    </a>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
-                            </div>
-                        {% else %}
-                            <div class="text-center py-4">
-                                <i class="fas fa-cogs fa-3x text-muted mb-3"></i>
-                                <p class="text-muted">No FusionTec products found.</p>
-                            </div>
-                        {% endif %}
+                    <button type="submit" class="btn btn-primary w-100">Add Type</button>
+                </form>
+                <hr/>
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="form_type" value="product">
+                    <div class="mb-3">
+                        <label class="form-label">Type *</label>
+                        <select class="form-select" name="product_type" required>
+                            <option value="">Select...</option>
+                            {% for t in simple_types %}
+                                <option value="{{ t.id }}">{{ t.prdt_desc }}</option>
+                            {% endfor %}
+                        </select>
                     </div>
-
-                    <!-- Business Analyst Tab -->
-                    <div class="tab-pane fade" id="biz" role="tabpanel">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h5><i class="fas fa-chart-line"></i> Business Analyst Products</h5>
-                            <span class="badge bg-primary">{{ biz_products.count }} Products</span>
-                        </div>
-                        {% if biz_products %}
-                            <div class="table-responsive">
-                                <table class="table table-hover">
-                                    <thead>
-                                        <tr>
-                                            <th>Product Name</th>
-                                            <th>Description</th>
-                                            <th>Link</th>
-                                            <th>Teams</th>
-                                            <th>Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for product in biz_products %}
-                                        <tr>
-                                            <td><strong>{{ product.biz_name }}</strong></td>
-                                            <td>{{ product.biz_description|truncatechars:100 }}</td>
-                                            <td>
-                                                {% if product.biz_link %}
-                                                    <a href="{{ product.biz_link }}" target="_blank" class="btn btn-sm btn-outline-primary">
-                                                        <i class="fas fa-external-link-alt"></i> View
-                                                    </a>
-                                                {% else %}
-                                                    <span class="text-muted">No link</span>
-                                                {% endif %}
-                                            </td>
-                                            <td>
-                                                <span class="badge bg-info">{{ product.biz_product_set.count }} Teams</span>
-                                            </td>
-                                            <td>
-                                                <div class="d-flex flex-column gap-2">
-                                                    <a href="{% url 'edit_biz_product' product.id %}" class="btn btn-sm btn-primary">
-                                                        <i class="fas fa-edit"></i> Edit
-                                                    </a>
-                                                    <a href="{% url 'manage_product_items' 'biz' product.id %}" class="btn btn-sm btn-outline-primary">
-                                                        <i class="fas fa-cogs"></i> Manage Items
-                                                    </a>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
-                            </div>
-                        {% else %}
-                            <div class="text-center py-4">
-                                <i class="fas fa-chart-line fa-3x text-muted mb-3"></i>
-                                <p class="text-muted">No Business Analyst products found.</p>
-                            </div>
-                        {% endif %}
+                    <div class="mb-3">
+                        <label class="form-label">Product Description (PrdtDesc) *</label>
+                        <input type="text" class="form-control" name="prdt_desc" placeholder="e.g., Tally Prime Single User" required>
+                    </div>
+                    <button type="submit" class="btn btn-success w-100">Add Product</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header bg-gradient-primary text-white">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-boxes me-2"></i>
+                        <h5 class="mb-0">Product Management</h5>
+                        <span class="badge bg-light text-dark ms-2">{{ simple_products.count }}</span>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <a href="{% url 'custom_admin_products' %}" class="btn btn-sm btn-light">
+                            <i class="fas fa-sync-alt"></i> Refresh
+                        </a>
                     </div>
                 </div>
+                
+                <!-- Professional Filter Section -->
+                <div class="filter-section">
+                    <div class="row align-items-center">
+                        <div class="col-lg-8">
+                            <div class="filter-controls">
+                                <form method="get" class="d-flex align-items-center gap-3">
+                                    <div class="filter-group">
+                                        <label class="filter-label">
+                                            <i class="fas fa-filter me-1"></i>Filter by Type
+                                        </label>
+                                        <div class="select-wrapper">
+                                            <select id="type-filter" name="type_filter" class="form-select filter-select">
+                                                <option value="">All Product Types</option>
+                                                {% for t in simple_types %}
+                                                    <option value="{{ t.id }}" {% if selected_type == t.id|stringformat:"s" %}selected{% endif %}>
+                                                        {{ t.prdt_desc }}
+                                                    </option>
+                                                {% endfor %}
+                                            </select>
+                                            <i class="fas fa-chevron-down select-arrow"></i>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="filter-actions">
+                                        <button type="submit" class="btn btn-light btn-sm">
+                                            <i class="fas fa-search"></i> Apply
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                        
+                        <div class="col-lg-4">
+                            <div class="filter-stats text-end">
+                                {% if selected_type %}
+                                    <div class="stat-item">
+                                        <i class="fas fa-filter text-warning"></i>
+                                        <span class="stat-text">Filtered: {{ simple_products.count }} product{{ simple_products.count|pluralize }}</span>
+                                    </div>
+                                    <div class="stat-item">
+                                        <i class="fas fa-layer-group text-info"></i>
+                                        <span class="stat-text">Type: 
+                                            {% for t in simple_types %}
+                                                {% if selected_type == t.id|stringformat:"s" %}
+                                                    {{ t.prdt_desc }}
+                                                {% endif %}
+                                            {% endfor %}
+                                        </span>
+                                    </div>
+                                {% else %}
+                                    <div class="stat-item">
+                                        <i class="fas fa-boxes text-success"></i>
+                                        <span class="stat-text">All {{ simple_products.count }} products</span>
+                                    </div>
+                                    <div class="stat-item">
+                                        <i class="fas fa-tags text-info"></i>
+                                        <span class="stat-text">{{ simple_types.count }} types available</span>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if simple_products %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Type (PrdtTId)</th>
+                                    <th>PrdtDesc</th>
+                                    <th>Created</th>
+                                    <th>Rate Cards</th>
+                                    <th>Actions</th>
+                                </tr>
+                                {% if selected_type %}
+                                <tr class="table-info">
+                                    <td colspan="6" class="text-center">
+                                        <div class="d-flex align-items-center justify-content-center gap-2">
+                                            <i class="fas fa-filter-circle"></i>
+                                            <span class="fw-semibold">Filtered Results</span>
+                                            <span class="badge bg-primary">Active</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endif %}
+                            </thead>
+                            <tbody>
+                                {% for p in simple_products %}
+                                <tr class="product-row">
+                                    <td>
+                                        <span class="product-id">#{{ p.id }}</span>
+                                    </td>
+                                    <td>
+                                        <div class="product-type-badge">
+                                            <i class="fas fa-tag me-1"></i>
+                                            {{ p.product_type.prdt_desc }}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="product-name">
+                                            <strong>{{ p.prdt_desc }}</strong>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="product-date">
+                                            <i class="fas fa-calendar-alt me-1 text-muted"></i>
+                                            <small>{{ p.created_at|date:"M d, Y" }}</small>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="rate-cards-count">
+                                            <span class="badge bg-gradient-info">
+                                                <i class="fas fa-receipt me-1"></i>
+                                                {{ p.rate_cards.count }} rates
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <a class="btn btn-sm btn-outline-primary action-btn" href="{% url 'admin_rate_cards' p.id %}" title="Manage Rate Cards">
+                                                <i class="fas fa-receipt"></i>
+                                                <span class="btn-text">Rates</span>
+                                            </a>
+                                            <button class="btn btn-sm btn-outline-danger action-btn" onclick="deleteProduct({{ p.id }})" title="Delete Product">
+                                                <i class="fas fa-trash"></i>
+                                                <span class="btn-text">Delete</span>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No products found. Add a type and a product on the left.</p>
+                    </div>
+                {% endif %}
             </div>
         </div>
     </div>
 </div>
 
-<!-- Quick Actions -->
+<!-- Product Types Details -->
+{% if simple_types %}
 <div class="row mt-4">
     <div class="col-12">
         <div class="card">
             <div class="card-header">
-                <h5 class="mb-0"><i class="fas fa-plus"></i> Quick Actions</h5>
+                <h5 class="mb-0"><i class="fas fa-layer-group"></i> Product Types</h5>
+            </div>
+            <div class="card-body">
+                {% for t in simple_types %}
+                <div class="mb-3 p-3 border rounded">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-primary mb-1">{{ t.prdt_desc }}</h6>
+                            <small class="text-muted">Created: {{ t.created_at|date:"M d, Y" }}</small>
+                        </div>
+                        <div>
+                            {% if t.image %}
+                                <img src="{{ t.image.url }}" alt="{{ t.prdt_desc }}" style="width: 50px; height: 50px; object-fit: cover;" class="rounded me-2">
+                            {% endif %}
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteType({{ t.id }})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Information Card -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-info-circle"></i> Information</h5>
             </div>
             <div class="card-body">
                 <div class="row">
-                    <div class="col-md-3">
-                        <a href="{% url 'add_tally_product' %}" class="btn btn-outline-primary w-100 mb-2">
-                            <i class="fas fa-plus"></i> Add Tally Product
-                        </a>
+                    <div class="col-md-6">
+                        <h6>Current Setup:</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check text-success me-2"></i>Types: {{ simple_types.count }}</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Products: {{ simple_products.count }}</li>
+                        </ul>
                     </div>
-                    <div class="col-md-3">
-                        <a href="{% url 'add_emudhra_product' %}" class="btn btn-outline-primary w-100 mb-2">
-                            <i class="fas fa-plus"></i> Add e-Mudhra Product
-                        </a>
-                    </div>
-                    <div class="col-md-3">
-                        <a href="{% url 'add_fusiontec_product' %}" class="btn btn-outline-primary w-100 mb-2">
-                            <i class="fas fa-plus"></i> Add FusionTec Product
-                        </a>
-                    </div>
-                    <div class="col-md-3">
-                        <a href="{% url 'add_biz_product' %}" class="btn btn-outline-primary w-100 mb-2">
-                            <i class="fas fa-plus"></i> Add Biz Product
-                        </a>
+                    <div class="col-md-6">
+                        <h6>Note:</h6>
+                        <p class="text-muted small">
+                            This page manages the new minimal schema tables: `ProductTypeMaster`, `ProductMaster`, and `RateCardMaster`.
+                        </p>
                     </div>
                 </div>
             </div>
