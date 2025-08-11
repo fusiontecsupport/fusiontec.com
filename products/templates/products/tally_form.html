@@ -747,17 +747,25 @@ document.addEventListener('DOMContentLoaded', function () {
       return;
     }
 
-    // Build Proforma Invoice HTML
+    // Build Proforma Invoice HTML (respect selected add-ons)
     let tokenRow = '';
     let installRow = '';
+    const includeToken = document.getElementById('add_token')?.checked;
+    const includeInstall = document.getElementById('add_installation')?.checked;
+
     if (window.selectedTallyDetails) {
-      if (window.selectedTallyDetails.token_amount && parseFloat(window.selectedTallyDetails.token_amount) > 0) {
-        tokenRow = `<tr><th>Token Amount</th><td>₹${window.selectedTallyDetails.token_amount}</td></tr>`;
+      const tokenAmount = parseFloat(window.selectedTallyDetails.token_amount || '0');
+      const installAmount = parseFloat(window.selectedTallyDetails.installing_charges || '0');
+
+      if (includeToken && tokenAmount > 0) {
+        tokenRow = `<tr><th>Token Amount</th><td>₹${tokenAmount}</td></tr>`;
       }
-      if (window.selectedTallyDetails.installing_charges && parseFloat(window.selectedTallyDetails.installing_charges) > 0) {
-        installRow = `<tr><th>Installation Charges</th><td>₹${window.selectedTallyDetails.installing_charges}</td></tr>`;
+      if (includeInstall && installAmount > 0) {
+        installRow = `<tr><th>Installation Charges</th><td>₹${installAmount}</td></tr>`;
       }
     }
+
+    const finalTotalAmount = parseFloat((document.getElementById('totalAmount')?.textContent || '0')) || 0;
 
     let piHtml = `
       <h4>Proforma Invoice</h4>
@@ -789,6 +797,7 @@ document.addEventListener('DOMContentLoaded', function () {
           <tr><th>Total Price</th><td><strong>${totalPriceText || "₹0.00"}</strong></td></tr>
           ${tokenRow}
           ${installRow}
+          <tr><th>Final Total</th><td><strong>₹${finalTotalAmount.toFixed(2)}</strong></td></tr>
         </tbody>
       </table>
     `;

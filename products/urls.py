@@ -11,6 +11,8 @@ urlpatterns = [
     path('catalog/', views.product_catalog, name='product_catalog'),
     path('product/<int:product_id>/', views.product_detail, name='product_detail'),
     path('product-type/<int:type_id>/', views.product_type_products, name='product_type_products'),
+    path('product-form/<int:type_id>/', views.product_type_form, name='product_type_form'),
+    path('save-product-submission/', views.save_product_submission, name='save_product_submission'),
     
     # ============================================================================
     # QUOTE & CONTACT FORMS
@@ -24,6 +26,8 @@ urlpatterns = [
     # ============================================================================
     path('api/states/', views.get_states, name='get_states'),
     path('api/districts/<str:state>/', views.get_districts, name='get_districts'),
+    path('api/submission/<int:submission_id>/', views.get_submission_details, name='get_submission_details'),
+    path('api/submission/<int:submission_id>/convert/', views.convert_submission_to_quote, name='convert_submission_to_quote'),
     
     # ============================================================================
     # CUSTOM ADMIN PANEL URLs
@@ -33,6 +37,7 @@ urlpatterns = [
     path('admin/dashboard/data/', views.dashboard_data_api, name='dashboard_data_api'),
     path('admin-contacts/', views.custom_admin_contacts, name='custom_admin_contacts'),
     path('admin-quotes/', views.custom_admin_quotes, name='custom_admin_quotes'),
+    path('admin-form-submissions/', views.custom_admin_form_submissions, name='custom_admin_form_submissions'),
     path('admin-products/', views.custom_admin_products, name='custom_admin_products'),
     path('admin-tally-submissions/', views.custom_admin_tally_submissions, name='custom_admin_tally_submissions'),
     path('admin-emudhra-submissions/', views.custom_admin_emudhra_submissions, name='custom_admin_emudhra_submissions'),

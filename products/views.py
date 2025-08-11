@@ -10,12 +10,14 @@ from functools import wraps
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db.models import Q
+import json
 
 from .models import (
     ProductMaster, ProductType, ProductItem, RateCardMaster, Customer, 
     QuoteSubmission, ContactSubmission, PaymentTransaction, 
     PaymentSettings, Applicant,
     ProductTypeMaster, ProductMasterV2, RateCardEntry,
+    ProductFormSubmission,
 )
 
 # ============================================================================
@@ -176,6 +178,164 @@ def product_type_products(request, type_id):
         'product_items': product_items,
     }
     return render(request, 'products/product_type.html', context)
+
+def product_type_form(request, type_id):
+    """Display product form for a specific product type"""
+    product_type = get_object_or_404(ProductTypeMaster, id=type_id)
+    
+    # Get all available products for this type
+    available_products = ProductMasterV2.objects.filter(product_type=product_type)
+    
+    # Get the first available product item for this type, or create a dummy one
+    try:
+        product_item = available_products.first()
+        if not product_item:
+            # Create a dummy product item for display purposes
+            product_item = type('DummyProduct', (), {
+                'prdt_desc': product_type.prdt_desc,
+                'basic_amount': 0,
+                'cgst': 0,
+                'sgst': 0,
+                'token_amount': 0,
+                'installing_charges': 0
+            })()
+    except:
+        product_item = type('DummyProduct', (), {
+            'prdt_desc': product_type.prdt_desc,
+            'basic_amount': 0,
+            'cgst': 0,
+            'sgst': 0,
+            'token_amount': 0,
+            'installing_charges': 0
+        })()
+    
+    # Get rate card data for each product
+    products_with_rates = []
+    for product in available_products:
+        # Get the latest rate card for this product
+        latest_rate = RateCardEntry.objects.filter(product=product).order_by('-rate_date').first()
+        
+        if latest_rate:
+            products_with_rates.append({
+                'product': product,
+                'rate_card': latest_rate
+            })
+        else:
+            # If no rate card, create a default one
+            products_with_rates.append({
+                'product': product,
+                'rate_card': type('DefaultRate', (), {
+                    'base_amt': 0,
+                    'cgst': 0,
+                    'sgst': 0,
+                    'token_amount': 0,
+                    'installation_charge': 0
+                })()
+            })
+    
+    # Debug: Print what we're getting
+    print(f"Debug: Found {len(products_with_rates)} products with rates")
+    for pw in products_with_rates:
+        print(f"Product: {pw['product'].prdt_desc}, Rate: {pw['rate_card']}")
+    
+    context = {
+        'product': product_item,
+        'product_type': product_type,
+        'available_products': available_products,
+        'products_with_rates': products_with_rates,
+    }
+    return render(request, 'products/product_form.html', context)
+
+@csrf_exempt
+def save_product_submission(request):
+    """Save product submission to database"""
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            
+            # Create or get customer
+            customer, created = Customer.objects.get_or_create(
+                email=data.get('email'),
+                defaults={
+                    'name': data.get('customer_name'),
+                    'company_name': data.get('company_name', ''),
+                    'mobile': data.get('mobile'),
+                    'has_gst': data.get('has_gst') == 'yes',
+                    'gst_number': data.get('gst_number', ''),
+                    'address': data.get('address', ''),
+                    'state': data.get('state', ''),
+                    'district': data.get('district', ''),
+                    'pincode': data.get('pincode', ''),
+                }
+            )
+            
+            # Update customer if not created
+            if not created:
+                customer.name = data.get('customer_name')
+                customer.company_name = data.get('company_name', '')
+                customer.mobile = data.get('mobile')
+                customer.has_gst = data.get('has_gst') == 'yes'
+                customer.gst_number = data.get('gst_number', '')
+                customer.address = data.get('address', '')
+                customer.state = data.get('state', '')
+                customer.district = data.get('district', '')
+                customer.pincode = data.get('pincode', '')
+                customer.save()
+            
+            # Get product item
+            product_item = ProductMasterV2.objects.get(id=data.get('product_id'))
+            
+            # Calculate GST rates from amounts
+            basic_amount = data.get('basic_amount', 0)
+            cgst_amount = data.get('cgst', 0)
+            sgst_amount = data.get('sgst', 0)
+            
+            # Calculate GST rates (avoid division by zero)
+            cgst_rate = 0
+            sgst_rate = 0
+            if basic_amount > 0:
+                cgst_rate = (cgst_amount / basic_amount) * 100
+                sgst_rate = (sgst_amount / basic_amount) * 100
+            
+            # Save to the new ProductFormSubmission table
+            form_submission = ProductFormSubmission.objects.create(
+                customer_name=data.get('customer_name'),
+                company_name=data.get('company_name', ''),
+                mobile=data.get('mobile'),
+                email=data.get('email'),
+                has_gst=data.get('has_gst'),
+                gst_number=data.get('gst_number', ''),
+                address=data.get('address', ''),
+                state=data.get('state', ''),
+                district=data.get('district', ''),
+                pincode=data.get('pincode', ''),
+                product_id=product_item,
+                quantity=data.get('quantity', 1),
+                basic_amount=basic_amount,
+                cgst_rate=cgst_rate,
+                sgst_rate=sgst_rate,
+                cgst_amount=cgst_amount,
+                sgst_amount=sgst_amount,
+                total_with_gst=data.get('total_amount', 0),
+                token_amount=data.get('token_amount', 0),
+                installation_charges=data.get('installing_charges', 0),
+                grand_total=data.get('grand_total', 0),
+                status='new'
+            )
+            
+            return JsonResponse({
+                'status': 'success',
+                'message': 'Form submitted successfully!',
+                'form_submission_id': form_submission.id
+            })
+            
+        except Exception as e:
+            return JsonResponse({
+                'status': 'error',
+                'message': f'Error saving submission: {str(e)}'
+            }, status=500)
+    
+    return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=405)
 
 # ============================================================================
 # QUOTE & CONTACT FORMS
@@ -1102,6 +1262,55 @@ def custom_admin_settings(request):
     }
     return render(request, 'products/admin/settings.html', context)
 
+@admin_required
+def custom_admin_form_submissions(request):
+    """Admin dashboard for product form submissions"""
+    submissions = ProductFormSubmission.objects.all().order_by('-created_at')
+    
+    # Filtering
+    status_filter = request.GET.get('status', '')
+    product_filter = request.GET.get('product', '')
+    date_filter = request.GET.get('date', '')
+    
+    if status_filter:
+        submissions = submissions.filter(status=status_filter)
+    
+    if product_filter:
+        submissions = submissions.filter(product_id__id=product_filter)
+    
+    if date_filter:
+        submissions = submissions.filter(created_at__date=date_filter)
+    
+    # Pagination
+    paginator = Paginator(submissions, 20)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    # Get unique products for filter
+    products = ProductMasterV2.objects.all().order_by('prdt_desc')
+    
+    # Statistics
+    total_submissions = ProductFormSubmission.objects.count()
+    new_submissions = ProductFormSubmission.objects.filter(status='new').count()
+    reviewed_submissions = ProductFormSubmission.objects.filter(status='reviewed').count()
+    approved_submissions = ProductFormSubmission.objects.filter(status='approved').count()
+    converted_submissions = ProductFormSubmission.objects.filter(status='converted').count()
+    
+    context = {
+        'page_obj': page_obj,
+        'total_submissions': total_submissions,
+        'new_submissions': new_submissions,
+        'reviewed_submissions': reviewed_submissions,
+        'approved_submissions': approved_submissions,
+        'converted_submissions': converted_submissions,
+        'products': products,
+        'status_filter': status_filter,
+        'product_filter': product_filter,
+        'date_filter': date_filter,
+    }
+    
+    return render(request, 'products/admin/form_submissions.html', context)
+
 # ============================================================================
 # PRODUCT MANAGEMENT VIEWS (New Structure)
 # ============================================================================
@@ -1504,6 +1713,69 @@ def get_districts(request, state):
     
     districts = states_districts.get(state, [])
     return JsonResponse({'districts': districts})
+
+@csrf_exempt
+def get_submission_details(request, submission_id):
+    """API endpoint to get submission details for modal"""
+    try:
+        submission = ProductFormSubmission.objects.get(id=submission_id)
+        
+        # Render the details HTML
+        from django.template.loader import render_to_string
+        html_content = render_to_string('products/admin/submission_details.html', {
+            'submission': submission
+        })
+        
+        return JsonResponse({
+            'success': True,
+            'html': html_content
+        })
+        
+    except ProductFormSubmission.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'message': 'Submission not found'
+        }, status=404)
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Error: {str(e)}'
+        }, status=500)
+
+@csrf_exempt
+def convert_submission_to_quote(request, submission_id):
+    """API endpoint to convert submission to quote"""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'message': 'Invalid method'}, status=405)
+    
+    try:
+        submission = ProductFormSubmission.objects.get(id=submission_id)
+        
+        if submission.status == 'converted':
+            return JsonResponse({
+                'success': False,
+                'message': 'Submission already converted'
+            })
+        
+        # Convert to quote
+        quote = submission.convert_to_quote()
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Successfully converted to quote',
+            'quote_id': quote.id
+        })
+        
+    except ProductFormSubmission.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'message': 'Submission not found'
+        }, status=404)
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Error converting: {str(e)}'
+        }, status=500)
 
 # ============================================================================
 # ERROR HANDLERS

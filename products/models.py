@@ -718,3 +718,193 @@ class RateCardEntry(BaseTimestampModel):
 
     def __str__(self) -> str:
         return f"{self.product.prdt_desc} @ {self.rate_date}"
+
+# ============================================================================
+# PRODUCT FORM SUBMISSIONS
+# ============================================================================
+
+class ProductFormSubmission(BaseTimestampModel):
+    """New dedicated table for storing product form submissions"""
+    
+    # Customer Information
+    customer_name = models.CharField(max_length=100, verbose_name="Customer Name")
+    company_name = models.CharField(max_length=100, blank=True, null=True, verbose_name="Company Name")
+    mobile = models.CharField(max_length=15, verbose_name="Mobile Number")
+    email = models.EmailField(verbose_name="Email ID")
+    
+    # GST Information
+    has_gst = models.CharField(max_length=3, choices=[('yes', 'Yes'), ('no', 'No')], verbose_name="Has GST")
+    gst_number = models.CharField(max_length=15, blank=True, null=True, verbose_name="GST Number")
+    
+    # Address Information (for non-GST customers)
+    address = models.TextField(blank=True, null=True, verbose_name="Address")
+    state = models.CharField(max_length=100, blank=True, null=True, verbose_name="State")
+    district = models.CharField(max_length=100, blank=True, null=True, verbose_name="District")
+    pincode = models.CharField(max_length=10, blank=True, null=True, verbose_name="Pincode")
+    
+    # Product Information
+    product_id = models.ForeignKey(
+        ProductMasterV2, 
+        on_delete=models.CASCADE, 
+        related_name='form_submissions',
+        verbose_name="Selected Product"
+    )
+    quantity = models.PositiveIntegerField(default=1, verbose_name="Quantity")
+    
+    # Pricing Information
+    basic_amount = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Basic Amount")
+    cgst_rate = models.DecimalField(max_digits=5, decimal_places=2, verbose_name="CGST Rate (%)")
+    sgst_rate = models.DecimalField(max_digits=5, decimal_places=2, verbose_name="SGST Rate (%)")
+    cgst_amount = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="CGST Amount")
+    sgst_amount = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="SGST Amount")
+    total_with_gst = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Total with GST")
+    
+    # Additional Charges
+    token_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name="Token Amount")
+    installation_charges = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name="Installation Charges")
+    grand_total = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Grand Total")
+    
+    # Submission Status
+    STATUS_CHOICES = [
+        ('new', 'New'),
+        ('reviewed', 'Reviewed'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+        ('converted', 'Converted to Quote'),
+    ]
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='new', verbose_name="Status")
+    
+    # Admin Notes
+    admin_notes = models.TextField(blank=True, null=True, verbose_name="Admin Notes")
+    
+    # Quote Reference (if converted)
+    quote_reference = models.ForeignKey(
+        QuoteSubmission, 
+        on_delete=models.SET_NULL, 
+        blank=True, 
+        null=True, 
+        related_name='form_submissions',
+        verbose_name="Related Quote"
+    )
+    
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "Product Form Submission"
+        verbose_name_plural = "Product Form Submissions"
+        indexes = [
+            models.Index(fields=['customer_name', 'created_at']),
+            models.Index(fields=['email', 'created_at']),
+            models.Index(fields=['mobile', 'created_at']),
+            models.Index(fields=['status', 'created_at']),
+            models.Index(fields=['product_id', 'created_at']),
+        ]
+    
+    def __str__(self):
+        return f"Form #{self.id} - {self.customer_name} - {self.product_id.prdt_desc}"
+    
+    def get_customer_info(self):
+        """Get formatted customer information"""
+        info = f"{self.customer_name}"
+        if self.company_name:
+            info += f" ({self.company_name})"
+        return info
+    
+    def get_address_info(self):
+        """Get formatted address information"""
+        if self.has_gst == 'yes':
+            return f"GST: {self.gst_number}" if self.gst_number else "GST Number not provided"
+        else:
+            parts = []
+            if self.address:
+                parts.append(self.address)
+            if self.state:
+                parts.append(self.state)
+            if self.district:
+                parts.append(self.district)
+            if self.pincode:
+                parts.append(self.pincode)
+            return ", ".join(parts) if parts else "Address not provided"
+    
+    def get_pricing_summary(self):
+        """Get formatted pricing summary"""
+        return f"Basic: ₹{self.basic_amount}, GST: ₹{self.cgst_amount + self.sgst_amount}, Total: ₹{self.grand_total}"
+    
+    def convert_to_quote(self):
+        """Convert this form submission to a quote"""
+        if self.status == 'converted':
+            return self.quote_reference
+        
+        # Create customer if doesn't exist
+        customer, created = Customer.objects.get_or_create(
+            email=self.email,
+            defaults={
+                'name': self.customer_name,
+                'company_name': self.company_name or '',
+                'mobile': self.mobile,
+                'has_gst': self.has_gst == 'yes',
+                'gst_number': self.gst_number or '',
+                'address': self.address or '',
+                'state': self.state or '',
+                'district': self.district or '',
+                'pincode': self.pincode or '',
+            }
+        )
+        
+        # Update customer if not created
+        if not created:
+            customer.name = self.customer_name
+            customer.company_name = self.company_name or ''
+            customer.mobile = self.mobile
+            customer.has_gst = self.has_gst == 'yes'
+            customer.gst_number = self.gst_number or ''
+            customer.address = self.address or ''
+            customer.state = self.state or ''
+            customer.district = self.district or ''
+            customer.pincode = self.pincode or ''
+            customer.save()
+        
+        # Locate a matching ProductItem by name to attach to QuoteSubmission
+        # We try to match ProductItem.item_name with ProductMasterV2.prdt_desc
+        product_item_obj = None
+        try:
+            product_item_obj = ProductItem.objects.filter(item_name__iexact=self.product_id.prdt_desc).first()
+        except Exception:
+            product_item_obj = None
+        
+        if product_item_obj is None:
+            # As a fallback, create a minimal ProductItem under a generic ProductType if possible
+            default_type = ProductType.objects.first()
+            if default_type is None:
+                raise ValueError("No ProductType exists to attach a QuoteSubmission. Please create at least one ProductType.")
+            product_item_obj = ProductItem.objects.create(
+                product_type=default_type,
+                item_code=f"auto-{self.product_id.id}",
+                item_name=self.product_id.prdt_desc,
+                item_category='product',
+                basic_amount=self.basic_amount,
+                cgst=self.cgst_amount,
+                sgst=self.sgst_amount,
+            )
+        
+        # Create quote submission
+        quote = QuoteSubmission.objects.create(
+            customer=customer,
+            product_item=product_item_obj,
+            quantity=self.quantity,
+            basic_amount=self.basic_amount,
+            cgst=self.cgst_amount,
+            sgst=self.sgst_amount,
+            total_amount=self.total_with_gst,
+            token_amount=self.token_amount,
+            installing_charges=self.installation_charges,
+            grand_total=self.grand_total,
+            status='pending',
+            notes=f"Converted from form submission #{self.id}"
+        )
+        
+        # Update this form submission
+        self.status = 'converted'
+        self.quote_reference = quote
+        self.save()
+        
+        return quote

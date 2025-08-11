@@ -1,0 +1,303 @@
+{% extends 'products/admin/base.html' %}
+{% load static %}
+
+{% block title %}Product Form Submissions - Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-clipboard-list"></i> Product Form Submissions
+                    </h3>
+                    <div class="card-tools">
+                        <span class="badge badge-primary">{{ total_submissions }} Total</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Statistics Cards -->
+                    <div class="row mb-4">
+                        <div class="col-lg-2 col-md-4 col-sm-6">
+                            <div class="info-box bg-info">
+                                <span class="info-box-icon"><i class="fas fa-plus-circle"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">New</span>
+                                    <span class="info-box-number">{{ new_submissions }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-2 col-md-4 col-sm-6">
+                            <div class="info-box bg-warning">
+                                <span class="info-box-icon"><i class="fas fa-eye"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Reviewed</span>
+                                    <span class="info-box-number">{{ reviewed_submissions }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-2 col-md-4 col-sm-6">
+                            <div class="info-box bg-success">
+                                <span class="info-box-icon"><i class="fas fa-check-circle"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Approved</span>
+                                    <span class="info-box-number">{{ approved_submissions }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-2 col-md-4 col-sm-6">
+                            <div class="info-box bg-primary">
+                                <span class="info-box-icon"><i class="fas fa-exchange-alt"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Converted</span>
+                                    <span class="info-box-number">{{ converted_submissions }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Filters -->
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <form method="get" class="form-inline">
+                                <div class="form-group mr-2">
+                                    <label for="status" class="mr-2">Status:</label>
+                                    <select name="status" id="status" class="form-control">
+                                        <option value="">All Status</option>
+                                        <option value="new" {% if status_filter == 'new' %}selected{% endif %}>New</option>
+                                        <option value="reviewed" {% if status_filter == 'reviewed' %}selected{% endif %}>Reviewed</option>
+                                        <option value="approved" {% if status_filter == 'approved' %}selected{% endif %}>Approved</option>
+                                        <option value="rejected" {% if status_filter == 'rejected' %}selected{% endif %}>Rejected</option>
+                                        <option value="converted" {% if status_filter == 'converted' %}selected{% endif %}>Converted</option>
+                                    </select>
+                                </div>
+                                <div class="form-group mr-2">
+                                    <label for="product" class="mr-2">Product:</label>
+                                    <select name="product" id="product" class="form-control">
+                                        <option value="">All Products</option>
+                                        {% for product in products %}
+                                        <option value="{{ product.id }}" {% if product_filter == product.id|stringformat:"s" %}selected{% endif %}>
+                                            {{ product.prdt_desc }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="form-group mr-2">
+                                    <label for="date" class="mr-2">Date:</label>
+                                    <input type="date" name="date" id="date" class="form-control" value="{{ date_filter }}">
+                                </div>
+                                <button type="submit" class="btn btn-primary mr-2">Filter</button>
+                                <a href="{% url 'custom_admin_form_submissions' %}" class="btn btn-secondary">Clear</a>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Submissions Table -->
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Customer</th>
+                                    <th>Contact</th>
+                                    <th>Product</th>
+                                    <th>Quantity</th>
+                                    <th>Total Amount</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for submission in page_obj %}
+                                <tr>
+                                    <td>
+                                        <span class="badge badge-secondary">#{{ submission.id }}</span>
+                                    </td>
+                                    <td>
+                                        <strong>{{ submission.customer_name }}</strong>
+                                        {% if submission.company_name %}
+                                        <br><small class="text-muted">{{ submission.company_name }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div><i class="fas fa-phone"></i> {{ submission.mobile }}</div>
+                                        <div><i class="fas fa-envelope"></i> {{ submission.email }}</div>
+                                        {% if submission.has_gst == 'yes' %}
+                                        <div><i class="fas fa-file-invoice"></i> GST: {{ submission.gst_number|default:"Not provided" }}</div>
+                                        {% else %}
+                                        <div><i class="fas fa-map-marker-alt"></i> {{ submission.state }}, {{ submission.district }}</div>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-info">{{ submission.product_id.prdt_desc }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-secondary">{{ submission.quantity }}</span>
+                                    </td>
+                                    <td>
+                                        <strong>₹{{ submission.grand_total }}</strong>
+                                        <br><small class="text-muted">
+                                            Base: ₹{{ submission.basic_amount }}<br>
+                                            GST: ₹{{ submission.cgst_amount|add:submission.sgst_amount }}
+                                        </small>
+                                    </td>
+                                    <td>
+                                        {% if submission.status == 'new' %}
+                                            <span class="badge badge-info">New</span>
+                                        {% elif submission.status == 'reviewed' %}
+                                            <span class="badge badge-warning">Reviewed</span>
+                                        {% elif submission.status == 'approved' %}
+                                            <span class="badge badge-success">Approved</span>
+                                        {% elif submission.status == 'rejected' %}
+                                            <span class="badge badge-danger">Rejected</span>
+                                        {% elif submission.status == 'converted' %}
+                                            <span class="badge badge-primary">Converted</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <small>{{ submission.created_at|date:"M d, Y" }}</small><br>
+                                        <small class="text-muted">{{ submission.created_at|time:"H:i" }}</small>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <button type="button" class="btn btn-sm btn-info" 
+                                                    onclick="viewSubmission({{ submission.id }})">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            {% if submission.status != 'converted' %}
+                                            <button type="button" class="btn btn-sm btn-success" 
+                                                    onclick="convertToQuote({{ submission.id }})">
+                                                <i class="fas fa-exchange-alt"></i>
+                                            </button>
+                                            {% endif %}
+                                            {% if submission.quote_reference %}
+                                            <a href="{% url 'custom_admin_quotes' %}?quote_id={{ submission.quote_reference.id }}" 
+                                               class="btn btn-sm btn-primary">
+                                                <i class="fas fa-external-link-alt"></i>
+                                            </a>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="9" class="text-center text-muted">
+                                        <i class="fas fa-inbox fa-3x mb-3"></i>
+                                        <p>No form submissions found.</p>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    {% if page_obj.has_other_pages %}
+                    <nav aria-label="Page navigation" class="mt-4">
+                        <ul class="pagination justify-content-center">
+                            {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if product_filter %}&product={{ product_filter }}{% endif %}{% if date_filter %}&date={{ date_filter }}{% endif %}">
+                                    Previous
+                                </a>
+                            </li>
+                            {% endif %}
+
+                            {% for num in page_obj.paginator.page_range %}
+                            {% if page_obj.number == num %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ num }}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if product_filter %}&product={{ product_filter }}{% endif %}{% if date_filter %}&date={{ date_filter }}{% endif %}">
+                                    {{ num }}
+                                </a>
+                            </li>
+                            {% endif %}
+                            {% endfor %}
+
+                            {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if product_filter %}&product={{ product_filter }}{% endif %}{% if date_filter %}&date={{ date_filter }}{% endif %}">
+                                    Next
+                                </a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Submission Detail Modal -->
+<div class="modal fade" id="submissionModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Form Submission Details</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="submissionModalBody">
+                <!-- Content will be loaded here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function viewSubmission(submissionId) {
+    // Load submission details via AJAX
+    fetch(`/api/submission/${submissionId}/`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('submissionModalBody').innerHTML = data.html;
+                $('#submissionModal').modal('show');
+            } else {
+                alert('Error loading submission details: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error loading submission details');
+        });
+}
+
+function convertToQuote(submissionId) {
+    if (confirm('Are you sure you want to convert this submission to a quote?')) {
+        fetch(`/api/submission/${submissionId}/convert/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Successfully converted to quote!');
+                location.reload();
+            } else {
+                alert('Error converting submission: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error converting submission');
+        });
+    }
+}
+</script>
+{% endblock %}

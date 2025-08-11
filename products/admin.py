@@ -5,7 +5,7 @@ from django.utils.safestring import mark_safe
 from .models import (
     ProductMaster, ProductType, ProductItem, RateCardMaster, Customer, QuoteSubmission,
     ContactSubmission, PaymentTransaction, PaymentSettings, Applicant,
-    ProductTypeMaster, ProductMasterV2, RateCardEntry,
+    ProductTypeMaster, ProductMasterV2, RateCardEntry, ProductFormSubmission,
 )
 
 # ============================================================================
@@ -102,13 +102,13 @@ class ProductItemAdmin(admin.ModelAdmin):
     
     def product_master(self, obj):
         return obj.product_type.product_master.product_name
-    product_master.short_description = 'Product'
+    product_master.short_description = 'Product Master'
     
     def get_discount_display(self, obj):
         discount = obj.get_discount_percentage()
         if discount > 0:
-            return format_html('<span style="color: green;">{}% OFF</span>', discount)
-        return 'No Discount'
+            return f"{discount}% OFF"
+        return "No discount"
     get_discount_display.short_description = 'Discount'
 
 # ============================================================================
@@ -122,6 +122,19 @@ class RateCardAdmin(admin.ModelAdmin):
     search_fields = ['product_item__item_name', 'rate_code']
     ordering = ['-rate_date']
     readonly_fields = ['net_amount']
+    
+    fieldsets = (
+        ('Basic Information', {
+            'fields': ('product_item', 'rate_code', 'rate_date')
+        }),
+        ('Pricing', {
+            'fields': ('base_amount', 'gst_percent', 'net_amount')
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        })
+    )
 
 # ============================================================================
 # CUSTOMER ADMIN
@@ -360,22 +373,100 @@ class RateCardEntryAdmin(admin.ModelAdmin):
     readonly_fields = ['nett_amt', 'cgst', 'sgst', 'token_total', 'token_cgst', 'token_sgst', 'installation_total', 'installation_cgst', 'installation_sgst', 't_amount', 'created_at', 'updated_at']
     fieldsets = (
         ('Basic Information', {
-            'fields': ('product', 'rate_date', 'base_amt', 'gst_percent', 'cgst', 'sgst', 'nett_amt')
+            'fields': ('product', 'rate_date', 'rate_code')
         }),
-        ('Token Details', {
-            'fields': ('token_desc', 'token_amount', 'token_gst_percent', 'token_cgst', 'token_sgst', 'token_total'),
-            'classes': ('collapse',)
+        ('Base Pricing', {
+            'fields': ('base_amt', 'gst_percent', 'nett_amt', 'cgst', 'sgst')
         }),
-        ('Installation Details', {
-            'fields': ('installation_charge', 'installation_gst_percent', 'installation_cgst', 'installation_sgst', 'installation_total'),
-            'classes': ('collapse',)
+        ('Token Charges', {
+            'fields': ('token_desc', 'token_amount', 'token_gst_percent', 'token_cgst', 'token_sgst', 'token_total')
+        }),
+        ('Installation Charges', {
+            'fields': ('installation_charge', 'installation_gst_percent', 'installation_cgst', 'installation_sgst', 'installation_total')
         }),
         ('Total Amount', {
-            'fields': ('t_amount',),
-            'classes': ('collapse',)
+            'fields': ('t_amount',)
         }),
         ('Timestamps', {
             'fields': ('created_at', 'updated_at'),
             'classes': ('collapse',)
-        })
+        }),
     )
+
+# ============================================================================
+# PRODUCT FORM SUBMISSION ADMIN
+# ============================================================================
+
+@admin.register(ProductFormSubmission)
+class ProductFormSubmissionAdmin(admin.ModelAdmin):
+    list_display = [
+        'id', 'customer_name', 'company_name', 'mobile', 'email', 'product_name', 
+        'quantity', 'grand_total', 'status', 'created_at'
+    ]
+    list_filter = ['status', 'has_gst', 'created_at', 'product_id__product_type']
+    search_fields = ['customer_name', 'company_name', 'email', 'mobile', 'gst_number']
+    ordering = ['-created_at']
+    readonly_fields = [
+        'created_at', 'updated_at', 'basic_amount', 'cgst_amount', 'sgst_amount', 
+        'total_with_gst', 'grand_total'
+    ]
+    
+    fieldsets = (
+        ('Customer Information', {
+            'fields': ('customer_name', 'company_name', 'mobile', 'email')
+        }),
+        ('GST & Address', {
+            'fields': ('has_gst', 'gst_number', 'address', 'state', 'district', 'pincode')
+        }),
+        ('Product & Quantity', {
+            'fields': ('product_id', 'quantity')
+        }),
+        ('Pricing Details', {
+            'fields': ('basic_amount', 'cgst_rate', 'sgst_rate', 'cgst_amount', 'sgst_amount', 'total_with_gst')
+        }),
+        ('Additional Charges', {
+            'fields': ('token_amount', 'installation_charges', 'grand_total')
+        }),
+        ('Status & Notes', {
+            'fields': ('status', 'admin_notes', 'quote_reference')
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    actions = ['convert_to_quote', 'mark_reviewed', 'mark_approved', 'mark_rejected']
+    
+    def product_name(self, obj):
+        return obj.product_id.prdt_desc
+    product_name.short_description = 'Product'
+    
+    def convert_to_quote(self, request, queryset):
+        converted_count = 0
+        for submission in queryset:
+            if submission.status != 'converted':
+                try:
+                    submission.convert_to_quote()
+                    converted_count += 1
+                except Exception as e:
+                    self.message_user(request, f'Error converting submission #{submission.id}: {str(e)}', level='ERROR')
+        
+        if converted_count > 0:
+            self.message_user(request, f'Successfully converted {converted_count} submission(s) to quote(s).')
+    convert_to_quote.short_description = "Convert selected submissions to quotes"
+    
+    def mark_reviewed(self, request, queryset):
+        updated = queryset.update(status='reviewed')
+        self.message_user(request, f'{updated} submission(s) marked as reviewed.')
+    mark_reviewed.short_description = "Mark as reviewed"
+    
+    def mark_approved(self, request, queryset):
+        updated = queryset.update(status='approved')
+        self.message_user(request, f'{updated} submission(s) marked as approved.')
+    mark_approved.short_description = "Mark as approved"
+    
+    def mark_rejected(self, request, queryset):
+        updated = queryset.update(status='rejected')
+        self.message_user(request, f'{updated} submission(s) marked as rejected.')
+    mark_rejected.short_description = "Mark as rejected"

@@ -1,0 +1,171 @@
+<div class="row">
+    <div class="col-md-6">
+        <h6 class="text-primary">Customer Information</h6>
+        <table class="table table-sm">
+            <tr>
+                <th>Name:</th>
+                <td>{{ submission.customer_name }}</td>
+            </tr>
+            {% if submission.company_name %}
+            <tr>
+                <th>Company:</th>
+                <td>{{ submission.company_name }}</td>
+            </tr>
+            {% endif %}
+            <tr>
+                <th>Mobile:</th>
+                <td>{{ submission.mobile }}</td>
+            </tr>
+            <tr>
+                <th>Email:</th>
+                <td>{{ submission.email }}</td>
+            </tr>
+        </table>
+    </div>
+    
+    <div class="col-md-6">
+        <h6 class="text-primary">GST & Address</h6>
+        <table class="table table-sm">
+            <tr>
+                <th>Has GST:</th>
+                <td>
+                    {% if submission.has_gst == 'yes' %}
+                        <span class="badge badge-success">Yes</span>
+                    {% else %}
+                        <span class="badge badge-warning">No</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% if submission.has_gst == 'yes' %}
+            <tr>
+                <th>GST Number:</th>
+                <td>{{ submission.gst_number|default:"Not provided" }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <th>Address:</th>
+                <td>{{ submission.address|default:"Not provided" }}</td>
+            </tr>
+            <tr>
+                <th>Location:</th>
+                <td>
+                    {% if submission.state %}{{ submission.state }}{% endif %}
+                    {% if submission.district %}, {{ submission.district }}{% endif %}
+                    {% if submission.pincode %} - {{ submission.pincode }}{% endif %}
+                </td>
+            </tr>
+            {% endif %}
+        </table>
+    </div>
+</div>
+
+<div class="row mt-3">
+    <div class="col-md-6">
+        <h6 class="text-primary">Product Details</h6>
+        <table class="table table-sm">
+            <tr>
+                <th>Product:</th>
+                <td>{{ submission.product_id.prdt_desc }}</td>
+            </tr>
+            <tr>
+                <th>Quantity:</th>
+                <td>{{ submission.quantity }}</td>
+            </tr>
+            <tr>
+                <th>Status:</th>
+                <td>
+                    {% if submission.status == 'new' %}
+                        <span class="badge badge-info">New</span>
+                    {% elif submission.status == 'reviewed' %}
+                        <span class="badge badge-warning">Reviewed</span>
+                    {% elif submission.status == 'approved' %}
+                        <span class="badge badge-success">Approved</span>
+                    {% elif submission.status == 'rejected' %}
+                        <span class="badge badge-danger">Rejected</span>
+                    {% elif submission.status == 'converted' %}
+                        <span class="badge badge-primary">Converted</span>
+                    {% endif %}
+                </td>
+            </tr>
+        </table>
+    </div>
+    
+    <div class="col-md-6">
+        <h6 class="text-primary">Pricing Breakdown</h6>
+        <table class="table table-sm">
+            <tr>
+                <th>Basic Amount:</th>
+                <td>₹{{ submission.basic_amount }}</td>
+            </tr>
+            <tr>
+                <th>CGST ({{ submission.cgst_rate }}%):</th>
+                <td>₹{{ submission.cgst_amount }}</td>
+            </tr>
+            <tr>
+                <th>SGST ({{ submission.sgst_rate }}%):</th>
+                <td>₹{{ submission.sgst_amount }}</td>
+            </tr>
+            <tr>
+                <th>Total with GST:</th>
+                <td>₹{{ submission.total_with_gst }}</td>
+            </tr>
+            {% if submission.token_amount > 0 %}
+            <tr>
+                <th>Token Amount:</th>
+                <td>₹{{ submission.token_amount }}</td>
+            </tr>
+            {% endif %}
+            {% if submission.installation_charges > 0 %}
+            <tr>
+                <th>Installation:</th>
+                <td>₹{{ submission.installation_charges }}</td>
+            </tr>
+            {% endif %}
+            <tr class="table-primary">
+                <th><strong>Grand Total:</strong></th>
+                <td><strong>₹{{ submission.grand_total }}</strong></td>
+            </tr>
+        </table>
+    </div>
+</div>
+
+{% if submission.quote_reference %}
+<div class="row mt-3">
+    <div class="col-12">
+        <div class="alert alert-info">
+            <h6 class="alert-heading">Quote Information</h6>
+            <p class="mb-0">
+                This submission has been converted to Quote #{{ submission.quote_reference.id }}.
+                <a href="{% url 'custom_admin_quotes' %}?quote_id={{ submission.quote_reference.id }}" 
+                   class="alert-link">View Quote Details</a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="row mt-3">
+    <div class="col-12">
+        <h6 class="text-primary">Submission Details</h6>
+        <table class="table table-sm">
+            <tr>
+                <th>Submission ID:</th>
+                <td>#{{ submission.id }}</td>
+            </tr>
+            <tr>
+                <th>Created:</th>
+                <td>{{ submission.created_at|date:"F d, Y \a\t H:i" }}</td>
+            </tr>
+            <tr>
+                <th>Last Updated:</th>
+                <td>{{ submission.updated_at|date:"F d, Y \a\t H:i" }}</td>
+            </tr>
+            {% if submission.admin_notes %}
+            <tr>
+                <th>Admin Notes:</th>
+                <td>{{ submission.admin_notes }}</td>
+            </tr>
+            {% endif %}
+        </table>
+    </div>
+</div>

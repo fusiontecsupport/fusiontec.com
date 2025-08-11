@@ -1,0 +1,913 @@
+{% extends 'products/base2.html' %}
+{% load static %}
+{% block title %}Fusiontec - {{ product.prdt_desc }} Form{% endblock %}
+
+{% block content %}
+<style>
+  body {
+    background-color: #f8f9fa;
+  }
+  .form-container {
+    background: #fff;
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    padding: 2rem;
+    max-width: 600px;
+    margin: 2rem auto;
+  }
+  .form-section {
+    margin-bottom: 1.5rem;
+  }
+  .form-section h6 {
+    margin-bottom: 0.75rem;
+  }
+  /* PI Table Styling */
+  #piContent table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  #piContent th, #piContent td {
+    border: 1px solid #dee2e6;
+    padding: 0.5rem 1rem;
+    text-align: left;
+  }
+  #piContent th {
+    background-color: #e9ecef;
+    width: 35%;
+  }
+   .error-message {
+    color: red;
+    font-size: 0.875rem;
+    margin-top: 4px;
+  }
+     .product-info {
+     background: #f8f9fa;
+     border-radius: 0.5rem;
+     padding: 1rem;
+     margin-bottom: 1.5rem;
+     border-left: 4px solid #0d6efd;
+   }
+   .rate-card-card {
+     border: 1px solid #dee2e6;
+     border-radius: 0.5rem;
+     transition: all 0.3s ease;
+   }
+   .rate-card-card:hover {
+     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+     transform: translateY(-2px);
+   }
+</style>
+
+<div class="container">
+  <div class="form-container">
+    <h4 class="text-primary text-center">{{ product.prdt_desc }} Form</h4>
+    
+    <!-- Debug Info -->
+    <div class="alert alert-info">
+      <strong>Debug Info:</strong><br>
+      Products with rates: {{ products_with_rates|length }}<br>
+      Available products: {{ available_products|length }}<br>
+      {% if products_with_rates %}
+        First product: {{ products_with_rates.0.product.prdt_desc }}<br>
+        First rate card: {{ products_with_rates.0.rate_card }}<br>
+      {% else %}
+        No rate cards found
+      {% endif %}
+    </div>
+    
+    <!-- Product Information Display -->
+    <div class="product-info">
+      <h6 class="text-primary mb-2">Product Details</h6>
+      <div class="row">
+        <div class="col-md-6">
+          <strong>Product Type:</strong> {{ product_type.prdt_desc }}<br>
+          <strong>Available Products:</strong> {{ available_products.count }} product{{ available_products.count|pluralize }}
+        </div>
+        <div class="col-md-6">
+          <div id="selectedProductInfo" style="display: none;">
+            <strong>Selected Product:</strong> <span id="selectedProductName">-</span><br>
+            <strong>Basic Amount:</strong> ₹<span id="selectedProductAmount">-</span>
+          </div>
+          <div id="defaultProductInfo">
+            <strong>Please select a product to see pricing details</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <form id="productForm" method="post">
+      {% csrf_token %}
+
+      <!-- Customer Info -->
+      <div class="form-section">
+        <label for="customerName" class="form-label">Customer Name <span style="color:red">*</span></label>
+        <input type="text" id="customerName" name="customer_name" class="form-control" maxlength="50" required />
+        <div class="error-message" id="error-customerName"></div>
+      </div>
+
+      <div class="form-section">
+        <label for="companyName" class="form-label">Company Name</label>
+        <input type="text" id="companyName" name="company_name" class="form-control" maxlength="50"/>
+        <div class="error-message" id="error-companyName"></div>
+      </div>
+
+      <!-- GST Selection -->
+      <div class="form-section">
+        <label for="gstSelector" class="form-label">GST Number?</label>
+        <select id="gstSelector" name="has_gst" class="form-select">
+          <option value="yes">Yes</option>
+          <option value="no">No</option>
+        </select>
+        <div class="error-message" id="error-gstSelector"></div>
+      </div>
+
+      <div class="form-section" id="gstNumberField">
+        <label for="gstNumber" class="form-label">GST Number <span style="color:red">*</span></label>
+        <input type="text" id="gstNumber" name="gst_number" class="form-control" maxlength="15"/>
+        <div class="error-message" id="error-gstNumber"></div>
+      </div>
+
+      <div class="form-section" id="nonGstFields" style="display: none;">
+        <label for="address" class="form-label">Address <span style="color:red">*</span></label>
+        <textarea id="address" name="address" class="form-control"></textarea>
+        <div class="error-message" id="error-address"></div>
+
+        <div class="row g-2 mt-2">
+          <div class="col-12 col-md-4">
+            <select id="state" name="state" class="form-select">
+              <option value="">Select State</option>
+            </select>
+            <div class="error-message" id="error-state"></div>
+          </div>
+          <div class="col-12 col-md-4">
+            <select id="district" name="district" class="form-select">
+              <option value="">Select District</option>
+            </select>
+            <div class="error-message" id="error-district"></div>
+          </div>
+          <div class="col-12 col-md-4">
+            <input type="text" name="pincode" id="pincode" placeholder="Pincode" class="form-control" />
+            <div class="error-message" id="error-pincode"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Contact Info -->
+      <div class="form-section">
+        <label for="mobile" class="form-label">Mobile Number <span style="color:red">*</span></label>
+        <input type="tel" id="mobile" name="mobile" class="form-control" maxlength="10" pattern="[0-9]*" inputmode="numeric" required />
+        <div class="error-message" id="error-mobile"></div>
+      </div>
+
+      <div class="form-section">
+        <label for="email" class="form-label">Email ID <span style="color:red">*</span></label>
+        <input type="email" id="email" name="email" class="form-control" />
+        <div class="error-message" id="error-email"></div>
+      </div>
+
+             <!-- Product Info -->
+       <div class="form-section">
+         <label for="productSelector" class="form-label">Select Product <span style="color:red">*</span></label>
+         {% if available_products.count > 1 %}
+           <select id="productSelector" name="product_id" class="form-select" required>
+             <option value="">-- Select a Product --</option>
+             {% for prod_data in products_with_rates %}
+               <option value="{{ prod_data.product.id }}" 
+                       data-basic-amount="{{ prod_data.rate_card.base_amt|default:'0' }}"
+                       data-cgst="{{ prod_data.rate_card.cgst|default:'0' }}"
+                       data-sgst="{{ prod_data.rate_card.sgst|default:'0' }}"
+                       data-token-amount="{{ prod_data.rate_card.token_amount|default:'0' }}"
+                       data-installation-charges="{{ prod_data.rate_card.installation_charge|default:'0' }}">
+                 {{ prod_data.product.prdt_desc }}
+               </option>
+             {% endfor %}
+           </select>
+         {% else %}
+           <input type="text" id="productName" name="product_name" class="form-control" value="{{ product.prdt_desc }}" readonly required />
+           <input type="hidden" id="productSelector" value="{{ product.id }}" />
+         {% endif %}
+         <div class="error-message" id="error-productSelector"></div>
+       </div>
+
+       <!-- Rate Card Details (Hidden by default) -->
+       <div class="form-section" id="rateCardDetails" style="display: none;">
+         <h6 class="text-primary mb-3">Rate Card Details</h6>
+         <div class="row">
+           <div class="col-md-6">
+             <div class="card bg-light rate-card-card">
+               <div class="card-body">
+                 <h6 class="card-title text-primary">Pricing Information</h6>
+                 <p class="mb-1"><strong>Base Amount:</strong> ₹<span id="rateBaseAmount">-</span></p>
+                 <p class="mb-1"><strong>CGST:</strong> <span id="rateCgst">-</span>%</p>
+                 <p class="mb-1"><strong>SGST:</strong> <span id="rateSgst">-</span>%</p>
+                 <p class="mb-1"><strong>Total with GST:</strong> ₹<span id="rateTotalGst">-</span></p>
+               </div>
+             </div>
+           </div>
+           <div class="col-md-6">
+             <div class="card bg-light rate-card-card">
+               <div class="card-body">
+                 <h6 class="card-title text-success">Additional Charges</h6>
+                 <p class="mb-1"><strong>Token Amount:</strong> ₹<span id="rateTokenAmount">-</span></p>
+                 <p class="mb-1"><strong>Installation Charges:</strong> ₹<span id="rateInstallCharges">-</span></p>
+                 <p class="mb-1"><strong>Final Total:</strong> ₹<span id="rateFinalTotal">-</span></p>
+               </div>
+             </div>
+           </div>
+         </div>
+       </div>
+
+      <div class="form-section">
+        <label for="quantity" class="form-label">Quantity <span style="color:red">*</span></label>
+        <input type="number" id="quantity" name="quantity" class="form-control" value="1" min="1" max="100" required />
+        <div class="error-message" id="error-quantity"></div>
+      </div>
+
+      <!-- Token and Installation Charges Switches -->
+      <div class="form-section" id="tokenSection" style="display:none;">
+        <label>
+          <input type="checkbox" id="add_token" checked>
+          Add Token (<span id="tokenAmountLabel"></span>)
+        </label>
+      </div>
+      <div class="form-section" id="installSection" style="display:none;">
+        <label>
+          <input type="checkbox" id="add_installation" checked>
+          Add Installation Charges (<span id="installAmountLabel"></span>)
+        </label>
+      </div>
+      <div class="form-section">
+        <strong>Total: ₹<span id="totalAmount">0</span></strong>
+      </div>
+
+      <!-- Price Breakdown -->
+      <div class="form-section bg-light rounded p-3" id="productDetailsContainer" style="display: none;">
+        <h6 class="text-secondary">Price Breakdown</h6>
+        <p>Basic Amount: <strong><span id="basicAmount">-</span></strong></p>
+                 <p>CGST (<span id="cgstRate">0</span>%): <strong><span id="cgst">-</span></strong></p>
+         <p>SGST (<span id="sgstRate">0</span>%): <strong><span id="sgst">-</span></strong></p>
+        <p>Total Price: <strong><span id="totalPrice">-</span></strong></p>
+        <p id="tokenDetail" style="display: none;">Token Amount: <strong><span id="tokenAmountDetail">-</span></strong></p>
+        <p id="installDetail" style="display: none;">Installation Charges: <strong><span id="installAmountDetail">-</span></strong></p>
+        <p>Final Total: <strong><span id="finalTotal">-</span></strong></p>
+      </div>
+
+             <button type="button" id="generatePiBtn" class="btn btn-outline-primary w-100 mb-3">
+         <span id="generateBtnText">Generate Proforma Invoice</span>
+         <span id="generateBtnSpinner" class="spinner-border spinner-border-sm ms-2" style="display: none;" role="status" aria-hidden="true"></span>
+       </button>
+    </form>
+
+  </div>
+</div>
+
+<!-- Proforma Invoice Modal -->
+<div class="modal fade" id="piModal" tabindex="-1" aria-labelledby="piModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="piModalLabel">Proforma Invoice Preview</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+              <div class="modal-body" id="piContent">
+          <!-- Success message -->
+          <div class="alert alert-success mb-3" id="successMessage" style="display: none;">
+            <i class="bi bi-check-circle-fill me-2"></i>
+            <strong>Success!</strong> Your form has been submitted successfully. Submission ID: <span id="quoteIdDisplay">-</span>
+          </div>
+          
+          <!-- PI content inserted here dynamically -->
+        </div>
+      <div class="modal-footer">
+        <button type="button" id="razorpayBtn" class="btn btn-primary">PAY-ONLINE</button>
+        <button type="button" id="downloadPiBtn" class="btn btn-primary">Download PDF</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<!-- Rate Card Data -->
+<script>
+  const rateCardData = {
+    {% if products_with_rates %}
+      {% for prod_data in products_with_rates %}
+        {{ prod_data.product.id }}: {
+          basic_amount: {{ prod_data.rate_card.base_amt|default:0 }},
+          cgst: {{ prod_data.rate_card.cgst|default:0 }},
+          sgst: {{ prod_data.rate_card.sgst|default:0 }},
+          token_amount: {{ prod_data.rate_card.token_amount|default:0 }},
+          installation_charge: {{ prod_data.rate_card.installation_charge|default:0 }},
+          product_name: "{{ prod_data.product.prdt_desc }}"
+        }{% if not forloop.last %},{% endif %}
+      {% endfor %}
+    {% else %}
+      // Default data if no rate cards exist
+      1: {
+        basic_amount: 0,
+        cgst: 0,
+        sgst: 0,
+        token_amount: 0,
+        installation_charge: 0,
+        product_name: "{{ product.prdt_desc }}"
+      }
+    {% endif %}
+  };
+  
+  // Debug: Log the rate card data
+  console.log('Rate Card Data:', rateCardData);
+  console.log('Products with rates count:', {{ products_with_rates|length }});
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Mobile number validation
+  const mobileInput = document.getElementById('mobile');
+  mobileInput.addEventListener('input', () => {
+    mobileInput.value = mobileInput.value.replace(/\D/g, '').slice(0,10);
+  });
+
+  // GST selector logic
+  const gstSelector = document.getElementById('gstSelector');
+  const gstNumberField = document.getElementById('gstNumberField');
+  const nonGstFields = document.getElementById('nonGstFields');
+
+  gstSelector.addEventListener('change', function() {
+    if (this.value === 'yes') {
+      gstNumberField.style.display = 'block';
+      nonGstFields.style.display = 'none';
+      // Clear non-GST fields
+      document.getElementById('address').value = '';
+      document.getElementById('state').value = '';
+      document.getElementById('district').value = '';
+      document.getElementById('pincode').value = '';
+    } else {
+      gstNumberField.style.display = 'none';
+      nonGstFields.style.display = 'block';
+      // Clear GST field
+      document.getElementById('gstNumber').value = '';
+    }
+  });
+
+  // Product selector change handler
+  const productSelector = document.getElementById('productSelector');
+  if (productSelector.tagName === 'SELECT') {
+    productSelector.addEventListener('change', function() {
+      updateProductInfo();
+      calculateTotal();
+    });
+  }
+
+  // Quantity change handler
+  const quantityInput = document.getElementById('quantity');
+  quantityInput.addEventListener('change', calculateTotal);
+
+  // Calculate total when page loads
+  calculateTotal();
+  
+  // Update product info display
+  updateProductInfo();
+
+  // Generate PI button
+  document.getElementById('generatePiBtn').addEventListener('click', generatePI);
+
+  // Download PDF button
+  document.getElementById('downloadPiBtn').addEventListener('click', downloadPDF);
+
+  // Razorpay payment button
+  document.getElementById('razorpayBtn').addEventListener('click', initiatePayment);
+});
+
+function updateProductInfo() {
+  const productSelector = document.getElementById('productSelector');
+  const selectedProductInfo = document.getElementById('selectedProductInfo');
+  const defaultProductInfo = document.getElementById('defaultProductInfo');
+  const selectedProductName = document.getElementById('selectedProductName');
+  const selectedProductAmount = document.getElementById('selectedProductAmount');
+  const rateCardDetails = document.getElementById('rateCardDetails');
+  
+  console.log('updateProductInfo called');
+  console.log('Product selector:', productSelector);
+  console.log('Product selector value:', productSelector ? productSelector.value : 'N/A');
+  
+  if (productSelector.tagName === 'SELECT' && productSelector.value) {
+    const selectedOption = productSelector.options[productSelector.selectedIndex];
+    const basicAmount = parseFloat(selectedOption.dataset.basicAmount) || 0;
+    const cgstRate = parseFloat(selectedOption.dataset.cgst) || 0;
+    const sgstRate = parseFloat(selectedOption.dataset.sgst) || 0;
+    const tokenAmount = parseFloat(selectedOption.dataset.tokenAmount) || 0;
+    const installCharges = parseFloat(selectedOption.dataset.installationCharges) || 0;
+    
+    console.log('Selected option data:', {
+      basicAmount: selectedOption.dataset.basicAmount,
+      cgst: selectedOption.dataset.cgst,
+      sgst: selectedOption.dataset.sgst,
+      tokenAmount: selectedOption.dataset.tokenAmount,
+      installCharges: selectedOption.dataset.installationCharges
+    });
+    
+    // Update product info
+    selectedProductName.textContent = selectedOption.text;
+    selectedProductAmount.textContent = basicAmount.toFixed(2);
+    
+    // Update rate card details
+    document.getElementById('rateBaseAmount').textContent = basicAmount.toFixed(2);
+    document.getElementById('rateCgst').textContent = cgstRate.toFixed(2);
+    document.getElementById('rateSgst').textContent = sgstRate.toFixed(2);
+    
+    const totalGst = basicAmount + (basicAmount * cgstRate / 100) + (basicAmount * sgstRate / 100);
+    document.getElementById('rateTotalGst').textContent = totalGst.toFixed(2);
+    
+    document.getElementById('rateTokenAmount').textContent = tokenAmount.toFixed(2);
+    document.getElementById('rateInstallCharges').textContent = installCharges.toFixed(2);
+    
+    const finalTotal = totalGst + tokenAmount + installCharges;
+    document.getElementById('rateFinalTotal').textContent = finalTotal.toFixed(2);
+    
+    // Show sections
+    selectedProductInfo.style.display = 'block';
+    defaultProductInfo.style.display = 'none';
+    rateCardDetails.style.display = 'block';
+    
+    console.log('Rate card details updated and shown');
+  } else {
+    // Hide sections
+    selectedProductInfo.style.display = 'none';
+    defaultProductInfo.style.display = 'block';
+    rateCardDetails.style.display = 'none';
+    
+    console.log('Rate card details hidden');
+  }
+}
+
+function calculateTotal() {
+  const quantity = parseInt(document.getElementById('quantity').value) || 1;
+  
+  // Get pricing data from selected product
+  let basicAmount, cgstRate, sgstRate, tokenAmount, installCharges;
+  
+  const productSelector = document.getElementById('productSelector');
+  if (productSelector.tagName === 'SELECT' && productSelector.value) {
+    // Get data from selected option
+    const selectedOption = productSelector.options[productSelector.selectedIndex];
+    basicAmount = parseFloat(selectedOption.dataset.basicAmount) || 0;
+    cgstRate = parseFloat(selectedOption.dataset.cgst) || 0;
+    sgstRate = parseFloat(selectedOption.dataset.sgst) || 0;
+    tokenAmount = parseFloat(selectedOption.dataset.tokenAmount) || 0;
+    installCharges = parseFloat(selectedOption.dataset.installationCharges) || 0;
+  } else {
+    // Fallback to default values - get from rate card data if available
+    const productId = document.getElementById('productSelector').value;
+    if (productId && rateCardData[productId]) {
+      const rateData = rateCardData[productId];
+      basicAmount = parseFloat(rateData.basic_amount) || 0;
+      cgstRate = parseFloat(rateData.cgst) || 0;
+      sgstRate = parseFloat(rateData.sgst) || 0;
+      tokenAmount = parseFloat(rateData.token_amount) || 0;
+      installCharges = parseFloat(rateData.installation_charge) || 0;
+    } else {
+      basicAmount = 0;
+      cgstRate = 0;
+      sgstRate = 0;
+      tokenAmount = 0;
+      installCharges = 0;
+    }
+  }
+
+  const totalBasic = basicAmount * quantity;
+  const cgst = (totalBasic * cgstRate) / 100;
+  const sgst = (totalBasic * sgstRate) / 100;
+  const totalWithGST = totalBasic + cgst + sgst;
+  const finalTotal = totalWithGST + tokenAmount + installCharges;
+
+     // Update display
+   document.getElementById('totalAmount').textContent = finalTotal.toFixed(2);
+   document.getElementById('basicAmount').textContent = totalBasic.toFixed(2);
+   document.getElementById('cgstRate').textContent = cgstRate.toFixed(2);
+   document.getElementById('sgstRate').textContent = sgstRate.toFixed(2);
+   document.getElementById('cgst').textContent = cgst.toFixed(2);
+   document.getElementById('sgst').textContent = sgst.toFixed(2);
+   document.getElementById('totalPrice').textContent = totalWithGST.toFixed(2);
+   document.getElementById('finalTotal').textContent = finalTotal.toFixed(2);
+
+  // Show/hide token and installation sections
+  const tokenSection = document.getElementById('tokenSection');
+  const installSection = document.getElementById('installSection');
+  
+  if (tokenAmount > 0) {
+    tokenSection.style.display = 'block';
+    document.getElementById('tokenAmountLabel').textContent = '₹' + tokenAmount.toFixed(2);
+    document.getElementById('tokenDetail').style.display = 'block';
+    document.getElementById('tokenAmountDetail').textContent = '₹' + tokenAmount.toFixed(2);
+  } else {
+    tokenSection.style.display = 'none';
+    document.getElementById('tokenDetail').style.display = 'none';
+  }
+
+  if (installCharges > 0) {
+    installSection.style.display = 'block';
+    document.getElementById('installAmountLabel').textContent = '₹' + installCharges.toFixed(2);
+    document.getElementById('installDetail').style.display = 'block';
+    document.getElementById('installAmountDetail').textContent = '₹' + installCharges.toFixed(2);
+  } else {
+    installSection.style.display = 'none';
+    document.getElementById('installDetail').style.display = 'none';
+  }
+
+  // Show price breakdown
+  document.getElementById('productDetailsContainer').style.display = 'block';
+}
+
+async function generatePI() {
+  // Validate form
+  if (!validateForm()) {
+    return;
+  }
+
+  // Show loading state
+  const generateBtn = document.getElementById('generatePiBtn');
+  const generateBtnText = document.getElementById('generateBtnText');
+  const generateBtnSpinner = document.getElementById('generateBtnSpinner');
+  
+  generateBtn.disabled = true;
+  generateBtnText.textContent = 'Saving...';
+  generateBtnSpinner.style.display = 'inline-block';
+
+  try {
+    // Save to database first
+    const saveResult = await saveToDatabase();
+    if (!saveResult.success) {
+      alert('Error saving submission: ' + saveResult.message);
+      return;
+    }
+
+    // Show success message
+    document.getElementById('successMessage').style.display = 'block';
+    document.getElementById('quoteIdDisplay').textContent = saveResult.form_submission_id;
+
+    // Generate PI content
+    const piContent = generatePIContent();
+    document.getElementById('piContent').innerHTML = piContent;
+    
+    // Show modal
+    const modal = new bootstrap.Modal(document.getElementById('piModal'));
+    modal.show();
+    
+  } finally {
+    // Reset button state
+    generateBtn.disabled = false;
+    generateBtnText.textContent = 'Generate Proforma Invoice';
+    generateBtnSpinner.style.display = 'none';
+  }
+}
+
+function validateForm() {
+  let isValid = true;
+  
+  // Clear previous errors
+  document.querySelectorAll('.error-message').forEach(el => el.textContent = '');
+  
+  // Required fields validation
+  const requiredFields = ['customerName', 'mobile', 'email'];
+  requiredFields.forEach(fieldId => {
+    const field = document.getElementById(fieldId);
+    if (!field.value.trim()) {
+      document.getElementById(`error-${fieldId}`).textContent = 'This field is required';
+      isValid = false;
+    }
+  });
+
+  // Product selection validation
+  const productSelector = document.getElementById('productSelector');
+  if (productSelector.tagName === 'SELECT' && !productSelector.value) {
+    document.getElementById('error-productSelector').textContent = 'Please select a product';
+    isValid = false;
+  }
+
+  // GST validation
+  const gstSelector = document.getElementById('gstSelector');
+  if (gstSelector.value === 'yes') {
+    const gstNumber = document.getElementById('gstNumber').value.trim();
+    if (!gstNumber) {
+      document.getElementById('error-gstNumber').textContent = 'GST number is required';
+      isValid = false;
+    }
+  } else {
+    const address = document.getElementById('address').value.trim();
+    
+    if (!address) {
+      document.getElementById('error-address').textContent = 'Address is required';
+      isValid = false;
+    }
+  }
+
+  return isValid;
+}
+
+function generatePIContent() {
+  const customerName = document.getElementById('customerName').value;
+  const companyName = document.getElementById('companyName').value;
+  const mobile = document.getElementById('mobile').value;
+  const email = document.getElementById('email').value;
+  const quantity = document.getElementById('quantity').value;
+  
+  // Get pricing data from selected product
+  let basicAmount, cgstRate, sgstRate, tokenAmount, installCharges, productName;
+  
+  const productSelector = document.getElementById('productSelector');
+  if (productSelector.tagName === 'SELECT' && productSelector.value) {
+    // Get data from selected option
+    const selectedOption = productSelector.options[productSelector.selectedIndex];
+    basicAmount = parseFloat(selectedOption.dataset.basicAmount) || 0;
+    cgstRate = parseFloat(selectedOption.dataset.cgst) || 0;
+    sgstRate = parseFloat(selectedOption.dataset.sgst) || 0;
+    tokenAmount = parseFloat(selectedOption.dataset.tokenAmount) || 0;
+    installCharges = parseFloat(selectedOption.dataset.installationCharges) || 0;
+    productName = selectedOption.text;
+  } else {
+    // Fallback to default values - get from rate card data if available
+    const productId = document.getElementById('productSelector').value;
+    if (productId && rateCardData[productId]) {
+      const rateData = rateCardData[productId];
+      basicAmount = parseFloat(rateData.basic_amount) || 0;
+      cgstRate = parseFloat(rateData.cgst) || 0;
+      sgstRate = parseFloat(rateData.sgst) || 0;
+      tokenAmount = parseFloat(rateData.token_amount) || 0;
+      installCharges = parseFloat(rateData.installation_charge) || 0;
+      productName = rateData.product_name;
+    } else {
+      basicAmount = 0;
+      cgstRate = 0;
+      sgstRate = 0;
+      tokenAmount = 0;
+      installCharges = 0;
+      productName = '{{ product.prdt_desc }}';
+    }
+  }
+
+  const totalBasic = basicAmount * quantity;
+  const cgst = (totalBasic * cgstRate) / 100;
+  const sgst = (totalBasic * sgstRate) / 100;
+  const totalWithGST = totalBasic + cgst + sgst;
+  const finalTotal = totalWithGST + tokenAmount + installCharges;
+
+  return `
+    <div class="row">
+      <div class="col-md-6">
+        <table class="table table-bordered">
+          <tbody>
+            <tr><th>Customer Name</th><td>${customerName}</td></tr>
+            <tr><th>Company Name</th><td>${companyName || 'N/A'}</td></tr>
+            <tr><th>Mobile</th><td>${mobile}</td></tr>
+            <tr><th>Email</th><td>${email}</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="col-md-6">
+        <table class="table table-bordered">
+          <tbody>
+                         <tr><th>Product</th><td>${productName}</td></tr>
+            <tr><th>Quantity</th><td>${quantity}</td></tr>
+            <tr><th>Basic Amount</th><td>₹${totalBasic.toFixed(2)}</td></tr>
+            <tr><th>CGST (${cgstRate}%)</th><td>₹${cgst.toFixed(2)}</td></tr>
+            <tr><th>SGST (${sgstRate}%)</th><td>₹${sgst.toFixed(2)}</td></tr>
+            <tr><th>Subtotal</th><td>₹${totalWithGST.toFixed(2)}</td></tr>
+            ${tokenAmount > 0 ? `<tr><th>Token Amount</th><td>₹${tokenAmount.toFixed(2)}</td></tr>` : ''}
+            ${installCharges > 0 ? `<tr><th>Installation Charges</th><td>₹${installCharges.toFixed(2)}</td></tr>` : ''}
+            <tr><th><strong>Total Amount</strong></th><td><strong>₹${finalTotal.toFixed(2)}</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+function downloadPDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: "pt" });
+  const leftMargin = 40;
+  let y = 40;
+
+  // Title
+  doc.setTextColor("#3949ab");
+  doc.setFont(undefined, "bold");
+  doc.text(productName + " - Proforma Invoice", leftMargin + 10, y);
+  y += 30;
+
+  // Customer Details
+  doc.setFont(undefined, "bold");
+  doc.text("Customer Details", leftMargin, y);
+  y += 20;
+
+  const customerData = [
+    ["Customer Name", document.getElementById('customerName').value],
+    ["Company Name", document.getElementById('companyName').value || 'N/A'],
+    ["Mobile", document.getElementById('mobile').value],
+    ["Email", document.getElementById('email').value]
+  ];
+
+  customerData.forEach(([key, value]) => {
+    doc.setFillColor(232, 234, 246);
+    doc.rect(leftMargin, y, 160, 20, "F");
+    doc.setTextColor("#3949ab");
+    doc.text(key, leftMargin + 5, y + 15);
+
+    doc.setFillColor(248, 249, 250);
+    doc.rect(leftMargin + 160, y, 360, 20, "F");
+    doc.setTextColor("#2c3e50");
+    doc.text(value, leftMargin + 165, y + 15);
+
+    y += 20;
+  });
+
+  y += 20;
+
+  // Product Details
+  doc.setFont(undefined, "bold");
+  doc.text("Product Details", leftMargin, y);
+  y += 20;
+
+  const quantity = parseInt(document.getElementById('quantity').value) || 1;
+  
+  // Get pricing data from selected product
+  let basicAmount, cgstRate, sgstRate, tokenAmount, installCharges, productName;
+  
+  const productSelector = document.getElementById('productSelector');
+  if (productSelector.tagName === 'SELECT' && productSelector.value) {
+    // Get data from selected option
+    const selectedOption = productSelector.options[productSelector.selectedIndex];
+    basicAmount = parseFloat(selectedOption.dataset.basicAmount) || 0;
+    cgstRate = parseFloat(selectedOption.dataset.cgst) || 0;
+    sgstRate = parseFloat(selectedOption.dataset.sgst) || 0;
+    tokenAmount = parseFloat(selectedOption.dataset.tokenAmount) || 0;
+    installCharges = parseFloat(selectedOption.dataset.installationCharges) || 0;
+    productName = selectedOption.text;
+  } else {
+    // Fallback to default values - get from rate card data if available
+    const productId = document.getElementById('productSelector').value;
+    if (productId && rateCardData[productId]) {
+      const rateData = rateCardData[productId];
+      basicAmount = parseFloat(rateData.basic_amount) || 0;
+      cgstRate = parseFloat(rateData.cgst) || 0;
+      sgstRate = parseFloat(rateData.sgst) || 0;
+      tokenAmount = parseFloat(rateData.token_amount) || 0;
+      installCharges = parseFloat(rateData.installation_charge) || 0;
+      productName = rateData.product_name;
+    } else {
+      basicAmount = 0;
+      cgstRate = 0;
+      sgstRate = 0;
+      tokenAmount = 0;
+      installCharges = 0;
+      productName = '{{ product.prdt_desc }}';
+    }
+  }
+
+  const totalBasic = basicAmount * quantity;
+  const cgst = (totalBasic * cgstRate) / 100;
+  const sgst = (totalBasic * sgstRate) / 100;
+  const totalWithGST = totalBasic + cgst + sgst;
+  const finalTotal = totalWithGST + tokenAmount + installCharges;
+
+  const productData = [
+    ["Product", productName],
+    ["Quantity", quantity.toString()],
+    ["Basic Amount", "₹" + totalBasic.toFixed(2)],
+    ["CGST (" + cgstRate + "%)", "₹" + cgst.toFixed(2)],
+    ["SGST (" + sgstRate + "%)", "₹" + sgst.toFixed(2)],
+    ["Subtotal", "₹" + totalWithGST.toFixed(2)]
+  ];
+
+  if (tokenAmount > 0) {
+    productData.push(["Token Amount", "₹" + tokenAmount.toFixed(2)]);
+  }
+  if (installCharges > 0) {
+    productData.push(["Installation Charges", "₹" + installCharges.toFixed(2)]);
+  }
+  productData.push(["Total Amount", "₹" + finalTotal.toFixed(2)]);
+
+  productData.forEach(([key, value]) => {
+    doc.setFillColor(232, 234, 246);
+    doc.rect(leftMargin, y, 160, 20, "F");
+    doc.setTextColor("#3949ab");
+    doc.text(key, leftMargin + 5, y + 15);
+
+    doc.setFillColor(248, 249, 250);
+    doc.rect(leftMargin + 160, y, 360, 20, "F");
+    doc.setTextColor("#2c3e50");
+    doc.text(value, leftMargin + 165, y + 15);
+
+    y += 20;
+  });
+
+  doc.save(productName.toLowerCase().replace(/\s+/g, '_') + "_PI.pdf");
+}
+
+async function saveToDatabase() {
+  try {
+    // Get form data
+    const formData = {
+      customer_name: document.getElementById('customerName').value.trim(),
+      company_name: document.getElementById('companyName').value.trim(),
+      mobile: document.getElementById('mobile').value.trim(),
+      email: document.getElementById('email').value.trim(),
+      has_gst: document.getElementById('gstSelector').value,
+      gst_number: document.getElementById('gstNumber').value.trim(),
+      address: document.getElementById('address').value.trim(),
+      state: document.getElementById('state').value,
+      district: document.getElementById('district').value,
+      pincode: document.getElementById('pincode').value.trim(),
+      product_id: document.getElementById('productSelector').value,
+      quantity: parseInt(document.getElementById('quantity').value) || 1,
+      basic_amount: parseFloat(document.getElementById('basicAmount').textContent) || 0,
+      cgst: parseFloat(document.getElementById('cgst').textContent) || 0,
+      sgst: parseFloat(document.getElementById('sgst').textContent) || 0,
+      total_amount: parseFloat(document.getElementById('totalPrice').textContent) || 0,
+      token_amount: parseFloat(document.getElementById('tokenAmountDetail').textContent.replace('₹', '')) || 0,
+      installing_charges: parseFloat(document.getElementById('installAmountDetail').textContent.replace('₹', '')) || 0,
+      grand_total: parseFloat(document.getElementById('finalTotal').textContent) || 0
+    };
+
+    // Send to server
+    const response = await fetch('/save-product-submission/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+      },
+      body: JSON.stringify(formData)
+    });
+
+    const result = await response.json();
+    
+    if (result.status === 'success') {
+      return { success: true, quote_id: result.quote_id };
+    } else {
+      return { success: false, message: result.message };
+    }
+    
+  } catch (error) {
+    console.error('Error saving to database:', error);
+    return { success: false, message: 'Network error occurred' };
+  }
+}
+
+function initiatePayment() {
+  // This would integrate with your payment system
+  alert('Payment integration would go here. Please contact support for payment processing.');
+}
+
+// API for dynamic dropdown
+document.addEventListener("DOMContentLoaded", () => {
+  const stateSelect = document.getElementById("state");
+  const districtSelect = document.getElementById("district");
+
+  if (!stateSelect || !districtSelect) {
+    console.error("State or district dropdown not found in the DOM");
+    return;
+  }
+
+  // Load states
+  fetch("/api/states/")
+    .then(res => res.json())
+    .then(data => {
+      if (!data.states || !Array.isArray(data.states)) {
+        throw new Error("Invalid states data format");
+      }
+      stateSelect.innerHTML = `<option value="">Select State</option>` +
+        data.states.map(s => `<option value="${s}">${s}</option>`).join('');
+    })
+    .catch(err => {
+      console.error("Error loading states:", err);
+      alert("Failed to load states. Please try again later.");
+    });
+
+  // On state change: load districts
+  stateSelect.addEventListener("change", () => {
+    const state = stateSelect.value;
+    if (!state) return;
+
+    districtSelect.innerHTML = `<option>Loading...</option>`;
+
+    fetch(`/api/districts/${encodeURIComponent(state)}/`)
+      .then(res => res.json())
+      .then(data => {
+        if (!data.districts || !Array.isArray(data.districts)) {
+          throw new Error("Invalid districts data format");
+        }
+        districtSelect.innerHTML = `<option value="">Select District</option>` +
+          data.districts.map(d => `<option value="${d}">${d}</option>`).join('');
+      })
+      .catch(err => {
+        console.error("Error loading districts:", err);
+        districtSelect.innerHTML = `<option value="">Failed to load districts</option>`;
+        alert("Failed to load districts. Please try again.");
+      });
+  });
+});
+</script>
+
+{% endblock %}
