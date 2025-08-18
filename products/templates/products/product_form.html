@@ -700,7 +700,7 @@ function generatePIContent() {
       <div>
         <table class="pi-table">
           <tbody>
-            <tr><th>Product</th><td>${productName}</td></tr>
+                         <tr><th>Product</th><td>${productName}</td></tr>
             <tr><th>Quantity</th><td>${quantity}</td></tr>
             ${includeToken ? `<tr><th>Token Amount</th><td>₹${tokenAmount.toFixed(2)}</td></tr>` : ''}
             ${includeInstall ? `<tr><th>Installation</th><td>₹${installCharges.toFixed(2)}</td></tr>` : ''}
@@ -716,9 +716,17 @@ function downloadPDF() {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ unit: 'pt', format: 'a4' });
   const pageWidth = doc.internal.pageSize.getWidth();
-  const margin = 40;
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const M = 24; // tighter margin for fuller look
+  const contentW = pageWidth - 2 * M;
 
-  // Collect data
+  // Helpers
+  const fmt = (n) => {
+    const num = Number(n || 0);
+    return num.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  };
+
+  // Collect form/customer
   const customer = {
     name: document.getElementById('customerName').value,
     company: document.getElementById('companyName').value || 'N/A',
@@ -726,13 +734,14 @@ function downloadPDF() {
     email: document.getElementById('email').value,
   };
 
+  // Pricing source
   const productSelector = document.getElementById('productSelector');
-  let basicAmount, gstRate, tokenAmount, installCharges, productName;
+  let unitPrice, gstRate, tokenAmount, installCharges, productName;
   const quantity = parseInt(document.getElementById('quantity').value) || 1;
 
   if (productSelector.tagName === 'SELECT' && productSelector.value) {
     const opt = productSelector.options[productSelector.selectedIndex];
-    basicAmount = parseFloat(opt.dataset.basicAmount) || 0;
+    unitPrice = parseFloat(opt.dataset.basicAmount) || 0;
     gstRate = parseFloat(opt.dataset.gst || 0) || 0;
     tokenAmount = parseFloat(opt.dataset.tokenAmount) || 0;
     installCharges = parseFloat(opt.dataset.installationCharges) || 0;
@@ -740,7 +749,7 @@ function downloadPDF() {
   } else {
     const productId = document.getElementById('productSelector').value;
     const rateData = productId && rateCardData[productId] ? rateCardData[productId] : null;
-    basicAmount = parseFloat(rateData?.basic_amount || 0);
+    unitPrice = parseFloat(rateData?.basic_amount || 0);
     gstRate = parseFloat(rateData?.gst || 0);
     tokenAmount = parseFloat(rateData?.token_amount || 0);
     installCharges = parseFloat(rateData?.installation_charge || 0);
@@ -750,101 +759,138 @@ function downloadPDF() {
   const includeToken = tokenAmount > 0 && document.getElementById('add_token')?.checked;
   const includeInstall = installCharges > 0 && document.getElementById('add_installation')?.checked;
 
-  const basicTotal = basicAmount * quantity;
-  const gstAmount = (basicTotal * gstRate) / 100;
-  const subTotal = basicTotal + gstAmount;
-  const finalTotal = subTotal + (includeToken ? tokenAmount : 0) + (includeInstall ? installCharges : 0);
+  const lineBasic = unitPrice * quantity;
+  const lineGst = (lineBasic * gstRate) / 100;
+  const lineTotal = lineBasic + lineGst;
 
-  // Brand Header
-  doc.setFillColor(13, 110, 253);
+  const basicTotal = lineBasic;
+  const gstTotal = lineGst;
+  const subTotal = basicTotal + gstTotal;
+  const grandTotal = subTotal + (includeToken ? tokenAmount : 0) + (includeInstall ? installCharges : 0);
+
+  const invoiceNo = 'PI-' + new Date().getTime();
+  const invoiceDate = new Date().toLocaleDateString();
+
+  // Header band
+  doc.setFillColor(23, 63, 132);
   doc.rect(0, 0, pageWidth, 70, 'F');
-  doc.setTextColor('#ffffff');
-  doc.setFont(undefined, 'bold');
+  doc.setTextColor(255, 255, 255);
+  doc.setFont('helvetica', 'bold');
   doc.setFontSize(16);
-  doc.text(`${productName} — Proforma Invoice`, margin, 40);
+  doc.text('PROFORMA INVOICE', M, 42);
   doc.setFontSize(10);
-  doc.setFont(undefined, 'normal');
-  doc.text(`Generated: ${new Date().toLocaleString()}`, pageWidth - margin, 40, { align: 'right' });
+  doc.setFont('helvetica', 'normal');
+  doc.text(`Invoice No: ${invoiceNo}`, pageWidth - M, 26, { align: 'right' });
+  doc.text(`Date: ${invoiceDate}`, pageWidth - M, 42, { align: 'right' });
 
-  // Seller/Buyer blocks
-  const topY = 90;
-  doc.setTextColor('#374151');
+  // Subheader product line
+  doc.setFont('helvetica', 'bold');
   doc.setFontSize(12);
-  doc.setFont(undefined, 'bold');
-  doc.text('Seller', margin, topY);
-  doc.text('Buyer', pageWidth / 2, topY);
+  doc.text(String(productName || 'Product'), M, 26);
 
-  doc.setFont(undefined, 'normal');
-  doc.setFontSize(11);
-  const sellerLines = [
-    'FusionTec Software',
-    'www.fusiontec.com',
-    'info@fusiontec.com',
-  ];
-  sellerLines.forEach((line, i) => doc.text(line, margin, topY + 18 + i * 14));
+  let y = 90;
 
-  const buyerLines = [
-    customer.name,
-    customer.company,
-    `${customer.mobile} • ${customer.email}`,
-  ];
-  buyerLines.forEach((line, i) => doc.text(line, pageWidth / 2, topY + 18 + i * 14));
+  // Buyer/Seller blocks
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor('#374151');
+  doc.text('Seller', M, y);
+  doc.text('Buyer', pageWidth / 2, y);
+  doc.setFont('helvetica', 'normal');
+  y += 18;
+  const seller = ['FusionTec Software', 'www.fusiontec.com', 'info@fusiontec.com'];
+  const buyer = [customer.name, customer.company, `${customer.mobile} • ${customer.email}`];
+  seller.forEach((s, i) => doc.text(s, M, y + i * 14));
+  buyer.forEach((b, i) => doc.text(b, pageWidth / 2, y + i * 14));
 
-  // Items table using AutoTable
-  const tableStartY = topY + 70;
+  // Items table
+  const tableY = y + 48;
   const body = [
-    [productName, quantity, `₹${basicAmount.toFixed(2)}`, `${gstRate}%`, `₹${(basicAmount * quantity + gstAmount).toFixed(2)}`],
+    [productName, String(quantity), fmt(unitPrice), `${gstRate}%`, fmt(lineGst), fmt(lineTotal)],
   ];
-  if (includeToken) body.push(['Token Charges', 1, `₹${tokenAmount.toFixed(2)}`, '-', `₹${tokenAmount.toFixed(2)}`]);
-  if (includeInstall) body.push(['Installation', 1, `₹${installCharges.toFixed(2)}`, '-', `₹${installCharges.toFixed(2)}`]);
+  if (includeToken) body.push(['Token Charges', '1', fmt(tokenAmount), '-', '-', fmt(tokenAmount)]);
+  if (includeInstall) body.push(['Installation', '1', fmt(installCharges), '-', '-', fmt(installCharges)]);
+
+  // proportional column widths to fill page
+  const wDesc = Math.round(contentW * 0.40);
+  const wQty  = Math.round(contentW * 0.08);
+  const wUnit = Math.round(contentW * 0.16);
+  const wPct  = Math.round(contentW * 0.08);
+  const wGst  = Math.round(contentW * 0.12);
+  const wLine = Math.round(contentW * 0.16);
 
   doc.autoTable({
-    startY: tableStartY,
-    head: [['Item', 'Qty', 'Basic', 'GST', 'Amount']],
+    startY: tableY,
+    head: [['Description', 'Qty', 'Unit Price', 'GST %', 'GST Amt', 'Line Total']],
     body,
     theme: 'grid',
-    styles: { fontSize: 10, cellPadding: 6 },
-    headStyles: { fillColor: [13, 110, 253], textColor: 255, halign: 'left' },
+    styles: { font: 'helvetica', fontStyle: 'normal', fontSize: 10, cellPadding: 6 },
+    headStyles: { fillColor: [23, 63, 132], textColor: 255 },
+    margin: { left: M, right: M },
+    tableWidth: contentW,
     columnStyles: {
-      0: { cellWidth: 220 },
-      1: { halign: 'right' },
-      2: { halign: 'right' },
-      3: { halign: 'right' },
-      4: { halign: 'right' },
+      0: { cellWidth: wDesc },
+      1: { cellWidth: wQty, halign: 'right' },
+      2: { cellWidth: wUnit, halign: 'right' },
+      3: { cellWidth: wPct, halign: 'right' },
+      4: { cellWidth: wGst, halign: 'right' },
+      5: { cellWidth: wLine, halign: 'right' },
     },
-    didDrawPage: (data) => {},
+    didDrawPage: (data) => {
+      // repeat header/footer
+      doc.setFillColor(23, 63, 132);
+      doc.rect(0, 0, pageWidth, 70, 'F');
+      doc.setTextColor(255, 255, 255);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(16);
+      doc.text('PROFORMA INVOICE', M, 42);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(10);
+      doc.text(`Invoice No: ${invoiceNo}`, pageWidth - M, 26, { align: 'right' });
+      doc.text(`Date: ${invoiceDate}`, pageWidth - M, 42, { align: 'right' });
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(12);
+      doc.text(String(productName || 'Product'), M, 26);
+    },
   });
 
-  // Totals block
-  const totalsY = doc.lastAutoTable.finalY + 10;
-  doc.setFont(undefined, 'bold');
-  doc.text('Totals', pageWidth - margin - 200, totalsY);
-  doc.setFont(undefined, 'normal');
+  y = doc.lastAutoTable.finalY + 16;
+
+  // If close to bottom, add page
+  if (y > pageHeight - 180) {
+    doc.addPage();
+    y = 90;
+  }
+
+  // Totals panel (right-aligned table)
   const totals = [
-    ['Basic Total', `₹${basicTotal.toFixed(2)}`],
-    [`GST (${gstRate}%)`, `₹${gstAmount.toFixed(2)}`],
-    ['Subtotal', `₹${subTotal.toFixed(2)}`],
+    ['Basic Total', fmt(basicTotal)],
+    [`GST (${gstRate}%)`, fmt(gstTotal)],
+    ['Subtotal', fmt(subTotal)],
   ];
-  if (includeToken) totals.push(['Token Amount', `₹${tokenAmount.toFixed(2)}`]);
-  if (includeInstall) totals.push(['Installation', `₹${installCharges.toFixed(2)}`]);
-  totals.push(['Grand Total', `₹${finalTotal.toFixed(2)}`]);
+  if (includeToken) totals.push(['Token Amount', fmt(tokenAmount)]);
+  if (includeInstall) totals.push(['Installation', fmt(installCharges)]);
+  totals.push([{ content: 'Grand Total', styles: { fontStyle: 'bold' } }, { content: `INR ${fmt(grandTotal)}`, styles: { fontStyle: 'bold' } }]);
 
-  let ty = totalsY + 12;
-  totals.forEach(([k, v]) => {
-    doc.setTextColor('#6b7280');
-    doc.text(k, pageWidth - margin - 200, ty);
-    doc.setTextColor('#111827');
-    doc.text(v, pageWidth - margin, ty, { align: 'right' });
-    ty += 16;
+  doc.autoTable({
+    startY: y,
+    head: [['', '']],
+    body: totals,
+    theme: 'plain',
+    styles: { font: 'helvetica', fontSize: 11, cellPadding: 4 },
+    columnStyles: { 0: { halign: 'right' }, 1: { halign: 'right' } },
+    margin: { left: pageWidth - M - 300 },
+    tableWidth: 300,
   });
 
-  // Footer
+  // Footer/notes
+  const fY = doc.lastAutoTable.finalY + 24;
+  doc.setFont('helvetica', 'normal');
   doc.setFontSize(9);
   doc.setTextColor('#6b7280');
-  doc.text('This is a system-generated Proforma Invoice. Prices are inclusive of applicable GST.', margin, ty + 24);
+  doc.text('Terms: Payment due within 7 days. This PI is valid for 15 days from the issue date.', M, fY);
 
-  const safeName = (productName || 'product').toLowerCase().replace(/\s+/g, '_');
-  doc.save(safeName + '_PI.pdf');
+  const safe = (productName || 'product').toLowerCase().replace(/\s+/g, '_');
+  doc.save(safe + '_PI.pdf');
 }
 
 async function saveToDatabase() {
