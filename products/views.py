@@ -1,7 +1,10 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse
 from django.conf import settings
 from django.contrib import messages
 from django.core.mail import EmailMessage, send_mail
+from django.core.mail.backends.smtp import EmailBackend
+import time
 from django.template.loader import render_to_string
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -323,11 +326,70 @@ def save_product_submission(request):
                 status='new'
             )
             
-            return JsonResponse({
-                'status': 'success',
-                'message': 'Form submitted successfully!',
-                'form_submission_id': form_submission.id
+            # Send admin notification email
+            admin_email_content = render_to_string('products/product_form_email.html', {
+                'customer_name': data.get('customer_name'),
+                'company_name': data.get('company_name', ''),
+                'email': data.get('email'),
+                'mobile': data.get('mobile'),
+                'has_gst': data.get('has_gst'),
+                'gst_number': data.get('gst_number', ''),
+                'address': data.get('address', ''),
+                'state': data.get('state', ''),
+                'district': data.get('district', ''),
+                'pincode': data.get('pincode', ''),
+                'product_name': product_item.prdt_desc,
+                'quantity': data.get('quantity', 1),
+                'basic_amount': basic_amount,
+                'cgst_amount': cgst_amount,
+                'sgst_amount': sgst_amount,
+                'total_with_gst': data.get('total_amount', 0),
+                'token_amount': data.get('token_amount', 0),
+                'installation_charges': data.get('installing_charges', 0),
+                'grand_total': data.get('grand_total', 0),
+                'submission_id': form_submission.id,
             })
+
+            # Send customer thank you email
+            customer_thank_you_content = render_to_string('products/product_form_thanks.html', {
+                'customer_name': data.get('customer_name'),
+                'product_name': product_item.prdt_desc,
+                'quantity': data.get('quantity', 1),
+                'submission_id': form_submission.id,
+            })
+
+            try:
+                # Send to admin
+                admin_email = EmailMessage(
+                    subject=f"[Fusiontec Product Form] - {product_item.prdt_desc} - {data.get('customer_name')}",
+                    body=admin_email_content,
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    to=[settings.CONTACT_FORM_RECIPIENT],
+                )
+                admin_email.content_subtype = "html"
+                admin_email.send()
+
+                # Send thank you to customer
+                customer_email = EmailMessage(
+                    subject="Product Form Submission Received - Fusiontec",
+                    body=customer_thank_you_content,
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    to=[data.get('email')],
+                )
+                customer_email.content_subtype = "html"
+                customer_email.send()
+
+                return JsonResponse({
+                    'status': 'success',
+                    'message': 'Form submitted successfully! You will receive a confirmation email shortly.',
+                    'form_submission_id': form_submission.id
+                })
+            except Exception as e:
+                return JsonResponse({
+                    'status': 'success',
+                    'message': f'Form submitted successfully but there was an error sending confirmation emails: {str(e)}',
+                    'form_submission_id': form_submission.id
+                })
             
         except Exception as e:
             return JsonResponse({
@@ -391,7 +453,57 @@ def quote_form(request, product_id):
             status='pending'
         )
         
-        messages.success(request, 'Quote request submitted successfully!')
+        # Send admin notification email
+        admin_email_content = render_to_string('products/quote_form_email.html', {
+            'customer_name': customer_name,
+            'company_name': company_name,
+            'email': email,
+            'mobile': mobile,
+            'product_name': product_item.item_name,
+            'quantity': quantity,
+            'basic_amount': basic_amount,
+            'cgst': cgst,
+            'sgst': sgst,
+            'total_amount': total_amount,
+            'token_amount': token_amount,
+            'installing_charges': installing_charges,
+            'grand_total': grand_total,
+            'quote_id': quote.id,
+        })
+
+        # Send customer thank you email
+        customer_thank_you_content = render_to_string('products/quote_form_thanks.html', {
+            'customer_name': customer_name,
+            'product_name': product_item.item_name,
+            'quantity': quantity,
+            'quote_id': quote.id,
+        })
+
+        try:
+            # Send to admin
+            admin_email = EmailMessage(
+                subject=f"[Fusiontec Quote Request] - {product_item.item_name} - {customer_name}",
+                body=admin_email_content,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                to=[settings.CONTACT_FORM_RECIPIENT],
+            )
+            admin_email.content_subtype = "html"
+            admin_email.send()
+
+            # Send thank you to customer
+            customer_email = EmailMessage(
+                subject="Quote Request Received - Fusiontec",
+                body=customer_thank_you_content,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                to=[email],
+            )
+            customer_email.content_subtype = "html"
+            customer_email.send()
+
+            messages.success(request, 'Quote request submitted successfully! You will receive a confirmation email shortly.')
+        except Exception as e:
+            messages.error(request, f'Quote submitted but there was an error sending confirmation emails: {str(e)}')
+        
         return redirect('quote_detail', quote_id=quote.id)
     
     context = {
@@ -430,10 +542,236 @@ def contact_form(request):
             message=message,
         )
 
-        messages.success(request, 'Your message has been sent successfully.')
-        return redirect('contact_form')
+        # Admin notification email
+        email_html_content = render_to_string('products/contact_form_email.html', {
+            'name': name,
+            'email': email,
+            'phone': phone,
+            'subject': subject,
+            'message': message,
+        })
+
+        # User thank-you email
+        user_thank_you_content = render_to_string('products/contact_form_thanks.html', {
+            'name': name,
+        })
+
+        try:
+            # Send to admin
+            email_msg = EmailMessage(
+                subject=f"[Fusiontec Contact] - {subject}",
+                body=email_html_content,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                to=[settings.CONTACT_FORM_RECIPIENT],
+            )
+            email_msg.content_subtype = "html"
+            email_msg.send()
+
+            # Send thank you to user
+            user_email = EmailMessage(
+                subject="Thanks for contacting Fusiontec!",
+                body=user_thank_you_content,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                to=[email],
+            )
+            user_email.content_subtype = "html"
+            user_email.send()
+
+            messages.success(request, 'Your message has been sent successfully! You will receive a confirmation email shortly.')
+        except Exception as e:
+            messages.error(request, f'Message saved but there was an error sending confirmation emails: {str(e)}')
+
+        # Redirect back to the referring page or home page
+        referer = request.META.get('HTTP_REFERER')
+        if referer and 'contact' not in referer:
+            return redirect(referer)
+        else:
+            return redirect('index')
     
-    return render(request, 'products/contact_form.html')
+    # If it's a GET request, redirect to home page
+    return redirect('index')
+
+def submit_quote(request):
+    """Handle quote form submission and send email using stored credentials"""
+    if request.method == 'POST':
+        try:
+            # Get form data
+            customer_name = request.POST.get('customer_name', '').strip()
+            company_name = request.POST.get('company_name', '').strip()
+            mobile = request.POST.get('mobile', '').strip()
+            email = request.POST.get('email', '').strip()
+            gst_number = request.POST.get('gst_number', '').strip()
+            address = request.POST.get('address', '').strip()
+            state = request.POST.get('state', '').strip()
+            district = request.POST.get('district', '').strip()
+            pincode = request.POST.get('pincode', '').strip()
+            product_type_id = request.POST.get('product_type_id')
+            quantity = int(request.POST.get('quantity', 1))
+            additional_requirements = request.POST.get('additional_requirements', '').strip()
+            
+            print(f"=== QUOTE FORM DEBUG ===")
+            print(f"Customer: {customer_name}")
+            print(f"Email: {email}")
+            print(f"Product Type ID: {product_type_id}")
+            print(f"All POST data: {dict(request.POST)}")
+            
+            # Validate required fields
+            if not all([customer_name, mobile, email, product_type_id]):
+                messages.error(request, 'Please fill all required fields.')
+                return redirect('index')
+            
+            # Get product type details
+            try:
+                product_type = ProductTypeMaster.objects.get(id=product_type_id)
+                print(f"Found product type: {product_type.prdt_desc}")
+                print(f"Email configured: {product_type.sender_email}")
+                print(f"App password configured: {'Yes' if product_type.app_password else 'No'}")
+            except ProductTypeMaster.DoesNotExist:
+                messages.error(request, 'Product type not found.')
+                return redirect('index')
+            
+            # Create submission record
+            print("Creating submission record...")
+            try:
+                from django.utils import timezone
+                from .models import QuoteRequest
+                
+                # Create quote request record
+                quote_request = QuoteRequest.objects.create(
+                    customer_name=customer_name,
+                    company_name=company_name,
+                    mobile=mobile,
+                    email=email,
+                    product_type=product_type,
+                    quantity=quantity,
+                    address=address,
+                    state=state,
+                    district=district,
+                    pincode=pincode,
+                    gst_number=gst_number if gst_number else None,
+                    additional_requirements=additional_requirements,
+                    status='new'
+                )
+                print(f"Quote request created with ID: {quote_request.id}")
+            except Exception as e:
+                print(f"Error creating quote request: {e}")
+                print(f"Error type: {type(e).__name__}")
+                raise e
+            
+            # Send email if email credentials are configured
+            print(f"Checking email credentials: sender_email='{product_type.sender_email}', app_password='{'Yes' if product_type.app_password else 'No'}'")
+            if product_type.sender_email and product_type.app_password:
+                print(f"Attempting to send email from {product_type.sender_email} to {email}")
+                try:
+                    # Configure email backend with stored credentials
+                    email_backend = EmailBackend(
+                        host='smtp.gmail.com',
+                        port=587,
+                        username=product_type.sender_email,
+                        password=product_type.app_password,
+                        use_tls=True,
+                        fail_silently=False
+                    )
+                    print("Email backend configured successfully")
+                    
+                    # Prepare email content
+                    subject = f"Quote Request - {product_type.prdt_desc}"
+                    
+                    # Create email body
+                    email_body = f"""
+Dear {customer_name},
+
+Thank you for your quote request for {product_type.prdt_desc}.
+
+Your request details:
+- Product Type: {product_type.prdt_desc}
+- Quantity: {quantity}
+- Company: {company_name or 'Not specified'}
+- Contact: {mobile}
+- Email: {email}
+- Address: {address}
+- State: {state}
+- District: {district}
+- Pincode: {pincode}
+- GST Number: {gst_number or 'Not provided'}
+- Additional Requirements: {additional_requirements or 'None'}
+
+Our team will review your requirements and get back to you with a detailed quote within 24-48 hours.
+
+Best regards,
+FusionTec Team
+                    """
+                    
+                    # Send email to customer using custom backend
+                    print("Creating customer email message...")
+                    email_message = EmailMessage(
+                        subject=subject,
+                        body=email_body,
+                        from_email=product_type.sender_email,
+                        to=[email],
+                        reply_to=[product_type.sender_email]
+                    )
+                    email_message.connection = email_backend
+                    print("Sending customer email...")
+                    email_message.send()
+                    print("Customer email sent successfully!")
+                    
+                    # Send notification to admin
+                    print("Creating admin notification email...")
+                    admin_subject = f"New Quote Request - {product_type.prdt_desc}"
+                    admin_body = f"""
+New quote request received:
+
+Customer: {customer_name}
+Product Type: {product_type.prdt_desc}
+Quantity: {quantity}
+Contact: {mobile} | {email}
+Company: {company_name or 'Not specified'}
+
+Additional Requirements:
+{additional_requirements or 'None'}
+
+Quote Request ID: {quote_request.id}
+                    """
+                    
+                    admin_email = EmailMessage(
+                        subject=admin_subject,
+                        body=admin_body,
+                        from_email=product_type.sender_email,
+                        to=[product_type.sender_email]  # Send to admin email
+                    )
+                    admin_email.connection = email_backend
+                    print("Sending admin email...")
+                    admin_email.send()
+                    print("Admin email sent successfully!")
+                    
+                    print(f"All emails sent successfully from {product_type.sender_email} to {email}")
+                    
+                    # Update email status
+                    quote_request.email_sent = True
+                    quote_request.email_sent_at = timezone.now()
+                    quote_request.save()
+                    print(f"Email status updated for quote request #{quote_request.id}")
+                    
+                    messages.success(request, 'Quote request submitted successfully! We will contact you soon.')
+                    
+                except Exception as email_error:
+                    # Log the email error but don't fail the submission
+                    print(f"Email sending failed: {email_error}")
+                    print(f"Email credentials: {product_type.sender_email}")
+                    messages.success(request, 'Quote request submitted successfully! We will contact you soon.')
+            else:
+                # No email credentials configured, just show success message
+                print(f"No email credentials configured for product type: {product_type.prdt_desc}")
+                messages.success(request, 'Quote request submitted successfully! We will contact you soon.')
+            
+            return redirect('index')
+            
+        except Exception as e:
+            messages.error(request, f'Error submitting quote: {str(e)}')
+            return redirect('index')
+    
+    return redirect('index')
 
 # ============================================================================
 # ADMIN FUNCTIONS
@@ -817,13 +1155,44 @@ def custom_admin_products(request):
                 ProductMasterV2.objects.get(id=product_id).delete()
                 messages.success(request, 'Product deleted.')
                 return redirect('custom_admin_products')
+            elif form_type == 'edit_type':
+                type_id = request.POST.get('type_id')
+                prdt_desc = (request.POST.get('prdt_desc') or '').strip()
+                image = request.FILES.get('image')
+                sender_email = (request.POST.get('sender_email') or '').strip()
+                app_password = (request.POST.get('app_password') or '').strip()
+                
+                if not type_id or not prdt_desc:
+                    messages.error(request, 'Type ID and description are required.')
+                else:
+                    try:
+                        product_type = ProductTypeMaster.objects.get(id=int(type_id))
+                        product_type.prdt_desc = prdt_desc
+                        product_type.sender_email = sender_email if sender_email else None
+                        product_type.app_password = app_password if app_password else None
+                        if image:
+                            product_type.image = image
+                        product_type.save()
+                        messages.success(request, 'Product Type updated.')
+                    except ProductTypeMaster.DoesNotExist:
+                        messages.error(request, 'Product Type not found.')
+                    except Exception as exc:
+                        messages.error(request, f'Failed to update: {exc}')
+                return redirect('custom_admin_products')
             elif form_type == 'type':
                 prdt_desc = (request.POST.get('prdt_desc') or '').strip()
                 image = request.FILES.get('image')
+                sender_email = (request.POST.get('sender_email') or '').strip()
+                app_password = (request.POST.get('app_password') or '').strip()
                 if not prdt_desc:
                     messages.error(request, 'Type description is required.')
                 else:
-                    ProductTypeMaster.objects.create(prdt_desc=prdt_desc, image=image)
+                    ProductTypeMaster.objects.create(
+                        prdt_desc=prdt_desc, 
+                        image=image,
+                        sender_email=sender_email if sender_email else None,
+                        app_password=app_password if app_password else None
+                    )
                     messages.success(request, 'Product Type created.')
                     return redirect('custom_admin_products')
             elif form_type == 'product':
@@ -1311,6 +1680,181 @@ def custom_admin_form_submissions(request):
     
     return render(request, 'products/admin/form_submissions.html', context)
 
+@admin_required
+def custom_admin_quote_requests(request):
+    """Admin dashboard for quote requests"""
+    from .models import QuoteRequest
+    quote_requests = QuoteRequest.objects.all().order_by('-created_at')
+    
+    # Filtering
+    status_filter = request.GET.get('status', '')
+    product_type_filter = request.GET.get('product_type', '')
+    date_filter = request.GET.get('date', '')
+    
+    if status_filter:
+        quote_requests = quote_requests.filter(status=status_filter)
+    
+    if product_type_filter:
+        quote_requests = quote_requests.filter(product_type_id=product_type_filter)
+    
+    if date_filter:
+        quote_requests = quote_requests.filter(created_at__date=date_filter)
+    
+    # Pagination
+    paginator = Paginator(quote_requests, 20)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    # Get unique product types for filter
+    product_types = ProductTypeMaster.objects.all().order_by('prdt_desc')
+    
+    # Statistics
+    total_requests = QuoteRequest.objects.count()
+    new_requests = QuoteRequest.objects.filter(status='new').count()
+    reviewed_requests = QuoteRequest.objects.filter(status='reviewed').count()
+    quoted_requests = QuoteRequest.objects.filter(status='quoted').count()
+    accepted_requests = QuoteRequest.objects.filter(status='accepted').count()
+    
+    context = {
+        'page_obj': page_obj,
+        'total_requests': total_requests,
+        'new_requests': new_requests,
+        'reviewed_requests': reviewed_requests,
+        'quoted_requests': quoted_requests,
+        'accepted_requests': accepted_requests,
+        'product_types': product_types,
+        'status_filter': status_filter,
+        'product_type_filter': product_type_filter,
+        'date_filter': date_filter,
+    }
+    
+    return render(request, 'products/admin/quote_requests.html', context)
+
+@admin_required
+def quote_request_detail(request, request_id):
+    """API endpoint to get quote request details"""
+    from .models import QuoteRequest
+    try:
+        quote_request = QuoteRequest.objects.get(id=request_id)
+        
+        # Render the details as HTML
+        html_content = f"""
+        <div class="row">
+            <div class="col-md-6">
+                <h6 class="text-primary">Customer Information</h6>
+                <table class="table table-sm">
+                    <tr><td><strong>Name:</strong></td><td>{quote_request.customer_name}</td></tr>
+                    <tr><td><strong>Company:</strong></td><td>{quote_request.company_name or 'Not specified'}</td></tr>
+                    <tr><td><strong>Mobile:</strong></td><td>{quote_request.mobile}</td></tr>
+                    <tr><td><strong>Email:</strong></td><td>{quote_request.email}</td></tr>
+                    <tr><td><strong>GST Number:</strong></td><td>{quote_request.gst_number or 'Not provided'}</td></tr>
+                </table>
+            </div>
+            <div class="col-md-6">
+                <h6 class="text-primary">Product Information</h6>
+                <table class="table table-sm">
+                    <tr><td><strong>Product Type:</strong></td><td>{quote_request.product_type.prdt_desc}</td></tr>
+                    <tr><td><strong>Quantity:</strong></td><td>{quote_request.quantity}</td></tr>
+                    <tr><td><strong>Status:</strong></td><td>
+                        <span class="badge bg-{'warning' if quote_request.status == 'new' else 'info' if quote_request.status == 'reviewed' else 'primary' if quote_request.status == 'quoted' else 'success' if quote_request.status == 'accepted' else 'danger' if quote_request.status == 'rejected' else 'secondary'}">
+                            {quote_request.status.title()}
+                        </span>
+                    </td></tr>
+                    <tr><td><strong>Created:</strong></td><td>{quote_request.created_at.strftime('%B %d, %Y at %I:%M %p')}</td></tr>
+                </table>
+            </div>
+        </div>
+        
+        <div class="row mt-3">
+            <div class="col-12">
+                <h6 class="text-primary">Address Information</h6>
+                <p>{quote_request.get_address_info()}</p>
+            </div>
+        </div>
+        
+        <div class="row mt-3">
+            <div class="col-12">
+                <h6 class="text-primary">Additional Requirements</h6>
+                <p>{quote_request.additional_requirements or 'No additional requirements specified'}</p>
+            </div>
+        </div>
+        
+        <div class="row mt-3">
+            <div class="col-12">
+                <h6 class="text-primary">Email Status</h6>
+                <table class="table table-sm">
+                    <tr><td><strong>Email Sent:</strong></td><td>
+                        <span class="badge bg-{'success' if quote_request.email_sent else 'danger'}">
+                            <i class="fas fa-{'check' if quote_request.email_sent else 'times'}"></i>
+                            {'Sent' if quote_request.email_sent else 'Not Sent'}
+                        </span>
+                    </td></tr>
+                    <tr><td><strong>Sent At:</strong></td><td>{quote_request.email_sent_at.strftime('%B %d, %Y at %I:%M %p') if quote_request.email_sent_at else 'N/A'}</td></tr>
+                </table>
+            </div>
+        </div>
+        
+        <div class="row mt-3">
+            <div class="col-12">
+                <h6 class="text-primary">Admin Notes</h6>
+                <textarea class="form-control" rows="3" placeholder="Add admin notes here...">{quote_request.admin_notes or ''}</textarea>
+            </div>
+        </div>
+        """
+        
+        return JsonResponse({
+            'success': True,
+            'html': html_content
+        })
+        
+    except QuoteRequest.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'message': 'Quote request not found'
+        }, status=404)
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': str(e)
+        }, status=500)
+
+@admin_required
+@csrf_exempt
+def update_quote_request_status(request, request_id):
+    """API endpoint to update quote request status"""
+    from .models import QuoteRequest
+    
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'message': 'Method not allowed'}, status=405)
+    
+    try:
+        import json
+        data = json.loads(request.body)
+        new_status = data.get('status')
+        
+        if not new_status:
+            return JsonResponse({'success': False, 'message': 'Status is required'}, status=400)
+        
+        quote_request = QuoteRequest.objects.get(id=request_id)
+        quote_request.status = new_status
+        quote_request.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Status updated to {new_status}'
+        })
+        
+    except QuoteRequest.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'message': 'Quote request not found'
+        }, status=404)
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': str(e)
+        }, status=500)
+
 # ============================================================================
 # PRODUCT MANAGEMENT VIEWS (New Structure)
 # ============================================================================
@@ -1701,18 +2245,47 @@ def add_bank_info(request):
 @csrf_exempt
 def get_states(request):
     """Get list of states for forms"""
-    from data.states_districts import states_districts
+    import json
+    import os
+    from django.conf import settings
     
-    states = list(states_districts.keys())
-    return JsonResponse({'states': states})
+    # Load states from JSON file
+    json_path = os.path.join(settings.BASE_DIR, 'data', 'states_districts.json')
+    try:
+        with open(json_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        
+        # Extract state names from the JSON structure
+        states = [item['state'] for item in data.get('states', [])]
+        return JsonResponse({'states': states})
+    except Exception as e:
+        print(f"Error loading states: {e}")
+        return JsonResponse({'states': []})
 
 @csrf_exempt
 def get_districts(request, state):
     """Get districts for a specific state"""
-    from data.states_districts import states_districts
+    import json
+    import os
+    from django.conf import settings
     
-    districts = states_districts.get(state, [])
-    return JsonResponse({'districts': districts})
+    # Load districts from JSON file
+    json_path = os.path.join(settings.BASE_DIR, 'data', 'states_districts.json')
+    try:
+        with open(json_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        
+        # Find the state and get its districts
+        districts = []
+        for item in data.get('states', []):
+            if item['state'] == state:
+                districts = item.get('districts', [])
+                break
+        
+        return JsonResponse({'districts': districts})
+    except Exception as e:
+        print(f"Error loading districts: {e}")
+        return JsonResponse({'districts': []})
 
 @csrf_exempt
 def get_submission_details(request, submission_id):

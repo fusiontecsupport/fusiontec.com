@@ -13,6 +13,7 @@ urlpatterns = [
     path('product-type/<int:type_id>/', views.product_type_products, name='product_type_products'),
     path('product-form/<int:type_id>/', views.product_type_form, name='product_type_form'),
     path('save-product-submission/', views.save_product_submission, name='save_product_submission'),
+    path('submit-quote/', views.submit_quote, name='submit_quote'),
     
     # ============================================================================
     # QUOTE & CONTACT FORMS
@@ -38,6 +39,9 @@ urlpatterns = [
     path('admin-contacts/', views.custom_admin_contacts, name='custom_admin_contacts'),
     path('admin-quotes/', views.custom_admin_quotes, name='custom_admin_quotes'),
     path('admin-form-submissions/', views.custom_admin_form_submissions, name='custom_admin_form_submissions'),
+    path('admin-quote-requests/', views.custom_admin_quote_requests, name='custom_admin_quote_requests'),
+    path('api/quote-request/<int:request_id>/', views.quote_request_detail, name='quote_request_detail'),
+    path('api/quote-request/<int:request_id>/update-status/', views.update_quote_request_status, name='update_quote_request_status'),
     path('admin-products/', views.custom_admin_products, name='custom_admin_products'),
     path('admin-tally-submissions/', views.custom_admin_tally_submissions, name='custom_admin_tally_submissions'),
     path('admin-emudhra-submissions/', views.custom_admin_emudhra_submissions, name='custom_admin_emudhra_submissions'),

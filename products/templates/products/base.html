@@ -68,14 +68,14 @@
               <li><a class="dropdown-item" href="#process">Process</a></li>
               <li><a class="dropdown-item" href="#products">Products</a></li>
               <li><a class="dropdown-item" href="#net_banking">Net Banking & Payment</a></li>
-              <li><a class="dropdown-item" href="{% url 'contact_form' %}">Contact Form</a></li>
+              <li><a class="dropdown-item" href="#" onclick="showEnquiryForm(); return false;">Contact Form</a></li>
             </ul>
           </li>
           <li class="nav-item"><a class="nav-link" href="#footer">Contact</a></li>
         </ul>
         
         <!-- Get a Free Quote Button -->
-        <a href="{% url 'contact_form' %}" class="btn btn-primary quote-btn">Get a Free Quote</a>
+        <button onclick="showEnquiryForm()" class="btn btn-primary quote-btn">Get a Free Quote</button>
       </div>
     </div>
   </nav>
@@ -197,7 +197,7 @@
   </main>
 
  <!-- Modern Floating Enquiry Form -->
-<div id="enquiryForm" class="floating-form">
+<div id="enquiryForm" class="floating-form hide">
   <div class="enquiry-header">
     <div class="enquiry-title">
       <i class="bi bi-chat-dots-fill me-2"></i>
@@ -209,7 +209,7 @@
   </div>
   
   <div class="enquiry-body">
-    <form method="POST" enctype="multipart/form-data" class="enquiry-form">
+    <form method="POST" action="{% url 'contact_form' %}" enctype="multipart/form-data" class="enquiry-form">
       {% csrf_token %}
       {% if messages %}
       <div id="message-container">
@@ -559,13 +559,7 @@
   }
 
   .enquiry-icon {
-    display: none;
-  }
-
-  @media (max-width: 768px) {
-    .enquiry-icon {
-      display: flex;
-    }
+    display: flex;
   }
 
   /* Loading state for submit button */
@@ -611,14 +605,39 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  // On load: show form and auto-hide based on screen size
-  form.classList.remove('hide');
-  icon.style.display = 'none';
+  // On load: hide form initially, show icon
+  form.classList.add('hide');
+  icon.style.display = 'flex';
 
-  const timeoutDuration = window.innerWidth < 992 ? 0 : 3000;
-  setTimeout(() => {
-    hideForm();
-  }, timeoutDuration);
+  // Check if we should show the form (e.g., redirected from contact page)
+  const shouldShowForm = window.location.search.includes('show_form=true') || 
+                        document.referrer.includes('/contact/');
+  
+  if (shouldShowForm) {
+    setTimeout(() => {
+      showForm();
+      form.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 500);
+  }
+
+  // Global function to show enquiry form (accessible from other pages)
+  window.showEnquiryForm = function() {
+    showForm();
+    // Scroll to form if it's not in viewport
+    setTimeout(() => {
+      form.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 100);
+  };
+
+  // Handle form submission
+  const enquiryForm = document.querySelector('.enquiry-form');
+  if (enquiryForm) {
+    enquiryForm.addEventListener('submit', function(e) {
+      const submitBtn = this.querySelector('.submit-btn');
+      submitBtn.classList.add('loading');
+      submitBtn.innerHTML = '<i class="bi bi-arrow-clockwise me-1"></i>Sending...';
+    });
+  }
 
   // On hover or click icon, show form
   icon.addEventListener('mouseenter', () => {

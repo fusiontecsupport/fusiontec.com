@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Quote Request Submission</title>
+  </head>
+  <body style="margin: 0; padding: 20px; font-family: Arial, sans-serif; background-color: #f8f9fa; color: #333;">
+
+    <div style="max-width: 600px; margin: auto; background-color: #ffffff; border: 1px solid #dee2e6; border-radius: 6px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.05); padding: 20px;">
+      <h2 style="color: #263A85; text-align: center; margin-bottom: 20px;">From fusiontec.com Quote Form</h2>
+      <h4 style="color: #263A85; text-align: center; margin-bottom: 20px;">New Quote Request Submission</h4>
+
+      <table style="width: 100%; border-collapse: collapse;">
+        <tr style="background-color: #263A85; color: #ffffff;">
+          <th style="text-align: left; padding: 10px; border: 1px solid #dee2e6;">Field</th>
+          <th style="text-align: left; padding: 10px; border: 1px solid #dee2e6;">Details</th>
+        </tr>
+        <tr style="background-color: #f8f9fa;">
+          <td style="padding: 10px; border: 1px solid #dee2e6;">Customer Name</td>
+          <td style="padding: 10px; border: 1px solid #dee2e6;">{{ customer_name }}</td>
+        </tr>
+        <tr>
+          <td style="padding: 10px; border: 1px solid #dee2e6;">Company Name</td>
+          <td style="padding: 10px; border: 1px solid #dee2e6;">{{ company_name|default:"Not provided" }}</td>
+        </tr>
+        <tr style="background-color: #f8f9fa;">
+          <td style="padding: 10px; border: 1px solid #dee2e6;">Email</td>
+          <td style="padding: 10px; border: 1px solid #dee2e6;">{{ email }}</td>
+        </tr>
+        <tr>
+          <td style="padding: 10px; border: 1px solid #dee2e6;">Mobile</td>
+          <td style="padding: 10px; border: 1px solid #dee2e6;">{{ mobile }}</td>
+        </tr>
+        <tr style="background-color: #f8f9fa;">
+          <td style="padding: 10px; border: 1px solid #dee2e6;">Product</td>
+          <td style="padding: 10px; border: 1px solid #dee2e6;">{{ product_name }}</td>
+        </tr>
+        <tr>
+          <td style="padding: 10px; border: 1px solid #dee2e6;">Quantity</td>
+          <td style="padding: 10px; border: 1px solid #dee2e6;">{{ quantity }}</td>
+        </tr>
+        <tr style="background-color: #f8f9fa;">
+          <td style="padding: 10px; border: 1px solid #dee2e6;">Basic Amount</td>
+          <td style="padding: 10px; border: 1px solid #dee2e6;">₹{{ basic_amount }}</td>
+        </tr>
+        <tr>
+          <td style="padding: 10px; border: 1px solid #dee2e6;">CGST</td>
+          <td style="padding: 10px; border: 1px solid #dee2e6;">₹{{ cgst }}</td>
+        </tr>
+        <tr style="background-color: #f8f9fa;">
+          <td style="padding: 10px; border: 1px solid #dee2e6;">SGST</td>
+          <td style="padding: 10px; border: 1px solid #dee2e6;">₹{{ sgst }}</td>
+        </tr>
+        <tr>
+          <td style="padding: 10px; border: 1px solid #dee2e6;">Total Amount</td>
+          <td style="padding: 10px; border: 1px solid #dee2e6;">₹{{ total_amount }}</td>
+        </tr>
+        <tr style="background-color: #f8f9fa;">
+          <td style="padding: 10px; border: 1px solid #dee2e6;">Token Amount</td>
+          <td style="padding: 10px; border: 1px solid #dee2e6;">₹{{ token_amount }}</td>
+        </tr>
+        <tr>
+          <td style="padding: 10px; border: 1px solid #dee2e6;">Installing Charges</td>
+          <td style="padding: 10px; border: 1px solid #dee2e6;">₹{{ installing_charges }}</td>
+        </tr>
+        <tr style="background-color: #f8f9fa;">
+          <td style="padding: 10px; border: 1px solid #dee2e6;">Grand Total</td>
+          <td style="padding: 10px; border: 1px solid #dee2e6;"><strong>₹{{ grand_total }}</strong></td>
+        </tr>
+        <tr>
+          <td style="padding: 10px; border: 1px solid #dee2e6;">Quote ID</td>
+          <td style="padding: 10px; border: 1px solid #dee2e6;">{{ quote_id }}</td>
+        </tr>
+      </table>
+
+      <p style="margin-top: 30px; font-size: 14px; text-align: center; color: #6c757d;">This email was generated automatically from the Fusiontec quote form.</p>
+    </div>
+
+  </body>
+</html>

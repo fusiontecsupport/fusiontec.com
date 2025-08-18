@@ -131,6 +131,20 @@ class ProductMaster(BaseTimestampModel):
         default=0,
         help_text="Order for display on website"
     )
+    sender_email = models.EmailField(
+        max_length=255, 
+        blank=True, 
+        null=True, 
+        verbose_name="Sender Email", 
+        help_text="Email address for sending notifications for this product"
+    )
+    app_password = models.CharField(
+        max_length=255, 
+        blank=True, 
+        null=True, 
+        verbose_name="App Password", 
+        help_text="App password for the sender email account"
+    )
     
     class Meta:
         ordering = ['display_order', 'product_name']
@@ -594,6 +608,8 @@ class ProductTypeMaster(BaseTimestampModel):
 
     prdt_desc = models.CharField(max_length=255, verbose_name="PrdtTDesc")
     image = models.ImageField(upload_to='products/types/', blank=True, null=True, verbose_name="Type Image")
+    sender_email = models.EmailField(max_length=255, blank=True, null=True, verbose_name="Sender Email", help_text="Email address for sending notifications for this product type")
+    app_password = models.CharField(max_length=255, blank=True, null=True, verbose_name="App Password", help_text="App password for the sender email account")
 
     class Meta:
         db_table = 'ProductTypeMaster'
@@ -604,7 +620,7 @@ class ProductTypeMaster(BaseTimestampModel):
         return self.prdt_desc
 
 
-class ProductMasterV2(BaseTimestampModel):
+class ProductMasterV2(models.Model):
     """Minimal product master table linked to `ProductTypeMaster`.
 
     Table name must be exactly 'ProductMaster'. Primary key represents PrdtId.
@@ -801,6 +817,94 @@ class ProductFormSubmission(BaseTimestampModel):
     
     def __str__(self):
         return f"Form #{self.id} - {self.customer_name} - {self.product_id.prdt_desc}"
+
+
+class QuoteRequest(BaseTimestampModel):
+    """Model for storing quote requests from the quote form"""
+    
+    # Customer Information
+    customer_name = models.CharField(max_length=100, verbose_name="Customer Name")
+    company_name = models.CharField(max_length=100, blank=True, null=True, verbose_name="Company Name")
+    mobile = models.CharField(max_length=15, verbose_name="Mobile Number")
+    email = models.EmailField(verbose_name="Email ID")
+    
+    # Product Information
+    product_type = models.ForeignKey(
+        ProductTypeMaster,
+        on_delete=models.CASCADE,
+        related_name='quote_requests',
+        verbose_name="Product Type"
+    )
+    quantity = models.PositiveIntegerField(default=1, verbose_name="Quantity")
+    
+    # Address Information
+    address = models.TextField(blank=True, null=True, verbose_name="Address")
+    state = models.CharField(max_length=100, blank=True, null=True, verbose_name="State")
+    district = models.CharField(max_length=100, blank=True, null=True, verbose_name="District")
+    pincode = models.CharField(max_length=10, blank=True, null=True, verbose_name="Pincode")
+    
+    # GST Information
+    gst_number = models.CharField(max_length=15, blank=True, null=True, verbose_name="GST Number")
+    
+    # Additional Information
+    additional_requirements = models.TextField(blank=True, null=True, verbose_name="Additional Requirements")
+    
+    # Status
+    STATUS_CHOICES = [
+        ('new', 'New'),
+        ('reviewed', 'Reviewed'),
+        ('quoted', 'Quoted'),
+        ('accepted', 'Accepted'),
+        ('rejected', 'Rejected'),
+        ('closed', 'Closed'),
+    ]
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='new', verbose_name="Status")
+    
+    # Admin Notes
+    admin_notes = models.TextField(blank=True, null=True, verbose_name="Admin Notes")
+    
+    # Email Status
+    email_sent = models.BooleanField(default=False, verbose_name="Email Sent")
+    email_sent_at = models.DateTimeField(blank=True, null=True, verbose_name="Email Sent At")
+    
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "Quote Request"
+        verbose_name_plural = "Quote Requests"
+        indexes = [
+            models.Index(fields=['customer_name', 'created_at']),
+            models.Index(fields=['email', 'created_at']),
+            models.Index(fields=['mobile', 'created_at']),
+            models.Index(fields=['status', 'created_at']),
+            models.Index(fields=['product_type', 'created_at']),
+        ]
+    
+    def __str__(self):
+        return f"Quote #{self.id} - {self.customer_name} - {self.product_type.prdt_desc}"
+    
+    def get_customer_info(self):
+        """Get formatted customer information"""
+        info = f"{self.customer_name}"
+        if self.company_name:
+            info += f" ({self.company_name})"
+        return info
+    
+    def get_address_info(self):
+        """Get formatted address information"""
+        parts = []
+        if self.address:
+            parts.append(self.address)
+        if self.state:
+            parts.append(self.state)
+        if self.district:
+            parts.append(self.district)
+        if self.pincode:
+            parts.append(self.pincode)
+        return ", ".join(parts) if parts else "Address not provided"
+    
+    def get_contact_info(self):
+        """Get formatted contact information"""
+        return f"{self.mobile} | {self.email}"
     
     def get_customer_info(self):
         """Get formatted customer information"""

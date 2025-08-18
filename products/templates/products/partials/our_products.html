@@ -30,7 +30,7 @@
             <div class="d-flex flex-wrap gap-2 justify-content-center">
               <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#typeModal{{ pt.id }}">Details</button>
               <a href="{% url 'product_type_form' pt.id %}" class="btn btn-outline-primary btn-sm">View</a>
-              <button type="button" class="btn btn-light btn-sm" onclick="showEnquiryForm()">Get Quote</button>
+              <button type="button" class="btn btn-light btn-sm" onclick="showQuoteForm({{ pt.id }}, '{{ pt.prdt_desc }}')">Get Quote</button>
             </div>
           </div>
         </div>
@@ -81,7 +81,7 @@
             </div>
             <div class="modal-footer border-0 pt-0">
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-              <button type="button" class="btn btn-primary" onclick="showEnquiryForm()">Get Quote</button>
+              <button type="button" class="btn btn-primary" onclick="showQuoteForm({{ pt.id }}, '{{ pt.prdt_desc }}')">Get Quote</button>
             </div>
           </div>
         </div>
@@ -93,6 +93,130 @@
       {% endfor %}
     </div>
     <!-- End Product Types -->
+
+    <!-- Quote Form Modal -->
+    <div class="modal fade" id="quoteFormModal" tabindex="-1" aria-labelledby="quoteFormModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content rounded-4 shadow-lg">
+                <div class="modal-header border-0 bg-gradient-primary text-white">
+                    <h5 class="modal-title" id="quoteFormModalLabel">
+                        <i class="bi bi-file-earmark-text me-2"></i>
+                        Get Quote
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form method="POST" action="{% url 'submit_quote' %}" enctype="multipart/form-data" id="quoteForm">
+                    {% csrf_token %}
+                    <input type="hidden" name="product_type_id" id="quote_product_type_id">
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Product Type</label>
+                                    <input type="text" class="form-control" id="quote_product_type_name" readonly>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Date</label>
+                                    <input type="text" class="form-control" id="quote_date" readonly>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <hr class="my-4">
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Full Name *</label>
+                                    <input type="text" name="customer_name" class="form-control" placeholder="Enter your full name" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Company Name</label>
+                                    <input type="text" name="company_name" class="form-control" placeholder="Enter company name">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Email Address *</label>
+                                    <input type="email" name="email" class="form-control" placeholder="Enter your email" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Phone Number *</label>
+                                    <input type="tel" name="mobile" class="form-control" placeholder="Enter phone number" required>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">GST Number</label>
+                                    <input type="text" name="gst_number" class="form-control" placeholder="Enter GST number (optional)">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Quantity *</label>
+                                    <input type="number" name="quantity" class="form-control" placeholder="Enter quantity" min="1" value="1" required>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Address</label>
+                            <textarea name="address" class="form-control" rows="2" placeholder="Enter your address"></textarea>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">State</label>
+                                    <select name="state" class="form-select" id="quote_state">
+                                        <option value="">Select State</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">District</label>
+                                    <select name="district" class="form-select" id="quote_district">
+                                        <option value="">Select District</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Pincode</label>
+                                    <input type="text" name="pincode" class="form-control" placeholder="Enter pincode">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Additional Requirements</label>
+                            <textarea name="additional_requirements" class="form-control" rows="3" placeholder="Describe your specific requirements or any additional information"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-send me-2"></i>
+                            Submit Quote Request
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
     <div class="row gx-5 justify-content-center">
       <div class="col-lg-11 col-xl-9 col-xxl-8">
@@ -279,8 +403,82 @@
         </div>
         {% endfor %}
       </div>
-    </div>
+        </div>
   </div>
- </section>
+</section>
+
+<script>
+// Function to show quote form modal
+function showQuoteForm(productTypeId, productTypeName) {
+    // Set the product type information
+    document.getElementById('quote_product_type_id').value = productTypeId;
+    document.getElementById('quote_product_type_name').value = productTypeName;
+    
+    // Set current date
+    const today = new Date();
+    const dateString = today.toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+    });
+    document.getElementById('quote_date').value = dateString;
+    
+    // Load states if not already loaded
+    loadStates();
+    
+    // Show the modal
+    const modal = new bootstrap.Modal(document.getElementById('quoteFormModal'));
+    modal.show();
+}
+
+// Load states for the quote form
+function loadStates() {
+    const stateSelect = document.getElementById('quote_state');
+    const districtSelect = document.getElementById('quote_district');
+    
+    // Only load if not already loaded
+    if (stateSelect.options.length > 1) return;
+    
+    fetch('/api/states/')
+        .then(response => response.json())
+        .then(data => {
+            stateSelect.innerHTML = '<option value="">Select State</option>';
+            data.forEach(state => {
+                const option = document.createElement('option');
+                option.value = state;
+                option.textContent = state;
+                stateSelect.appendChild(option);
+            });
+        })
+        .catch(error => console.error('Error loading states:', error));
+}
+
+// Handle state change for districts
+document.addEventListener('DOMContentLoaded', function() {
+    const stateSelect = document.getElementById('quote_state');
+    const districtSelect = document.getElementById('quote_district');
+    
+    if (stateSelect) {
+        stateSelect.addEventListener('change', function() {
+            const selectedState = this.value;
+            districtSelect.innerHTML = '<option value="">Select District</option>';
+            
+            if (selectedState) {
+                fetch(`/api/districts/${encodeURIComponent(selectedState)}/`)
+                    .then(response => response.json())
+                    .then(data => {
+                        data.forEach(district => {
+                            const option = document.createElement('option');
+                            option.value = district;
+                            option.textContent = district;
+                            districtSelect.appendChild(option);
+                        });
+                    })
+                    .catch(error => console.error('Error loading districts:', error));
+            }
+        });
+    }
+});
+</script>
 
 

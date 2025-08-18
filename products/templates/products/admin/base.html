@@ -246,6 +246,10 @@
                            href="{% url 'custom_admin_form_submissions' %}">
                             <i class="fas fa-clipboard-list me-2"></i> Form Submissions
                         </a>
+                        <a class="nav-link {% if request.resolver_match.url_name == 'custom_admin_quote_requests' %}active{% endif %}" 
+                           href="{% url 'custom_admin_quote_requests' %}">
+                            <i class="fas fa-file-invoice-dollar me-2"></i> Quote Requests
+                        </a>
                         <a class="nav-link {% if request.resolver_match.url_name == 'custom_admin_products' %}active{% endif %}" 
                            href="{% url 'custom_admin_products' %}">
                             <i class="fas fa-box me-2"></i> Products

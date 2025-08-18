@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Product Form Submission Received</title>
+  </head>
+  <body style="margin: 0; padding: 20px; font-family: Arial, sans-serif; background-color: #f8f9fa; color: #333;">
+
+    <div style="max-width: 600px; margin: auto; background-color: #ffffff; border: 1px solid #dee2e6; border-radius: 6px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.05); padding: 20px;">
+      <div style="text-align: center; margin-bottom: 30px;">
+        <h2 style="color: #263A85; margin-bottom: 10px;">Thank You for Your Submission!</h2>
+        <p style="color: #6c757d; font-size: 16px;">Dear {{ customer_name }},</p>
+      </div>
+
+      <div style="background-color: #f8f9fa; padding: 20px; border-radius: 6px; margin-bottom: 20px;">
+        <p style="margin: 0 0 15px 0; font-size: 16px; line-height: 1.6;">
+          We have successfully received your product form submission for <strong>{{ product_name }}</strong>. Our team will review your requirements and get back to you within 24-48 hours with detailed information.
+        </p>
+        
+        <p style="margin: 0 0 15px 0; font-size: 16px; line-height: 1.6;">
+          <strong>Submission Details:</strong><br>
+          • Product: {{ product_name }}<br>
+          • Quantity: {{ quantity }}<br>
+          • Submission ID: {{ submission_id }}
+        </p>
+        
+        <p style="margin: 0; font-size: 16px; line-height: 1.6;">
+          If you have any urgent questions, please don't hesitate to contact us at <a href="mailto:support@fusiontec.com" style="color: #263A85;">support@fusiontec.com</a> or call us directly.
+        </p>
+      </div>
+
+      <div style="text-align: center; margin-top: 30px;">
+        <p style="color: #6c757d; font-size: 14px; margin-bottom: 10px;">
+          Best regards,<br>
+          <strong>The Fusiontec Team</strong>
+        </p>
+        <p style="color: #6c757d; font-size: 12px;">
+          Fusiontec - Your Trusted Technology Partner<br>
+          Email: support@fusiontec.com<br>
+          Website: www.fusiontec.com
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>

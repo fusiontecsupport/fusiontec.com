@@ -5,7 +5,7 @@ from django.utils.safestring import mark_safe
 from .models import (
     ProductMaster, ProductType, ProductItem, RateCardMaster, Customer, QuoteSubmission,
     ContactSubmission, PaymentTransaction, PaymentSettings, Applicant,
-    ProductTypeMaster, ProductMasterV2, RateCardEntry, ProductFormSubmission,
+    ProductTypeMaster, ProductMasterV2, RateCardEntry, ProductFormSubmission, QuoteRequest,
 )
 
 # ============================================================================
@@ -14,9 +14,9 @@ from .models import (
 
 @admin.register(ProductMaster)
 class ProductMasterAdmin(admin.ModelAdmin):
-    list_display = ['product_code', 'product_name', 'is_active', 'display_order', 'get_types_count', 'get_items_count']
+    list_display = ['product_code', 'product_name', 'sender_email', 'is_active', 'display_order', 'get_types_count', 'get_items_count']
     list_filter = ['is_active', 'product_code']
-    search_fields = ['product_name', 'description']
+    search_fields = ['product_name', 'description', 'sender_email']
     ordering = ['display_order', 'product_name']
     readonly_fields = ['get_types_count', 'get_items_count']
     
@@ -27,6 +27,10 @@ class ProductMasterAdmin(admin.ModelAdmin):
         ('Media & Links', {
             'fields': ('image', 'website_link'),
             'classes': ('collapse',)
+        }),
+        ('Email Configuration', {
+            'fields': ('sender_email', 'app_password'),
+            'description': 'Email settings for sending notifications for this product'
         }),
     )
     
@@ -352,17 +356,29 @@ admin.site.index_title = "Welcome to FusionTec Administration"
 
 @admin.register(ProductTypeMaster)
 class ProductTypeMasterAdmin(admin.ModelAdmin):
-    list_display = ['id', 'prdt_desc', 'created_at']
-    search_fields = ['prdt_desc']
+    list_display = ['id', 'prdt_desc', 'sender_email', 'created_at']
+    search_fields = ['prdt_desc', 'sender_email']
     readonly_fields = ['created_at', 'updated_at']
+    fieldsets = (
+        ('Basic Information', {
+            'fields': ('prdt_desc', 'image')
+        }),
+        ('Email Configuration', {
+            'fields': ('sender_email', 'app_password'),
+            'description': 'Email settings for sending notifications for this product type'
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
 
 
 @admin.register(ProductMasterV2)
 class ProductMasterV2Admin(admin.ModelAdmin):
-    list_display = ['id', 'product_type', 'prdt_desc', 'created_at']
+    list_display = ['id', 'product_type', 'prdt_desc']
     list_filter = ['product_type']
     search_fields = ['prdt_desc']
-    readonly_fields = ['created_at', 'updated_at']
 
 
 @admin.register(RateCardEntry)
@@ -470,3 +486,73 @@ class ProductFormSubmissionAdmin(admin.ModelAdmin):
         updated = queryset.update(status='rejected')
         self.message_user(request, f'{updated} submission(s) marked as rejected.')
     mark_rejected.short_description = "Mark as rejected"
+
+# ============================================================================
+# QUOTE REQUEST ADMIN
+# ============================================================================
+
+@admin.register(QuoteRequest)
+class QuoteRequestAdmin(admin.ModelAdmin):
+    list_display = [
+        'id', 'customer_name', 'company_name', 'mobile', 'email', 
+        'product_type', 'quantity', 'status', 'email_sent', 'created_at'
+    ]
+    list_filter = ['status', 'email_sent', 'created_at', 'product_type']
+    search_fields = ['customer_name', 'company_name', 'email', 'mobile', 'gst_number']
+    ordering = ['-created_at']
+    readonly_fields = ['created_at', 'updated_at', 'email_sent_at']
+    
+    fieldsets = (
+        ('Customer Information', {
+            'fields': ('customer_name', 'company_name', 'mobile', 'email')
+        }),
+        ('Product & Quantity', {
+            'fields': ('product_type', 'quantity')
+        }),
+        ('Address Information', {
+            'fields': ('address', 'state', 'district', 'pincode'),
+            'classes': ('collapse',)
+        }),
+        ('Additional Information', {
+            'fields': ('gst_number', 'additional_requirements'),
+            'classes': ('collapse',)
+        }),
+        ('Status & Notes', {
+            'fields': ('status', 'admin_notes')
+        }),
+        ('Email Status', {
+            'fields': ('email_sent', 'email_sent_at'),
+            'classes': ('collapse',)
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    actions = ['mark_reviewed', 'mark_quoted', 'mark_accepted', 'mark_rejected', 'mark_closed']
+    
+    def mark_reviewed(self, request, queryset):
+        updated = queryset.update(status='reviewed')
+        self.message_user(request, f'{updated} quote request(s) marked as reviewed.')
+    mark_reviewed.short_description = "Mark selected as reviewed"
+    
+    def mark_quoted(self, request, queryset):
+        updated = queryset.update(status='quoted')
+        self.message_user(request, f'{updated} quote request(s) marked as quoted.')
+    mark_quoted.short_description = "Mark selected as quoted"
+    
+    def mark_accepted(self, request, queryset):
+        updated = queryset.update(status='accepted')
+        self.message_user(request, f'{updated} quote request(s) marked as accepted.')
+    mark_accepted.short_description = "Mark selected as accepted"
+    
+    def mark_rejected(self, request, queryset):
+        updated = queryset.update(status='rejected')
+        self.message_user(request, f'{updated} quote request(s) marked as rejected.')
+    mark_rejected.short_description = "Mark selected as rejected"
+    
+    def mark_closed(self, request, queryset):
+        updated = queryset.update(status='closed')
+        self.message_user(request, f'{updated} quote request(s) marked as closed.')
+    mark_closed.short_description = "Mark selected as closed"
