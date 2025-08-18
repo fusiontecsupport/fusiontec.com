@@ -1,3 +1,4 @@
+{% load static %}
 <!-- Products Section -->
 <section class="py-5" id="products">
   <div class="container px-4 px-lg-5 mb-5">
@@ -94,10 +95,36 @@
     </div>
     <!-- End Product Types -->
 
+    <!-- Hardcoded DSC Card -->
+    <div class="row g-4 justify-content-center mt-2" data-aos="fade-up" data-aos-delay="200">
+      <div class="col-12 col-sm-10 col-lg-8 col-xl-6">
+        <div class="card h-100 shadow-sm border-0">
+          <div class="row g-0 align-items-center">
+            <div class="col-md-4 p-3">
+              <div class="ratio ratio-16x9 rounded-3 overflow-hidden" style="background:#ffffff;">
+                <img src="{% static 'products/img/e-mudhra.jpg' %}" alt="Digital Signature Certificate" class="w-100 h-100" style="object-fit: contain; object-position: center;" />
+              </div>
+            </div>
+            <div class="col-md-8">
+              <div class="card-body">
+                <h5 class="card-title mb-2">Digital Signature Certificate (DSC)</h5>
+                <p class="card-text small text-muted mb-3">Class 3 DSC for GST, MCA, Income Tax, Tender submissions, EPFO filings, and more.</p>
+                <div class="d-flex flex-wrap gap-2">
+                  <a href="{% url 'dsc_form' %}" class="btn btn-primary btn-sm">View</a>
+                  <button type="button" class="btn btn-light btn-sm" onclick="showQuoteForm(0, 'Digital Signature Certificate')">Get Quote</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- End Hardcoded DSC Card -->
+
     <!-- Quote Form Modal -->
     <div class="modal fade" id="quoteFormModal" tabindex="-1" aria-labelledby="quoteFormModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
-            <div class="modal-content rounded-4 shadow-lg">
+t            <div class="modal-content rounded-4 shadow-lg">
                 <div class="modal-header border-0 bg-gradient-primary text-white">
                     <h5 class="modal-title" id="quoteFormModalLabel">
                         <i class="bi bi-file-earmark-text me-2"></i>
@@ -178,7 +205,7 @@
                         
                         <div class="row">
                             <div class="col-md-4">
-a daa                                 <div class="mb-3">
+                                <div class="mb-3">
                                     <label class="form-label fw-semibold">State</label>
                                     <select name="state" class="form-select" id="quote_state">
                                         <option value="">Select State</option>

@@ -1,0 +1,589 @@
+{% extends 'products/base2.html' %}
+{% load static %}
+
+{% block title %}Buy Digital Signature Certificate | FusionTec{% endblock %}
+
+{% block content %}
+<style>
+  :root { --anim-fast: .2s; --anim-med: .45s; --anim-slow: .9s; }
+  .toggle-group .btn { transition: all .2s ease-in-out; }
+  .toggle-group .btn.active { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+  .price-pulse { animation: pricePulse var(--anim-slow) ease-in-out; }
+  @keyframes pricePulse { 0% { transform: scale(1); } 40% { transform: scale(1.02); } 100% { transform: scale(1); } }
+  .fade-up { opacity: 0; transform: translateY(12px); animation: fadeUp var(--anim-med) ease-out forwards; }
+  @keyframes fadeUp { to { opacity: 1; transform: none; } }
+  #enquirySection.ring { box-shadow: 0 0 0 0.25rem rgba(13,110,253,.25); border-radius: .5rem; }
+  .cta-grid .btn { transition: transform .15s ease-in-out, box-shadow .15s ease-in-out; }
+  .cta-grid .btn:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(0,0,0,0.08); }
+  .reveal { opacity: 0; transform: translateY(16px); transition: opacity var(--anim-med) ease, transform var(--anim-med) ease; }
+  .reveal.is-visible { opacity: 1; transform: none; }
+  /* Decorative soft blobs */
+  .soft-blob { position: absolute; border-radius: 999px; filter: blur(25px); opacity: .25; animation: floatBlob 12s ease-in-out infinite; }
+  .blob-1 { width: 220px; height: 220px; background: #ffd7ba; top: -40px; right: -40px; }
+  .blob-2 { width: 180px; height: 180px; background: #cfe6ff; bottom: -30px; left: -30px; animation-delay: -3s; }
+  @keyframes floatBlob { 0%,100% { transform: translateY(0) translateX(0) scale(1); } 50% { transform: translateY(-8px) translateX(6px) scale(1.03); } }
+</style>
+<section class="py-5" style="background:#fff7f1;">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-10">
+        <div class="position-relative">
+          <div class="soft-blob blob-1 d-none d-md-block"></div>
+          <div class="soft-blob blob-2 d-none d-md-block"></div>
+        </div>
+        <div class="card border-0 shadow rounded-4 position-relative overflow-hidden">
+          <div class="card-body p-4 p-md-5 fade-up">
+            <div class="row g-3 align-items-center">
+              <div class="col-md-6">
+                <h2 class="fw-bold mb-3">Buy Digital Signature Certificate in 3 clicks</h2>
+                <ul class="small text-muted mb-4">
+                  <li>Government licensed certifying authority partner</li>
+                  <li>Used for GST, MCA, Income Tax, Tenders, EPFO and more</li>
+                  <li>2048 bit encryption • 24/7 support</li>
+                </ul>
+
+                <div class="mb-3">
+                  <div class="fw-semibold mb-1">Class Type</div>
+                  <div class="btn-group toggle-group" id="classTypeGroup" role="group"></div>
+                </div>
+
+                <div class="mb-3">
+                  <div class="fw-semibold mb-1">User Type</div>
+                  <div class="btn-group toggle-group" id="userTypeGroup" role="group"></div>
+                </div>
+
+                <div class="mb-3">
+                  <div class="fw-semibold mb-1">Certificate Type</div>
+                  <div class="btn-group toggle-group" id="certTypeGroup" role="group"></div>
+                </div>
+
+                <div class="mb-3">
+                  <div class="fw-semibold mb-1">Validity</div>
+                  <div class="btn-group toggle-group" id="validityGroup" role="group"></div>
+                </div>
+
+                <div class="form-check mb-3">
+                  <input class="form-check-input" type="checkbox" value="" id="outsideIndia">
+                  <label class="form-check-label" for="outsideIndia">
+                    Residing outside India
+                  </label>
+                </div>
+
+                <div id="addOnsContainer" class="mb-3" style="display:none;">
+                  <div class="fw-semibold mb-2">Optional add-ons</div>
+                  <div id="tokenRow" class="form-check form-switch mb-2" style="display:none;">
+                    <input class="form-check-input" type="checkbox" id="add_token" checked>
+                    <label class="form-check-label" for="add_token">Add Token (<span id="tokenAmountLabel">₹0</span>)</label>
+                  </div>
+                  <div id="installRow" class="form-check form-switch" style="display:none;">
+                    <input class="form-check-input" type="checkbox" id="add_installation" checked>
+                    <label class="form-check-label" for="add_installation">Add Installation Charges (<span id="installAmountLabel">₹0</span>)</label>
+                  </div>
+                </div>
+
+                <div class="border rounded-3 p-3 bg-white">
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div class="fw-semibold">Price</div>
+                    <a href="#" class="text-decoration-none">DSC Price List</a>
+                  </div>
+                  <div id="priceValue" class="display-6 fw-bold text-primary mb-2">₹ 1,500</div>
+                  <div id="notConfiguredHint" class="text-danger small d-none">Price not configured for this selection.</div>
+
+                  <div class="cta-grid d-grid gap-2 mt-2">
+                    <button class="btn btn-primary btn-lg" id="proceedBtn" type="button">Proceed to Buy</button>
+                    <button class="btn btn-outline-secondary" id="talkBtn" type="button">Talk to an Expert</button>
+                  </div>
+                </div>
+
+                <!-- Enquiry Form -->
+                <div class="mt-4" id="enquirySection">
+                  <h6 class="fw-semibold mb-2">Quick Enquiry</h6>
+                  <div class="row g-2">
+                    <div class="col-12 col-md-6"><input type="text" id="enqName" class="form-control" placeholder="Your Name"></div>
+                    <div class="col-12 col-md-6"><input type="email" id="enqEmail" class="form-control" placeholder="Email"></div>
+                    <div class="col-12 col-md-6"><input type="tel" id="enqMobile" class="form-control" placeholder="Mobile Number"></div>
+                    <div class="col-12 col-md-6"><input type="text" id="enqAddress" class="form-control" placeholder="Address (optional)"></div>
+                    <div class="col-12"><button id="enqSubmit" class="btn btn-success w-100">Send Enquiry</button></div>
+                  </div>
+                  <div id="enqMsg" class="small mt-2"></div>
+                </div>
+              </div>
+
+              <div class="col-md-6 fade-up" style="animation-delay:.1s">
+                <div class="ratio ratio-4x3 rounded-4 border bg-white d-flex align-items-center justify-content-center p-3">
+                  <img src="{% static 'products/img/e-mudhra.jpg' %}" alt="eMudhra" class="img-fluid" style="object-fit:contain;">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Trust/Stats strip -->
+        <div class="row text-center g-3 mt-4 reveal">
+          <div class="col-6 col-md-3">
+            <div class="p-3 bg-white rounded-3 shadow-sm h-100">
+              <div class="h4 mb-0 fw-bold">10K+</div>
+              <div class="small text-muted">Certificates delivered</div>
+            </div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="p-3 bg-white rounded-3 shadow-sm h-100">
+              <div class="h4 mb-0 fw-bold">24/7</div>
+              <div class="small text-muted">Priority support</div>
+            </div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="p-3 bg-white rounded-3 shadow-sm h-100">
+              <div class="h4 mb-0 fw-bold">3-steps</div>
+              <div class="small text-muted">Simple & paperless</div>
+            </div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="p-3 bg-white rounded-3 shadow-sm h-100">
+              <div class="h4 mb-0 fw-bold">Secure</div>
+              <div class="small text-muted">2048-bit encryption</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- How it works -->
+        <div class="mt-5 reveal">
+          <h5 class="fw-semibold text-center mb-3">Follow a simple 3-step process</h5>
+          <div class="row g-3">
+            <div class="col-md-4">
+              <div class="h-100 p-3 bg-white rounded-3 shadow-sm">
+                <div class="fw-bold mb-1">Step 1</div>
+                <div class="text-muted small mb-2">Click on Buy Certificate</div>
+                <div class="small">Select the class, user and validity that match your use-case.</div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="h-100 p-3 bg-white rounded-3 shadow-sm">
+                <div class="fw-bold mb-1">Step 2</div>
+                <div class="text-muted small mb-2">Verify your identity online</div>
+                <div class="small">Quick and secure paperless eKYC with guided assistance.</div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="h-100 p-3 bg-white rounded-3 shadow-sm">
+                <div class="fw-bold mb-1">Step 3</div>
+                <div class="text-muted small mb-2">Download your DSC</div>
+                <div class="small">Instant issuance and installation help from our team.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Security/Compliance -->
+        <div class="mt-5 reveal">
+          <div class="row g-3">
+            <div class="col-md-4">
+              <div class="p-3 bg-white rounded-3 shadow-sm h-100">
+                <div class="fw-semibold">Compliance</div>
+                <div class="small text-muted">CCA guidelines • GST/MCA/IT portals • Tendering</div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="p-3 bg-white rounded-3 shadow-sm h-100">
+                <div class="fw-semibold">Data Security</div>
+                <div class="small text-muted">Best practices with hardened infra and access controls</div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="p-3 bg-white rounded-3 shadow-sm h-100">
+                <div class="fw-semibold">Trusted by businesses</div>
+                <div class="small text-muted">From MSMEs to enterprises across India</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- FAQ -->
+        <div class="mt-5 reveal">
+          <h5 class="fw-semibold mb-3">Frequently asked questions</h5>
+          <div class="accordion" id="dscFaq">
+            <div class="accordion-item">
+              <h2 class="accordion-header" id="q1h">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#q1">What is a Class 3 DSC?</button>
+              </h2>
+              <div id="q1" class="accordion-collapse collapse" data-bs-parent="#dscFaq">
+                <div class="accordion-body small text-muted">A Class 3 DSC is a highly secure certificate used for e-filing on government and tender portals. Available for individuals and organizations with 1–3 year validity.</div>
+              </div>
+            </div>
+            <div class="accordion-item">
+              <h2 class="accordion-header" id="q2h">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#q2">How long does issuance take?</button>
+              </h2>
+              <div id="q2" class="accordion-collapse collapse" data-bs-parent="#dscFaq">
+                <div class="accordion-body small text-muted">With paperless eKYC and correct documents, issuance can be completed quickly, typically the same day.</div>
+              </div>
+            </div>
+            <div class="accordion-item">
+              <h2 class="accordion-header" id="q3h">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#q3">Do I need a USB token?</button>
+              </h2>
+              <div id="q3" class="accordion-collapse collapse" data-bs-parent="#dscFaq">
+                <div class="accordion-body small text-muted">Some use-cases require a FIPS-compliant cryptographic token. You can add it as an optional add-on if applicable.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="text-muted small mt-4 reveal">
+          UI inspired by eMudhra buy page. For official details see
+          <a href="https://emudhradigital.com/" target="_blank" rel="noopener">eMudhra</a>.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+(function(){
+  const proceedBtn = document.getElementById('proceedBtn');
+  const talkBtn = document.getElementById('talkBtn');
+  const enquirySection = document.getElementById('enquirySection');
+  const outsideIndia = document.getElementById('outsideIndia');
+  const priceEl = document.getElementById('priceValue');
+  const notCfg = document.getElementById('notConfiguredHint');
+  const addOnsContainer = document.getElementById('addOnsContainer');
+  const tokenRow = document.getElementById('tokenRow');
+  const installRow = document.getElementById('installRow');
+  const tokenCheckbox = document.getElementById('add_token');
+  const installCheckbox = document.getElementById('add_installation');
+  const tokenAmtLabel = document.getElementById('tokenAmountLabel');
+  const installAmtLabel = document.getElementById('installAmountLabel');
+  const enqSubmit = document.getElementById('enqSubmit');
+  const enqMsg = document.getElementById('enqMsg');
+  const enqName = document.getElementById('enqName');
+  const enqEmail = document.getElementById('enqEmail');
+  const enqMobile = document.getElementById('enqMobile');
+  const enqAddress = document.getElementById('enqAddress');
+
+  const state = {
+    classType: 'class3',
+    userType: 'individual',
+    certType: 'signature',
+    validity: '2y'
+  };
+
+  // Fallback local price table if backend is not ready
+  const localPrices = {
+    class3: {
+      signature: { '1y': 2890, '2y': 3067, '3y': 3952 },
+      encryption: { '1y': 2890, '2y': 3067, '3y': 3952 }, // same as signature for now
+      both: { '1y': 3657, '2y': 3952, '3y': 5250 },
+      foreign: {
+        signature: { '2y': 14868 },
+        both: { '2y': 20768 }
+      }
+    },
+    dgft: {
+      signature: { '1y': 3421, '2y': 3657 },
+      encryption: { '1y': 3421, '2y': 3657 },
+      both: { '1y': 3421, '2y': 3657 }
+    }
+  };
+
+  let lastComponents = null;
+  let lastGST = 0;
+  let lastSurcharge = 0;
+  let currentDisplayedPrice = 0;
+
+  function setPriceValue(value){
+    const target = Number(value) || 0;
+    const start = Number(String(priceEl.textContent).replace(/[^0-9.]/g,'')) || currentDisplayedPrice || 0;
+    const duration = 450;
+    const startTime = performance.now();
+    priceEl.classList.add('price-pulse');
+    function step(now){
+      const t = Math.min(1, (now - startTime) / duration);
+      const eased = t * (2 - t);
+      const val = start + (target - start) * eased;
+      priceEl.textContent = `₹ ${Number(val).toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
+      if(t < 1){
+        requestAnimationFrame(step);
+      } else {
+        currentDisplayedPrice = target;
+        setTimeout(()=>priceEl.classList.remove('price-pulse'), 150);
+      }
+    }
+    requestAnimationFrame(step);
+  }
+
+  function renderComputedPrice(){
+    if(!lastComponents){
+      return;
+    }
+    const dsc = parseFloat(lastComponents.dsc_charge || 0);
+    const token = parseFloat(lastComponents.token_amount || 0);
+    const install = parseFloat(lastComponents.installation_charge || 0);
+    const gstPct = parseFloat(lastGST || 0);
+    const includeToken = token > 0 && (tokenCheckbox ? tokenCheckbox.checked : true);
+    const includeInstall = install > 0 && (installCheckbox ? installCheckbox.checked : true);
+    const base = dsc + (includeToken ? token : 0) + (includeInstall ? install : 0);
+    let total = base * (1 + (gstPct/100));
+    if(outsideIndia && outsideIndia.checked){
+      total += parseFloat(lastSurcharge || 0);
+    }
+    setPriceValue(total);
+  }
+
+  async function updatePrice(){
+    try{
+      const params = new URLSearchParams({
+        class_type: state.classType,
+        user_type: state.userType,
+        cert_type: state.certType,
+        validity: state.validity,
+        outside: outsideIndia && outsideIndia.checked ? '1' : '0'
+      });
+      const resp = await fetch(`/api/dsc-price/?${params.toString()}`);
+      const data = await resp.json();
+      if(data.success){
+        if(notCfg) notCfg.classList.add('d-none');
+        const comps = data.components || {};
+        lastComponents = comps;
+        lastGST = comps.gst_percent || 0;
+        lastSurcharge = data.outside_surcharge || 0;
+
+        // Show/hide add-on toggles
+        const tokenVal = parseFloat(comps.token_amount || 0);
+        const installVal = parseFloat(comps.installation_charge || 0);
+        if(tokenVal > 0 || installVal > 0){
+          addOnsContainer.style.display = '';
+        } else {
+          addOnsContainer.style.display = 'none';
+        }
+        if(tokenVal > 0){
+          tokenRow.style.display = '';
+          tokenAmtLabel.textContent = `₹${Number(tokenVal).toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
+          if(tokenCheckbox) tokenCheckbox.checked = true;
+        } else {
+          tokenRow.style.display = 'none';
+          if(tokenCheckbox) tokenCheckbox.checked = false;
+        }
+        if(installVal > 0){
+          installRow.style.display = '';
+          installAmtLabel.textContent = `₹${Number(installVal).toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
+          if(installCheckbox) installCheckbox.checked = true;
+        } else {
+          installRow.style.display = 'none';
+          if(installCheckbox) installCheckbox.checked = false;
+        }
+
+        renderComputedPrice();
+      } else {
+        throw new Error('Backend not configured');
+      }
+    } catch(e){
+      // Fallback: use local table
+      try {
+        if(notCfg) notCfg.classList.remove('d-none');
+        // Hide add-ons when DB/pricing not configured for this selection
+        lastComponents = null;
+        if(addOnsContainer) addOnsContainer.style.display = 'none';
+        if(tokenRow) tokenRow.style.display = 'none';
+        if(installRow) installRow.style.display = 'none';
+        if(tokenCheckbox) tokenCheckbox.checked = false;
+        if(installCheckbox) installCheckbox.checked = false;
+
+        const outside = outsideIndia && outsideIndia.checked;
+        let price = null;
+        if (outside && state.classType === 'class3' && state.validity === '2y') {
+          price = (localPrices.class3.foreign[state.certType]||{})['2y'] || null;
+        }
+        if (price == null) {
+          const table = (localPrices[state.classType]||{})[state.certType]||{};
+          price = table[state.validity] || null;
+        }
+        if(price != null){
+          setPriceValue(price);
+        } else {
+          priceEl.textContent = 'Price not configured';
+        }
+      } catch (err) {
+        priceEl.textContent = 'Price unavailable';
+      }
+    }
+  }
+
+  function wireGroup(groupId, key){
+    const group = document.getElementById(groupId);
+    if(!group) return;
+    group.addEventListener('click', function(e){
+      const btn = e.target.closest('button');
+      if(!btn) return;
+      [...group.querySelectorAll('button')].forEach(b=>{
+        b.classList.remove('btn-primary','active');
+        b.classList.add('btn-outline-primary');
+      });
+      btn.classList.remove('btn-outline-primary');
+      btn.classList.add('btn-primary','active');
+      const val = btn.getAttribute('data-value');
+      if(val) state[key] = val;
+      updatePrice();
+    });
+  }
+
+  wireGroup('classTypeGroup','classType');
+  wireGroup('userTypeGroup','userType');
+  wireGroup('certTypeGroup','certType');
+  wireGroup('validityGroup','validity');
+
+  if(outsideIndia){
+    outsideIndia.addEventListener('change', function(){
+      // Recompute locally using surcharge if we already have components
+      if(lastComponents){
+        renderComputedPrice();
+      } else {
+        updatePrice();
+      }
+    });
+  }
+
+  if(tokenCheckbox){
+    tokenCheckbox.addEventListener('change', renderComputedPrice);
+  }
+  if(installCheckbox){
+    installCheckbox.addEventListener('change', renderComputedPrice);
+  }
+
+  if(enqSubmit){
+    enqSubmit.addEventListener('click', async function(){
+      enqMsg.textContent = '';
+      const name = (enqName?.value || '').trim();
+      const email = (enqEmail?.value || '').trim();
+      const mobileNo = (enqMobile?.value || '').trim();
+      const address = (enqAddress?.value || '').trim();
+      if(!name || !email || !mobileNo){
+        enqMsg.textContent = 'Please fill Name, Email and Mobile.';
+        enqMsg.className = 'small mt-2 text-danger';
+        return;
+      }
+      // Compute current quoted price number from UI text (safe fallback)
+      const totalStr = priceEl.textContent.replace(/[^0-9.]/g,'');
+      const quoted = parseFloat(totalStr || '0') || 0;
+      const payload = {
+        name,
+        email,
+        mobile: mobileNo,
+        address,
+        class_type: state.classType,
+        user_type: state.userType,
+        cert_type: state.certType,
+        validity: state.validity,
+        include_token: !!(tokenCheckbox && tokenCheckbox.checked),
+        include_installation: !!(installCheckbox && installCheckbox.checked),
+        outside_india: !!(outsideIndia && outsideIndia.checked),
+        quoted_price: quoted
+      };
+      try{
+        const resp = await fetch('/api/dsc-enquiry/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await resp.json();
+        if(data.success){
+          enqMsg.textContent = 'Enquiry submitted successfully. We will contact you soon.';
+          enqMsg.className = 'small mt-2 text-success';
+          enqName.value = '';
+          enqEmail.value = '';
+          enqMobile.value = '';
+          enqAddress.value = '';
+        } else {
+          throw new Error(data.message || 'Failed to submit');
+        }
+      } catch(err){
+        enqMsg.textContent = 'Failed to submit enquiry. Please try again.';
+        enqMsg.className = 'small mt-2 text-danger';
+      }
+    });
+  }
+  // Build buttons dynamically from backend options
+  async function buildOptions(){
+    try{
+      const resp = await fetch('/api/dsc-options/');
+      const data = await resp.json();
+      if(!data.success) return;
+      const classes = data.classes || [];
+      const map = data.map || {};
+      const defaults = data.defaults || {};
+      const classEl = document.getElementById('classTypeGroup');
+      const userEl = document.getElementById('userTypeGroup');
+      const certEl = document.getElementById('certTypeGroup');
+      const valEl = document.getElementById('validityGroup');
+
+      function renderButtons(el, values, activeVal, format){
+        el.innerHTML='';
+        (values||[]).forEach(v=>{
+          const btn = document.createElement('button');
+          btn.type='button';
+          btn.className = 'btn btn-sm ' + (v===activeVal ? 'btn-primary active' : 'btn-outline-primary');
+          btn.setAttribute('data-value', v);
+          btn.textContent = format ? format(v) : v;
+          el.appendChild(btn);
+        });
+      }
+
+      // pick defaults
+      state.classType = defaults.class_type || classes[0] || 'class3';
+      const users = Object.keys(map[state.classType]||{individual:{}});
+      state.userType = defaults.user_type || users[0] || 'individual';
+      const certs = Object.keys((map[state.classType]||{})[state.userType]||{signature:[]});
+      state.certType = defaults.cert_type || certs[0] || 'signature';
+      const valids = ((map[state.classType]||{})[state.userType]||{})[state.certType] || [];
+      // If no validities available, keep state but render none; price will show 'not configured'
+      state.validity = defaults.validity || valids[0] || '1y';
+
+      renderButtons(classEl, classes, state.classType, v=>{
+        if(v==='class3') return 'Class 3';
+        if(v==='dgft') return 'DGFT';
+        return v.charAt(0).toUpperCase()+v.slice(1);
+      });
+      renderButtons(userEl, users, state.userType, v=> v==='individual'?'Individual':'Organization');
+      renderButtons(certEl, certs, state.certType, v=> v.charAt(0).toUpperCase()+v.slice(1));
+      renderButtons(valEl, valids, state.validity, v=> ({'1y':'1 Year','2y':'2 Years','3y':'3 Years'}[v]||v));
+      if(valids && valids.length){
+        valEl.classList.remove('opacity-50');
+        valEl.style.pointerEvents = '';
+      } else {
+        valEl.classList.add('opacity-50');
+        valEl.style.pointerEvents = 'none';
+      }
+
+      updatePrice();
+    } catch(e){
+      // If options API fails, keep existing UI but attempt price fetch
+      updatePrice();
+    }
+  }
+
+  buildOptions();
+
+  function scrollToEnquiry(){
+    if(!enquirySection) return;
+    enquirySection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    enquirySection.classList.add('ring');
+    setTimeout(()=> enquirySection.classList.remove('ring'), 1500);
+  }
+  if(proceedBtn){ proceedBtn.addEventListener('click', scrollToEnquiry); }
+  if(talkBtn){ talkBtn.addEventListener('click', scrollToEnquiry); }
+
+  // Reveal on scroll
+  const revealEls = document.querySelectorAll('.reveal');
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){
+        e.target.classList.add('is-visible');
+        io.unobserve(e.target);
+      }
+    });
+  }, { rootMargin: '0px 0px -10% 0px', threshold: 0.1 });
+  revealEls.forEach(el=> io.observe(el));
+})();
+</script>
+{% endblock %}
+
+

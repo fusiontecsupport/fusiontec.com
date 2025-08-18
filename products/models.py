@@ -376,8 +376,8 @@ class Customer(BaseTimestampModel):
     
     name = models.CharField(max_length=255)
     company_name = models.CharField(max_length=255, blank=True, null=True)
-    email = models.EmailField(unique=True, db_index=True)
-    mobile = models.CharField(max_length=20, unique=True, db_index=True)
+    email = models.EmailField(db_index=True)
+    mobile = models.CharField(max_length=20, db_index=True)
     has_gst = models.BooleanField(default=True)
     gst_number = models.CharField(max_length=50, blank=True, null=True, db_index=True)
     address = models.TextField(blank=True, null=True)
@@ -556,6 +556,87 @@ class PaymentSettings(BaseTimestampModel):
     
     def __str__(self):
         return f"{self.get_setting_type_display()} - {self.title}"
+
+# ============================================================================
+# DSC PRICING (Dynamic)
+# ============================================================================
+
+class DscPrice(BaseTimestampModel):
+    """Pricing table for Digital Signature Certificates (DSC).
+
+    Row key: class_type + user_type + cert_type + validity.
+    Stores component charges and computes final net amount including GST.
+    """
+
+    USER_CHOICES = [("individual", "Individual"), ("organization", "Organization")]
+    CERT_CHOICES = [("signature", "Signature"), ("encryption", "Encryption"), ("both", "Both")]
+    VALIDITY_CHOICES = [("1y", "1 Year"), ("2y", "2 Years"), ("3y", "3 Years")]
+
+    class_type = models.CharField(max_length=20, db_index=True, help_text="e.g., class3, dgft, foreign class3")
+    user_type = models.CharField(max_length=12, choices=USER_CHOICES, db_index=True)
+    cert_type = models.CharField(max_length=12, choices=CERT_CHOICES, db_index=True)
+    validity = models.CharField(max_length=2, choices=VALIDITY_CHOICES, db_index=True)
+
+    # Component charges
+    dsc_charge = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)], help_text="Base DSC charge")
+    token_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0, validators=[MinValueValidator(0)])
+    installation_charge = models.DecimalField(max_digits=10, decimal_places=2, default=0, validators=[MinValueValidator(0)], help_text="Service/installation charges")
+    gst_percent = models.DecimalField(max_digits=5, decimal_places=2, default=18.00)
+    outside_india_surcharge = models.DecimalField(max_digits=10, decimal_places=2, default=0, validators=[MinValueValidator(0)])
+
+    # Stored for quick reads
+    nett_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0, editable=False)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        unique_together = [("class_type", "user_type", "cert_type", "validity")]
+        verbose_name = "DSC Price"
+        verbose_name_plural = "DSC Prices"
+
+    def __str__(self) -> str:
+        return f"{self.class_type} | {self.get_user_type_display()} | {self.get_cert_type_display()} | {self.get_validity_display()}"
+
+    def compute_nett(self) -> float:
+        base = float(self.dsc_charge or 0) + float(self.token_amount or 0) + float(self.installation_charge or 0)
+        pct = float(self.gst_percent or 0) / 100.0
+        return base * (1.0 + pct)
+
+    def save(self, *args, **kwargs):
+        self.nett_amount = self.compute_nett()
+        return super().save(*args, **kwargs)
+
+# ============================================================================
+# DSC ENQUIRIES
+# ============================================================================
+
+class DscEnquiry(BaseTimestampModel):
+    """Stores enquiries from the DSC landing page with the chosen options."""
+
+    # Customer details
+    name = models.CharField(max_length=255)
+    email = models.EmailField(max_length=255)
+    mobile = models.CharField(max_length=20)
+    address = models.TextField(blank=True, null=True)
+
+    # Selected options
+    class_type = models.CharField(max_length=20)
+    user_type = models.CharField(max_length=20)
+    cert_type = models.CharField(max_length=20)
+    validity = models.CharField(max_length=5)
+    include_token = models.BooleanField(default=False)
+    include_installation = models.BooleanField(default=False)
+    outside_india = models.BooleanField(default=False)
+
+    # Pricing snapshot
+    quoted_price = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'DSC Enquiry'
+        verbose_name_plural = 'DSC Enquiries'
+
+    def __str__(self) -> str:
+        return f"{self.name} - {self.class_type}/{self.user_type}/{self.cert_type}/{self.validity}"
 
 # ============================================================================
 # APPLICANT DOCUMENTS

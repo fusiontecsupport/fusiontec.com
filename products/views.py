@@ -20,7 +20,7 @@ from .models import (
     QuoteSubmission, ContactSubmission, PaymentTransaction, 
     PaymentSettings, Applicant,
     ProductTypeMaster, ProductMasterV2, RateCardEntry,
-    ProductFormSubmission,
+    ProductFormSubmission, DscPrice,
 )
 
 # ============================================================================
@@ -248,6 +248,167 @@ def product_type_form(request, type_id):
         'products_with_rates': products_with_rates,
     }
     return render(request, 'products/product_form.html', context)
+
+def dsc_form(request):
+    """Dedicated DSC landing/form page similar to eMudhra's buy page."""
+    return render(request, 'products/dsc_form.html')
+
+def dsc_price_api(request):
+    """Return price for a DSC combination.
+    Params: class_type, user_type, cert_type, validity, outside (0/1)
+    """
+    class_type = request.GET.get('class_type', 'class3')
+    user_type = request.GET.get('user_type', 'individual')
+    cert_type = request.GET.get('cert_type', 'signature')
+    validity = request.GET.get('validity', '2y')
+    outside = request.GET.get('outside', '0') == '1'
+
+    try:
+        def canonical(val: str) -> str:
+            val = (val or '').lower()
+            return ''.join(ch for ch in val if ch.isalnum())
+
+        requested = canonical(class_type)
+
+        qs = DscPrice.objects.filter(
+            user_type=user_type,
+            cert_type=cert_type,
+            validity=validity,
+            is_active=True,
+        )
+
+        price_row = None
+        for row in qs:
+            if canonical(row.class_type) == requested:
+                price_row = row
+                break
+        if price_row is None and requested in {'class3','classiii','class3dsc'}:
+            for row in qs:
+                if canonical(row.class_type) in {'class3','classiii','class3dsc'}:
+                    price_row = row
+                    break
+        if price_row is None and qs.count() == 1:
+            price_row = qs.first()
+        if price_row is None:
+            return JsonResponse({'success': False, 'message': 'Price not configured for this selection'}, status=404)
+
+        price = float(price_row.nett_amount)
+        if outside:
+            price += float(price_row.outside_india_surcharge or 0)
+        return JsonResponse({
+            'success': True,
+            'price': price,
+            'currency': 'INR',
+            'components': {
+                'dsc_charge': float(price_row.dsc_charge),
+                'token_amount': float(price_row.token_amount),
+                'installation_charge': float(price_row.installation_charge),
+                'gst_percent': float(price_row.gst_percent),
+            },
+            'outside_surcharge': float(price_row.outside_india_surcharge or 0)
+        })
+    except DscPrice.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'Price not configured'}, status=404)
+    except Exception as e:
+        # Handle cases like missing table before migrations
+        return JsonResponse({'success': False, 'message': f'Pricing backend not ready: {str(e)}'}, status=404)
+
+def dsc_options_api(request):
+    """Return available DSC combinations for building dynamic buttons.
+    Structure:
+    {
+      classes: ["class3", "dgft", ...],
+      map: { class: { user_type: { cert_type: ["1y","2y",...] } } },
+      defaults: { class_type, user_type, cert_type, validity }
+    }
+    """
+    try:
+        options = {}
+        classes = []
+        default_row = None
+        for row in DscPrice.objects.filter(is_active=True).order_by('created_at'):
+            if default_row is None:
+                default_row = row
+            c = row.class_type
+            u = row.user_type
+            t = row.cert_type
+            v = row.validity
+            if c not in options:
+                options[c] = {}
+                classes.append(c)
+            if u not in options[c]:
+                options[c][u] = {}
+            if t not in options[c][u]:
+                options[c][u][t] = []
+            if v not in options[c][u][t]:
+                options[c][u][t].append(v)
+        if not classes:
+            return JsonResponse({'success': True, 'classes': [], 'map': {}, 'defaults': {} })
+        defaults = {
+            'class_type': default_row.class_type,
+            'user_type': default_row.user_type,
+            'cert_type': default_row.cert_type,
+            'validity': default_row.validity,
+        }
+        return JsonResponse({'success': True, 'classes': classes, 'map': options, 'defaults': defaults})
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': str(e)}, status=500)
+
+@csrf_exempt
+def dsc_enquiry_api(request):
+    """Create a DSC enquiry from the landing page."""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'message': 'Method not allowed'}, status=405)
+    try:
+        payload = json.loads(request.body or '{}')
+    except Exception:
+        payload = request.POST
+    try:
+        name = (payload.get('name') or '').strip()
+        email = (payload.get('email') or '').strip()
+        mobile = (payload.get('mobile') or '').strip()
+        address = (payload.get('address') or '').strip() or None
+        class_type = payload.get('class_type')
+        user_type = payload.get('user_type')
+        cert_type = payload.get('cert_type')
+        validity = payload.get('validity')
+        include_token = bool(payload.get('include_token'))
+        include_installation = bool(payload.get('include_installation'))
+        outside_india = bool(payload.get('outside_india'))
+        quoted_price = float(payload.get('quoted_price') or 0)
+
+        if not (name and email and mobile):
+            return JsonResponse({'success': False, 'message': 'Name, Email and Mobile are required.'}, status=400)
+
+        from .models import DscEnquiry
+        enquiry = DscEnquiry.objects.create(
+            name=name,
+            email=email,
+            mobile=mobile,
+            address=address,
+            class_type=class_type or '',
+            user_type=user_type or '',
+            cert_type=cert_type or '',
+            validity=validity or '',
+            include_token=include_token,
+            include_installation=include_installation,
+            outside_india=outside_india,
+            quoted_price=quoted_price,
+        )
+        return JsonResponse({'success': True, 'id': enquiry.id})
+    except Exception as exc:
+        return JsonResponse({'success': False, 'message': str(exc)}, status=500)
+
+@admin_required
+def custom_admin_dsc_enquiries(request):
+    """List DSC enquiries in custom admin."""
+    from .models import DscEnquiry
+    enquiries = DscEnquiry.objects.all().order_by('-created_at')
+    paginator = Paginator(enquiries, 20)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    context = { 'page_obj': page_obj }
+    return render(request, 'products/admin/dsc_enquiries.html', context)
 
 @csrf_exempt
 def save_product_submission(request):
@@ -1630,6 +1791,65 @@ def custom_admin_settings(request):
         'bank_info': [bank_settings] if bank_settings else [],
     }
     return render(request, 'products/admin/settings.html', context)
+
+@admin_required
+def admin_dsc_prices(request):
+    """Admin page to view/update DSC dynamic prices."""
+    if request.method == 'POST':
+        action = request.POST.get('action', 'save')
+        row_id = request.POST.get('row_id')
+        class_type = request.POST.get('class_type')
+        user_type = request.POST.get('user_type')
+        cert_type = request.POST.get('cert_type')
+        validity = request.POST.get('validity')
+        dsc_charge = request.POST.get('dsc_charge')
+        token_amount = request.POST.get('token_amount') or '0'
+        installation_charge = request.POST.get('installation_charge') or '0'
+        gst_percent = request.POST.get('gst_percent') or '18'
+        surcharge = request.POST.get('outside_india_surcharge') or '0'
+        is_active = request.POST.get('is_active') == 'on'
+
+        try:
+            if action == 'delete' and row_id:
+                DscPrice.objects.filter(id=row_id).delete()
+                messages.success(request, 'Price row deleted.')
+                return redirect('admin_dsc_prices')
+
+            if row_id:
+                row = DscPrice.objects.get(id=row_id)
+                row.class_type = class_type
+                row.user_type = user_type
+                row.cert_type = cert_type
+                row.validity = validity
+                row.dsc_charge = float(dsc_charge or 0)
+                row.token_amount = float(token_amount or 0)
+                row.installation_charge = float(installation_charge or 0)
+                row.gst_percent = float(gst_percent or 0)
+                row.outside_india_surcharge = float(surcharge or 0)
+                row.is_active = is_active
+                row.save()
+                messages.success(request, 'Price updated.')
+            else:
+                DscPrice.objects.create(
+                    class_type=class_type,
+                    user_type=user_type,
+                    cert_type=cert_type,
+                    validity=validity,
+                    dsc_charge=float(dsc_charge or 0),
+                    token_amount=float(token_amount or 0),
+                    installation_charge=float(installation_charge or 0),
+                    gst_percent=float(gst_percent or 0),
+                    outside_india_surcharge=float(surcharge or 0),
+                    is_active=is_active,
+                )
+                messages.success(request, 'Price added.')
+            return redirect('admin_dsc_prices')
+        except Exception as exc:
+            messages.error(request, f'Failed to save price: {exc}')
+
+    prices = DscPrice.objects.order_by('class_type','user_type','cert_type','validity')
+    context = { 'prices': prices }
+    return render(request, 'products/admin/dsc_prices.html', context)
 
 @admin_required
 def custom_admin_form_submissions(request):

@@ -254,6 +254,14 @@
                            href="{% url 'custom_admin_products' %}">
                             <i class="fas fa-box me-2"></i> Products
                         </a>
+                        <a class="nav-link {% if request.resolver_match.url_name == 'admin_dsc_prices' %}active{% endif %}"
+                           href="{% url 'admin_dsc_prices' %}">
+                            <i class="fas fa-certificate me-2"></i> DSC Prices
+                        </a>
+                        <a class="nav-link {% if request.resolver_match.url_name == 'custom_admin_dsc_enquiries' %}active{% endif %}"
+                           href="{% url 'custom_admin_dsc_enquiries' %}">
+                            <i class="fas fa-question-circle me-2"></i> DSC Enquiries
+                        </a>
                         
                         <hr class="text-white-50 my-3">
                         

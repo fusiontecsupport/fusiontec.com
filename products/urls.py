@@ -14,6 +14,11 @@ urlpatterns = [
     path('product-form/<int:type_id>/', views.product_type_form, name='product_type_form'),
     path('save-product-submission/', views.save_product_submission, name='save_product_submission'),
     path('submit-quote/', views.submit_quote, name='submit_quote'),
+    # DSC form (e-Mudhra-like)
+    path('dsc/', views.dsc_form, name='dsc_form'),
+    path('api/dsc-price/', views.dsc_price_api, name='dsc_price_api'),
+    path('api/dsc-options/', views.dsc_options_api, name='dsc_options_api'),
+    path('api/dsc-enquiry/', views.dsc_enquiry_api, name='dsc_enquiry_api'),
     
     # ============================================================================
     # QUOTE & CONTACT FORMS
@@ -37,12 +42,14 @@ urlpatterns = [
     path('admin-dashboard/', views.custom_admin_dashboard, name='custom_admin_dashboard'),
     path('admin/dashboard/data/', views.dashboard_data_api, name='dashboard_data_api'),
     path('admin-contacts/', views.custom_admin_contacts, name='custom_admin_contacts'),
+    path('admin-dsc-enquiries/', views.custom_admin_dsc_enquiries, name='custom_admin_dsc_enquiries'),
     path('admin-quotes/', views.custom_admin_quotes, name='custom_admin_quotes'),
     path('admin-form-submissions/', views.custom_admin_form_submissions, name='custom_admin_form_submissions'),
     path('admin-quote-requests/', views.custom_admin_quote_requests, name='custom_admin_quote_requests'),
     path('api/quote-request/<int:request_id>/', views.quote_request_detail, name='quote_request_detail'),
     path('api/quote-request/<int:request_id>/update-status/', views.update_quote_request_status, name='update_quote_request_status'),
     path('admin-products/', views.custom_admin_products, name='custom_admin_products'),
+    path('admin-dsc-prices/', views.admin_dsc_prices, name='admin_dsc_prices'),
     path('admin-tally-submissions/', views.custom_admin_tally_submissions, name='custom_admin_tally_submissions'),
     path('admin-emudhra-submissions/', views.custom_admin_emudhra_submissions, name='custom_admin_emudhra_submissions'),
     path('admin-fusiontec-submissions/', views.custom_admin_fusiontec_submissions, name='custom_admin_fusiontec_submissions'),
