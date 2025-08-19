@@ -45,8 +45,9 @@
   <nav class="navbar fixed-top navbar-expand-lg navbar-light bg-white py-3 shadow" style="top: 4px;">
     <div class="container px-5">
       <!-- Logo -->
-      <a href="/admin/" target="_blank" class="navbar-brand">
+      <a href="/admin/" target="_blank" class="navbar-brand d-flex flex-column align-items-center">
         <img src="{% static 'products/img/logo.png' %}" class="logo" alt="Logo">
+        {% block logo_subtitle %}<span class="logo-subtitle">Simplifying Complexity</span>{% endblock %}
       </a>
       
       <!-- Mobile Toggle Button -->
@@ -68,7 +69,7 @@
               <li><a class="dropdown-item" href="#process">Process</a></li>
               <li><a class="dropdown-item" href="#products">Products</a></li>
               <li><a class="dropdown-item" href="#net_banking">Net Banking & Payment</a></li>
-              <li><a class="dropdown-item" href="#" onclick="showEnquiryForm(); return false;">Contact Form</a></li>
+              <li><a class="dropdown-item" href="{% url 'dsc_form' %}">DSC Form</a></li>
             </ul>
           </li>
           <li class="nav-item"><a class="nav-link" href="#footer">Contact</a></li>
@@ -97,6 +98,16 @@
     .logo {
       height: 55px;
       width: auto;
+    }
+    .logo-subtitle {
+      font-size: 0.7rem;
+      color: #1e3a8a;
+      font-weight: 600;
+      line-height: 1;
+      margin-top: 2px;
+      display: block;
+      text-align: center;
+      letter-spacing: 0.2px;
     }
 
     /* Navigation Links */
@@ -181,6 +192,9 @@
       
       .logo {
         height: 45px;
+      }
+      .logo-subtitle {
+        font-size: 0.65rem;
       }
     }
 

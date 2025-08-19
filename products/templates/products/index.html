@@ -4,6 +4,8 @@
 
 {% block title %}Fusiontec - Home{% endblock %}
 
+{% block logo_subtitle %}<span class="logo-subtitle">Simplifying Complexity</span>{% endblock %}
+
 {% block content %}
 
 <main>
@@ -851,6 +853,42 @@
 </section>
 
 {% include 'products/partials/our_products.html' %}
+
+<!-- Dedicated DSC Section -->
+<section class="py-5 bg-white" id="dsc">
+    <div class="container px-5">
+        <div class="text-center mb-4" data-aos="fade-up">
+            <h2 class="fw-bolder mb-2">Digital Signature Certificate (DSC)</h2>
+            <p class="text-muted">Class 3 DSC for GST, MCA, Income Tax, Tender submissions, EPFO filings, and more.</p>
+        </div>
+        <div class="row justify-content-center" data-aos="fade-up" data-aos-delay="100">
+            <div class="col-12 col-md-11 col-lg-10">
+                <div class="card shadow-sm border-0 overflow-hidden">
+                    <div class="row g-0 align-items-stretch">
+                        <div class="col-12 col-md-5">
+                            <div class="h-100 d-flex align-items-center p-3">
+                                <div class="ratio ratio-4x3 w-100 rounded-3 overflow-hidden" style="background:#ffffff;">
+                                    <img src="{% static 'products/img/e-mudhra.jpg' %}" alt="Digital Signature Certificate" class="w-100 h-100" style="object-fit: contain; object-position: center;">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-7">
+                            <div class="card-body h-100 d-flex flex-column justify-content-center p-4">
+                                <h5 class="card-title">Digital Signature Certificate (DSC)</h5>
+                                <p class="card-text text-muted mb-4">Class 3 DSC for GST, MCA, Income Tax, Tender submissions, EPFO filings, and more.</p>
+                                <div class="d-flex flex-wrap gap-2">
+                                    <a href="{% url 'dsc_form' %}" class="btn btn-primary">View</a>
+                                    <button type="button" class="btn btn-light" onclick="showQuoteForm(0, 'Digital Signature Certificate')">Get Quote</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
 
 <!-- Net Banking Section -->
 <section class="py-5 bg-light" id="net_banking">

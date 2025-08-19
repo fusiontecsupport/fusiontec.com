@@ -1,6 +1,6 @@
 {% extends 'products/base2.html' %}
 {% load static %}
-{% block title %}Fusiontec - {{ product.prdt_desc }} Form{% endblock %}
+{% block title %}Fusiontec - {% if available_products.count == 1 and products_with_rates %}{{ products_with_rates.0.product.prdt_desc }}{% else %}Product{% endif %} Form{% endblock %}
 
 {% block content %}
 <style>
@@ -80,40 +80,18 @@
 
 <div class="container">
   <div class="form-container">
-    <h4 class="text-primary text-center">{{ product.prdt_desc }} Form</h4>
+    <h4 class="text-primary text-center">
+      <span id="formHeading">
+        {% if available_products.count == 1 and products_with_rates %}
+          {{ products_with_rates.0.product.prdt_desc }}
+        {% else %}
+          Product
+        {% endif %}
+        Form
+      </span>
+    </h4>
     
-    <!-- Debug Info -->
-    <div class="alert alert-info">
-      <strong>Debug Info:</strong><br>
-      Products with rates: {{ products_with_rates|length }}<br>
-      Available products: {{ available_products|length }}<br>
-      {% if products_with_rates %}
-        First product: {{ products_with_rates.0.product.prdt_desc }}<br>
-        First rate card: {{ products_with_rates.0.rate_card }}<br>
-      {% else %}
-        No rate cards found
-      {% endif %}
-    </div>
-    
-    <!-- Product Information Display -->
-    <div class="product-info">
-      <h6 class="text-primary mb-2">Product Details</h6>
-      <div class="row">
-        <div class="col-md-6">
-          <strong>Product Type:</strong> {{ product_type.prdt_desc }}<br>
-          <strong>Available Products:</strong> {{ available_products.count }} product{{ available_products.count|pluralize }}
-        </div>
-        <div class="col-md-6">
-          <div id="selectedProductInfo" style="display: none;">
-            <strong>Selected Product:</strong> <span id="selectedProductName">-</span><br>
-            <strong>Basic Amount:</strong> ₹<span id="selectedProductAmount">-</span>
-          </div>
-          <div id="defaultProductInfo">
-            <strong>Please select a product to see pricing details</strong>
-          </div>
-        </div>
-      </div>
-    </div>
+    <!-- Product Information Display removed as requested -->
 
     <form id="productForm" method="post">
       {% csrf_token %}
@@ -374,6 +352,15 @@ document.addEventListener('DOMContentLoaded', function() {
     productSelector.addEventListener('change', function() {
       updateProductInfo();
       calculateTotal();
+      // Update heading text to selected product
+      const headingEl = document.getElementById('formHeading');
+      if (headingEl && this.value) {
+        const selectedOption = this.options[this.selectedIndex];
+        const name = selectedOption ? selectedOption.text : 'Product';
+        headingEl.textContent = `${name} Form`;
+      } else if (headingEl) {
+        headingEl.textContent = 'Product Form';
+      }
     });
   }
 
@@ -437,9 +424,9 @@ function updateProductInfo() {
       installCharges: selectedOption.dataset.installationCharges
     });
     
-    // Update product info
-    selectedProductName.textContent = selectedOption.text;
-    selectedProductAmount.textContent = basicAmount.toFixed(2);
+    // Update product info (if those elements exist)
+    if (selectedProductName) selectedProductName.textContent = selectedOption.text;
+    if (selectedProductAmount) selectedProductAmount.textContent = basicAmount.toFixed(2);
     
     // Update rate card details
     document.getElementById('rateBaseAmount').textContent = basicAmount.toFixed(2);
@@ -454,16 +441,16 @@ function updateProductInfo() {
     const finalTotal = totalGst + tokenAmount + installCharges;
     document.getElementById('rateFinalTotal').textContent = finalTotal.toFixed(2);
     
-    // Show sections
-    selectedProductInfo.style.display = 'block';
-    defaultProductInfo.style.display = 'none';
+    // Show sections (if those containers exist)
+    if (selectedProductInfo) selectedProductInfo.style.display = 'block';
+    if (defaultProductInfo) defaultProductInfo.style.display = 'none';
     rateCardDetails.style.display = 'block';
     
     console.log('Rate card details updated and shown');
   } else {
-    // Hide sections
-    selectedProductInfo.style.display = 'none';
-    defaultProductInfo.style.display = 'block';
+    // Hide sections (if those containers exist)
+    if (selectedProductInfo) selectedProductInfo.style.display = 'none';
+    if (defaultProductInfo) defaultProductInfo.style.display = 'block';
     rateCardDetails.style.display = 'none';
     
     console.log('Rate card details hidden');
