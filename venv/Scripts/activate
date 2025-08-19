@@ -35,7 +35,7 @@ deactivate () {
 # unset irrelevant variables
 deactivate nondestructive
 
-VIRTUAL_ENV="C:\Users\LEGION\OneDrive\Desktop\New folder\fusiontec\New folder (2)\New folder\fusiontec.com\venv"
+VIRTUAL_ENV="E:\FusionTec\fusiontec.com\venv"
 export VIRTUAL_ENV
 
 _OLD_VIRTUAL_PATH="$PATH"
