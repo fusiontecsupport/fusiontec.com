@@ -108,6 +108,9 @@ def index(request):
     # Get product type masters for the new structure
     product_type_masters = ProductTypeMaster.objects.all().order_by('id')
     
+    # Locate DSC type for quote button convenience
+    dsc_type = ProductTypeMaster.objects.filter(prdt_desc__icontains='dsc').first()
+    
     # Get payment information
     razorpay_infos = PaymentSettings.objects.filter(setting_type='razorpay', is_active=True)
     payment_infos = PaymentSettings.objects.filter(setting_type='qr_code', is_active=True)
@@ -116,6 +119,7 @@ def index(request):
     context = {
         'product_masters': product_masters,
         'product_type_masters': product_type_masters,
+        'dsc_type': dsc_type,
         'razorpay_infos': razorpay_infos,
         'payment_infos': payment_infos,
         'bank_infos': bank_infos,
@@ -770,12 +774,6 @@ def submit_quote(request):
             quantity = int(request.POST.get('quantity', 1))
             additional_requirements = request.POST.get('additional_requirements', '').strip()
             
-            print(f"=== QUOTE FORM DEBUG ===")
-            print(f"Customer: {customer_name}")
-            print(f"Email: {email}")
-            print(f"Product Type ID: {product_type_id}")
-            print(f"All POST data: {dict(request.POST)}")
-            
             # Validate required fields
             if not all([customer_name, mobile, email, product_type_id]):
                 messages.error(request, 'Please fill all required fields.')
@@ -784,154 +782,168 @@ def submit_quote(request):
             # Get product type details
             try:
                 product_type = ProductTypeMaster.objects.get(id=product_type_id)
-                print(f"Found product type: {product_type.prdt_desc}")
-                print(f"Email configured: {product_type.sender_email}")
-                print(f"App password configured: {'Yes' if product_type.app_password else 'No'}")
             except ProductTypeMaster.DoesNotExist:
-                messages.error(request, 'Product type not found.')
-                return redirect('index')
+                # Fallback: try to locate DSC type by name if an invalid id (e.g., 0) was sent
+                product_type = ProductTypeMaster.objects.filter(prdt_desc__icontains='dsc').first()
+                if not product_type:
+                    product_type = ProductTypeMaster.objects.filter(
+                        Q(prdt_desc__icontains='digital') & Q(prdt_desc__icontains='signature')
+                    ).first()
+                if not product_type:
+                    product_type = ProductTypeMaster.objects.filter(prdt_desc__icontains='mudhra').first()
+                if not product_type:
+                    messages.error(request, 'Product type not found.')
+                    return redirect('index')
             
             # Create submission record
-            print("Creating submission record...")
-            try:
-                from django.utils import timezone
-                from .models import QuoteRequest
-                
-                # Create quote request record
-                quote_request = QuoteRequest.objects.create(
-                    customer_name=customer_name,
-                    company_name=company_name,
-                    mobile=mobile,
-                    email=email,
-                    product_type=product_type,
-                    quantity=quantity,
-                    address=address,
-                    state=state,
-                    district=district,
-                    pincode=pincode,
-                    gst_number=gst_number if gst_number else None,
-                    additional_requirements=additional_requirements,
-                    status='new'
-                )
-                print(f"Quote request created with ID: {quote_request.id}")
-            except Exception as e:
-                print(f"Error creating quote request: {e}")
-                print(f"Error type: {type(e).__name__}")
-                raise e
+            from django.utils import timezone
+            from .models import QuoteRequest
+            quote_request = QuoteRequest.objects.create(
+                customer_name=customer_name,
+                company_name=company_name,
+                mobile=mobile,
+                email=email,
+                product_type=product_type,
+                quantity=quantity,
+                address=address,
+                state=state,
+                district=district,
+                pincode=pincode,
+                gst_number=gst_number if gst_number else None,
+                additional_requirements=additional_requirements,
+                status='new'
+            )
             
+            # Resolve sender credentials
+            # For DSC, force the dedicated mailbox regardless of DB values
+            is_dsc = False
+            try:
+                _posted_id = (product_type_id or '').strip()
+            except Exception:
+                _posted_id = ''
+            try:
+                _name = (product_type.prdt_desc or '').strip().lower()
+                is_dsc = (
+                    _posted_id in ('', '0', None) or
+                    ('dsc' in _name) or
+                    ('digital' in _name and 'signature' in _name) or
+                    ('mudhra' in _name)
+                )
+            except Exception:
+                is_dsc = _posted_id in ('', '0', None)
+
+            if is_dsc:
+                sender_email_cfg = 'dsc@fusiontec.com'
+                app_password_cfg = 'pcjn sxte zvci tljs'
+            else:
+                sender_email_cfg = (product_type.sender_email or '').strip()
+                app_password_cfg = (product_type.app_password or '').strip()
+            # Gmail app passwords are often spaced for readability; strip any spaces
+            sanitized_password = app_password_cfg.replace(' ', '')
+
             # Send email if email credentials are configured
-            print(f"Checking email credentials: sender_email='{product_type.sender_email}', app_password='{'Yes' if product_type.app_password else 'No'}'")
-            if product_type.sender_email and product_type.app_password:
-                print(f"Attempting to send email from {product_type.sender_email} to {email}")
+            print(f"Checking email credentials: sender_email='{sender_email_cfg}', app_password='{'Yes' if sanitized_password else 'No'}'")
+            if sender_email_cfg and sanitized_password:
+                print(f"Attempting to send email from {sender_email_cfg} to {email}")
                 try:
                     # Configure email backend with stored credentials
                     email_backend = EmailBackend(
                         host='smtp.gmail.com',
                         port=587,
-                        username=product_type.sender_email,
-                        password=product_type.app_password,
+                        username=sender_email_cfg,
+                        password=sanitized_password,
                         use_tls=True,
                         fail_silently=False
                     )
-                    print("Email backend configured successfully")
-                    
+
                     # Prepare email content
                     subject = f"Quote Request - {product_type.prdt_desc}"
-                    
+
                     # Create email body
                     email_body = f"""
-Dear {customer_name},
+ Dear {customer_name},
 
-Thank you for your quote request for {product_type.prdt_desc}.
+ Thank you for your quote request for {product_type.prdt_desc}.
 
-Your request details:
-- Product Type: {product_type.prdt_desc}
-- Quantity: {quantity}
-- Company: {company_name or 'Not specified'}
-- Contact: {mobile}
-- Email: {email}
-- Address: {address}
-- State: {state}
-- District: {district}
-- Pincode: {pincode}
-- GST Number: {gst_number or 'Not provided'}
-- Additional Requirements: {additional_requirements or 'None'}
+ Your request details:
+ - Product Type: {product_type.prdt_desc}
+ - Quantity: {quantity}
+ - Company: {company_name or 'Not specified'}
+ - Contact: {mobile}
+ - Email: {email}
+ - Address: {address}
+ - State: {state}
+ - District: {district}
+ - Pincode: {pincode}
+ - GST Number: {gst_number or 'Not provided'}
+ - Additional Requirements: {additional_requirements or 'None'}
 
-Our team will review your requirements and get back to you with a detailed quote within 24-48 hours.
+ Our team will review your requirements and get back to you with a detailed quote within 24-48 hours.
 
-Best regards,
-FusionTec Team
+ Best regards,
+ FusionTec Team
                     """
-                    
+
                     # Send email to customer using custom backend
-                    print("Creating customer email message...")
                     email_message = EmailMessage(
                         subject=subject,
                         body=email_body,
-                        from_email=product_type.sender_email,
+                        from_email=sender_email_cfg,
                         to=[email],
-                        reply_to=[product_type.sender_email]
+                        reply_to=[sender_email_cfg]
                     )
                     email_message.connection = email_backend
-                    print("Sending customer email...")
                     email_message.send()
-                    print("Customer email sent successfully!")
-                    
+
                     # Send notification to admin
-                    print("Creating admin notification email...")
                     admin_subject = f"New Quote Request - {product_type.prdt_desc}"
                     admin_body = f"""
-New quote request received:
+ New quote request received:
 
-Customer: {customer_name}
-Product Type: {product_type.prdt_desc}
-Quantity: {quantity}
-Contact: {mobile} | {email}
-Company: {company_name or 'Not specified'}
+ Customer: {customer_name}
+ Product Type: {product_type.prdt_desc}
+ Quantity: {quantity}
+ Contact: {mobile} | {email}
+ Company: {company_name or 'Not specified'}
 
-Additional Requirements:
-{additional_requirements or 'None'}
+ Additional Requirements:
+ {additional_requirements or 'None'}
 
-Quote Request ID: {quote_request.id}
+ Quote Request ID: {quote_request.id}
                     """
-                    
+
                     admin_email = EmailMessage(
                         subject=admin_subject,
                         body=admin_body,
-                        from_email=product_type.sender_email,
-                        to=[product_type.sender_email]  # Send to admin email
+                        from_email=sender_email_cfg,
+                        to=['dsc@fusiontec.com'] if is_dsc else [settings.CONTACT_FORM_RECIPIENT]
                     )
                     admin_email.connection = email_backend
-                    print("Sending admin email...")
                     admin_email.send()
-                    print("Admin email sent successfully!")
-                    
-                    print(f"All emails sent successfully from {product_type.sender_email} to {email}")
-                    
+
                     # Update email status
                     quote_request.email_sent = True
                     quote_request.email_sent_at = timezone.now()
                     quote_request.save()
-                    print(f"Email status updated for quote request #{quote_request.id}")
-                    
+
                     messages.success(request, 'Quote request submitted successfully! We will contact you soon.')
-                    
+
                 except Exception as email_error:
                     # Log the email error but don't fail the submission
                     print(f"Email sending failed: {email_error}")
-                    print(f"Email credentials: {product_type.sender_email}")
+                    print(f"Email credentials: {sender_email_cfg}")
                     messages.success(request, 'Quote request submitted successfully! We will contact you soon.')
             else:
                 # No email credentials configured, just show success message
                 print(f"No email credentials configured for product type: {product_type.prdt_desc}")
                 messages.success(request, 'Quote request submitted successfully! We will contact you soon.')
-            
+
             return redirect('index')
-            
+
         except Exception as e:
             messages.error(request, f'Error submitting quote: {str(e)}')
             return redirect('index')
-    
+
     return redirect('index')
 
 # ============================================================================
@@ -1270,11 +1282,11 @@ def custom_admin_quotes(request):
     # Apply search filter
     if search_query:
         quotes = quotes.filter(
-            models.Q(customer__name__icontains=search_query) |
-            models.Q(customer__mobile__icontains=search_query) |
-            models.Q(customer__email__icontains=search_query) |
-            models.Q(product_item__item_name__icontains=search_query) |
-            models.Q(product_item__product_type__type_name__icontains=search_query)
+            Q(customer__name__icontains=search_query) |
+            Q(customer__mobile__icontains=search_query) |
+            Q(customer__email__icontains=search_query) |
+            Q(product_item__item_name__icontains=search_query) |
+            Q(product_item__product_type__type_name__icontains=search_query)
         )
     
     # Apply status filter
@@ -1707,11 +1719,11 @@ def custom_admin_biz_submissions(request):
     # Apply search filter
     if search_query:
         quotes = quotes.filter(
-            models.Q(customer__name__icontains=search_query) |
-            models.Q(customer__mobile__icontains=search_query) |
-            models.Q(customer__email__icontains=search_query) |
-            models.Q(product_item__item_name__icontains=search_query) |
-            models.Q(product_item__product_type__type_name__icontains=search_query)
+            Q(customer__name__icontains=search_query) |
+            Q(customer__mobile__icontains=search_query) |
+            Q(customer__email__icontains=search_query) |
+            Q(product_item__item_name__icontains=search_query) |
+            Q(product_item__product_type__type_name__icontains=search_query)
         )
     
     # Pagination

@@ -9,6 +9,61 @@
       <p class="lead fw-light mt-3" data-aos="fade-up" data-aos-delay="200">Comprehensive software solutions for your business needs</p>
     </div>
 
+    <style>
+      /* Scoped inline styles for product cards */
+      #products .product-type-card,
+      #products .product-card {
+        border-radius: 16px;
+        border: 1px solid #e9ecef;
+        background: linear-gradient(180deg, #ffffff, #f9fbff);
+        transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+      }
+      #products .product-type-card:hover,
+      #products .product-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 28px rgba(16, 24, 40, .08);
+        border-color: #d0d7e2;
+      }
+      #products .image-wrap {
+        position: relative;
+        width: 100%;
+        padding-top: 56.25%;
+        background: #ffffff;
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid #eef2f6;
+      }
+      #products .image-wrap > img,
+      #products .image-wrap > .placeholder {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        object-position: center;
+      }
+      #products .product-title { font-weight: 600; }
+      #products .btn-pill { border-radius: 999px; }
+
+      /* Button/layout overrides – scoped to #products */
+      #products .card-body > .d-flex {
+        min-height: auto !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        gap: .5rem;
+      }
+      #products .btn,
+      #products .card-body > .d-flex .btn {
+        width: auto !important;
+        margin-bottom: 0 !important;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        height: auto !important;
+        white-space: nowrap;
+      }
+    </style>
+
     <!-- Product Types (from ProductTypeMaster) -->
     <div class="row g-4 justify-content-center" data-aos="fade-up" data-aos-delay="150">
       {% for pt in product_type_masters %}
@@ -16,22 +71,24 @@
         <div class="card product-type-card h-100 shadow-sm border-0">
           <div class="p-3">
             {% if pt.image %}
-              <div class="ratio ratio-16x9 rounded-3 overflow-hidden" style="background:#ffffff;">
-                <img src="{{ pt.image.url }}" alt="{{ pt.prdt_desc }}" class="w-100 h-100" style="object-fit: contain; object-position: center;" />
+              <div class="image-wrap">
+                <img src="{{ pt.image.url }}" alt="{{ pt.prdt_desc }}" />
               </div>
             {% else %}
-              <div class="ratio ratio-16x9 rounded-3 overflow-hidden d-flex align-items-center justify-content-center" style="background:#f3f6f9;">
-                <i class="bi bi-image text-muted" style="font-size:2rem;"></i>
+              <div class="image-wrap d-flex align-items-center justify-content-center" style="background:#f3f6f9;">
+                <div class="placeholder d-flex align-items-center justify-content-center">
+                  <i class="bi bi-image text-muted" style="font-size:2rem;"></i>
+                </div>
               </div>
             {% endif %}
           </div>
-          <div class="card-body text-center">
-            <h5 class="card-title mb-2">{{ pt.prdt_desc }}</h5>
+          <div class="card-body text-center pt-0">
+            <h5 class="product-title mb-2">{{ pt.prdt_desc }}</h5>
             <p class="card-text small text-muted mb-3">Explore solutions under {{ pt.prdt_desc }}.</p>
             <div class="d-flex flex-wrap gap-2 justify-content-center">
-              <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#typeModal{{ pt.id }}">Details</button>
-              <a href="{% url 'product_type_form' pt.id %}" class="btn btn-outline-primary btn-sm">View</a>
-              <button type="button" class="btn btn-light btn-sm" onclick="showQuoteForm({{ pt.id }}, '{{ pt.prdt_desc }}')">Get Quote</button>
+              <button type="button" class="btn btn-primary btn-sm btn-pill" data-bs-toggle="modal" data-bs-target="#typeModal{{ pt.id }}">Details</button>
+              <a href="{% url 'product_type_form' pt.id %}" class="btn btn-outline-primary btn-sm btn-pill">View</a>
+              <button type="button" class="btn btn-light btn-sm btn-pill" onclick="showQuoteForm({{ pt.id }}, '{{ pt.prdt_desc }}')">Get Quote</button>
             </div>
           </div>
         </div>
@@ -224,42 +281,30 @@ t            <div class="modal-content rounded-4 shadow-lg">
     <div class="row gx-5 justify-content-center">
       <div class="col-lg-11 col-xl-9 col-xxl-8">
         {% for product in products %}
-        <div class="card overflow-hidden shadow rounded-4 border-0 mb-5" data-aos="fade-up">
-          <div class="card-body p-0">
-            <div class="d-flex flex-column align-items-stretch">
-
-              <!-- Left -->
-              <div class="product-image d-flex flex-column justify-content-center align-items-center p-3">
-                <a href="{{ product.tally_link|default:'#' }}" target="_blank" rel="noopener noreferrer">
-                  {% if product.tally_image %}
-                    <img class="img-fluid mb-2" src="{{ product.tally_image.url }}" alt="{{ product.tally_name }}" />
-                  {% else %}
-                    <div class="img-fluid mb-2 d-flex align-items-center justify-content-center" style="width: 200px; height: 150px; background-color: #f8f9fa; border: 1px solid #dee2e6;">
-                      <i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
-                    </div>
-                  {% endif %}
-                </a>
-              </div>
-
-              <!-- Right -->
-              <div class="product-actions d-flex flex-column justify-content-center align-items-start p-3">
-                <div class="row g-2 w-100">
-                  <div class="col-6">
-                    <button id="sendEnquiryBtn" class="btn btn-primary w-100 px-4">Send Enquiry</button>
-                  </div>
-                  <div class="col-6">
-                    <a href="{{ product.tally_link|default:'#' }}" target="_blank" rel="noopener noreferrer">
-                      <button class="btn btn-outline-primary w-100 px-4">More Details</button>
-                    </a>
-                  </div>
-                  <div class="col-12">
-                    <a href="{% url 'tally_form' %}">
-                      <button class="btn btn-light w-100 px-4">Price list</button>
-                    </a>
+        <div class="card product-card overflow-hidden rounded-4 border-0 mb-4" data-aos="fade-up">
+          <div class="p-3">
+            <a href="{{ product.tally_link|default:'#' }}" target="_blank" rel="noopener noreferrer" class="d-block">
+              {% if product.tally_image %}
+                <div class="image-wrap">
+                  <img src="{{ product.tally_image.url }}" alt="{{ product.tally_name }}" />
+                </div>
+              {% else %}
+                <div class="image-wrap" style="background-color:#f8f9fa;">
+                  <div class="placeholder d-flex align-items-center justify-content-center">
+                    <i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
                   </div>
                 </div>
-              </div>
-
+              {% endif %}
+            </a>
+          </div>
+          <div class="card-body pt-0 text-center">
+            {% if product.tally_name %}
+              <h5 class="product-title mb-3">{{ product.tally_name }}</h5>
+            {% endif %}
+            <div class="d-flex flex-wrap gap-2 justify-content-center">
+              <button id="sendEnquiryBtn" class="btn btn-primary btn-pill px-4">Send Enquiry</button>
+              <a href="{{ product.tally_link|default:'#' }}" target="_blank" rel="noopener noreferrer" class="btn btn-outline-primary btn-pill px-4">More Details</a>
+              <a href="{% url 'tally_form' %}" class="btn btn-light btn-pill px-4">Price list</a>
             </div>
           </div>
         </div>
@@ -271,42 +316,30 @@ t            <div class="modal-content rounded-4 shadow-lg">
     <div class="row gx-5 justify-content-center">
       <div class="col-lg-11 col-xl-9 col-xxl-8">
         {% for product in emudhra_products %}
-        <div class="card overflow-hidden shadow rounded-4 border-0 mb-5" data-aos="fade-up">
-          <div class="card-body p-0">
-            <div class="d-flex flex-column align-items-stretch">
-
-              <!-- Left -->
-              <div class="product-image d-flex flex-column justify-content-center align-items-center p-3">
-                <a href="{{ product.emudhra_link|default:'#' }}" target="_blank" rel="noopener noreferrer">
-                  {% if product.emudhra_image %}
-                    <img class="img-fluid mb-2" src="{{ product.emudhra_image.url }}" alt="{{ product.emudhra_name }}" />
-                  {% else %}
-                    <div class="img-fluid mb-2 d-flex align-items-center justify-content-center" style="width: 200px; height: 150px; background-color: #f8f9fa; border: 1px solid #dee2e6;">
-                      <i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
-                    </div>
-                  {% endif %}
-                </a>
-              </div>
-
-              <!-- Right -->
-              <div class="product-actions d-flex flex-column justify-content-center align-items-start p-3">
-                <div class="row g-2 w-100">
-                  <div class="col-6">
-                    <button id="sendEnquiryBtn2" class="btn btn-primary w-100 px-4">Send Enquiry</button>
-                  </div>
-                  <div class="col-6">
-                    <a href="{{ product.emudhra_link|default:'#' }}" target="_blank" rel="noopener noreferrer">
-                      <button class="btn btn-outline-primary w-100 px-4">More Details</button>
-                    </a>  
-                  </div>
-                  <div class="col-12">
-                    <a href="{% url 'emudhra_form' %}">
-                      <button class="btn btn-light w-100 px-4">Price list</button>
-                    </a>
+        <div class="card product-card overflow-hidden rounded-4 border-0 mb-4" data-aos="fade-up">
+          <div class="p-3">
+            <a href="{{ product.emudhra_link|default:'#' }}" target="_blank" rel="noopener noreferrer" class="d-block">
+              {% if product.emudhra_image %}
+                <div class="image-wrap">
+                  <img src="{{ product.emudhra_image.url }}" alt="{{ product.emudhra_name }}" />
+                </div>
+              {% else %}
+                <div class="image-wrap" style="background-color:#f8f9fa;">
+                  <div class="placeholder d-flex align-items-center justify-content-center">
+                    <i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
                   </div>
                 </div>
-              </div>
-              
+              {% endif %}
+            </a>
+          </div>
+          <div class="card-body pt-0 text-center">
+            {% if product.emudhra_name %}
+              <h5 class="product-title mb-3">{{ product.emudhra_name }}</h5>
+            {% endif %}
+            <div class="d-flex flex-wrap gap-2 justify-content-center">
+              <button id="sendEnquiryBtn2" class="btn btn-primary btn-pill px-4">Send Enquiry</button>
+              <a href="{{ product.emudhra_link|default:'#' }}" target="_blank" rel="noopener noreferrer" class="btn btn-outline-primary btn-pill px-4">More Details</a>
+              <a href="{% url 'emudhra_form' %}" class="btn btn-light btn-pill px-4">Price list</a>
             </div>
           </div>
         </div>
@@ -318,42 +351,30 @@ t            <div class="modal-content rounded-4 shadow-lg">
     <div class="row gx-5 justify-content-center">
       <div class="col-lg-11 col-xl-9 col-xxl-8">
         {% for product in fusiontec_products %}
-        <div class="card overflow-hidden shadow rounded-4 border-0 mb-5" data-aos="fade-up">
-          <div class="card-body p-0">
-            <div class="d-flex flex-column align-items-stretch">
-
-              <!-- Left -->
-              <div class="product-image d-flex flex-column justify-content-center align-items-center p-3">
-                <a href="{{ product.fusiontec_link|default:'#' }}" target="_blank" rel="noopener noreferrer">
-                  {% if product.fusiontec_image %}
-                    <img class="img-fluid mb-2" src="{{ product.fusiontec_image.url }}" alt="{{ product.fusiontec_name }}" />
-                  {% else %}
-                    <div class="img-fluid mb-2 d-flex align-items-center justify-content-center" style="width: 200px; height: 150px; background-color: #f8f9fa; border: 1px solid #dee2e6;">
-                      <i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
-                    </div>
-                  {% endif %}
-                </a>
-              </div>
-
-              <!-- Right -->
-              <div class="product-actions d-flex flex-column justify-content-center align-items-start p-3">
-                <div class="row g-2 w-100">
-                  <div class="col-6">
-                    <button id="sendEnquiryBtn3" class="btn btn-primary w-100 px-4">Send Enquiry</button>
-                  </div>
-                  <div class="col-6">
-                    <a href="{{ product.fusiontec_link|default:'#' }}" target="_blank" rel="noopener noreferrer">
-                      <button class="btn btn-outline-primary w-100 px-4">More Details</button>
-                    </a>
-                  </div>
-                  <div class="col-12">
-                    <a href="{% url 'fusiontec_form' %}">
-                      <button class="btn btn-light w-100 px-4">Price list</button>
-                    </a>
+        <div class="card product-card overflow-hidden rounded-4 border-0 mb-4" data-aos="fade-up">
+          <div class="p-3">
+            <a href="{{ product.fusiontec_link|default:'#' }}" target="_blank" rel="noopener noreferrer" class="d-block">
+              {% if product.fusiontec_image %}
+                <div class="image-wrap">
+                  <img src="{{ product.fusiontec_image.url }}" alt="{{ product.fusiontec_name }}" />
+                </div>
+              {% else %}
+                <div class="image-wrap" style="background-color:#f8f9fa;">
+                  <div class="placeholder d-flex align-items-center justify-content-center">
+                    <i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
                   </div>
                 </div>
-              </div>
-
+              {% endif %}
+            </a>
+          </div>
+          <div class="card-body pt-0 text-center">
+            {% if product.fusiontec_name %}
+              <h5 class="product-title mb-3">{{ product.fusiontec_name }}</h5>
+            {% endif %}
+            <div class="d-flex flex-wrap gap-2 justify-content-center">
+              <button id="sendEnquiryBtn3" class="btn btn-primary btn-pill px-4">Send Enquiry</button>
+              <a href="{{ product.fusiontec_link|default:'#' }}" target="_blank" rel="noopener noreferrer" class="btn btn-outline-primary btn-pill px-4">More Details</a>
+              <a href="{% url 'fusiontec_form' %}" class="btn btn-light btn-pill px-4">Price list</a>
             </div>
           </div>
         </div>
@@ -365,42 +386,30 @@ t            <div class="modal-content rounded-4 shadow-lg">
     <div class="row gx-5 justify-content-center">
       <div class="col-lg-11 col-xl-9 col-xxl-8">
         {% for product in biz_products %}
-        <div class="card overflow-hidden shadow rounded-4 border-0 mb-5" data-aos="fade-up">
-          <div class="card-body p-0">
-            <div class="d-flex flex-column align-items-stretch">
-
-              <!-- Left -->
-              <div class="product-image d-flex flex-column justify-content-center align-items-center p-3">
-                <a href="{{ product.biz_link|default:'#' }}" target="_blank" rel="noopener noreferrer">
-                  {% if product.biz_image %}
-                    <img class="img-fluid mb-2" src="{{ product.biz_image.url }}" alt="{{ product.biz_name }}" />
-                  {% else %}
-                    <div class="img-fluid mb-2 d-flex align-items-center justify-content-center" style="width: 200px; height: 150px; background-color: #f8f9fa; border: 1px solid #dee2e6;">
-                      <i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
-                    </div>
-                  {% endif %}
-                </a>
-              </div>
-
-              <!-- Right -->
-              <div class="product-actions d-flex flex-column justify-content-center align-items-start p-3">
-                <div class="row g-2 w-100">
-                  <div class="col-6">
-                    <button id="sendEnquiryBtn4" class="btn btn-primary w-100 px-4">Send Enquiry</button>
-                  </div>
-                  <div class="col-6">
-                    <a href="{{ product.biz_link|default:'#' }}" target="_blank" rel="noopener noreferrer">
-                      <button class="btn btn-outline-primary w-100 px-4">More Details</button>
-                    </a>
-                  </div>
-                  <div class="col-12">
-                    <a href="{% url 'biz_form' %}">
-                      <button class="btn btn-light w-100 px-4">Price list</button>
-                    </a>
+        <div class="card product-card overflow-hidden rounded-4 border-0 mb-4" data-aos="fade-up">
+          <div class="p-3">
+            <a href="{{ product.biz_link|default:'#' }}" target="_blank" rel="noopener noreferrer" class="d-block">
+              {% if product.biz_image %}
+                <div class="image-wrap">
+                  <img src="{{ product.biz_image.url }}" alt="{{ product.biz_name }}" />
+                </div>
+              {% else %}
+                <div class="image-wrap" style="background-color:#f8f9fa;">
+                  <div class="placeholder d-flex align-items-center justify-content-center">
+                    <i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
                   </div>
                 </div>
-              </div>
-
+              {% endif %}
+            </a>
+          </div>
+          <div class="card-body pt-0 text-center">
+            {% if product.biz_name %}
+              <h5 class="product-title mb-3">{{ product.biz_name }}</h5>
+            {% endif %}
+            <div class="d-flex flex-wrap gap-2 justify-content-center">
+              <button id="sendEnquiryBtn4" class="btn btn-primary btn-pill px-4">Send Enquiry</button>
+              <a href="{{ product.biz_link|default:'#' }}" target="_blank" rel="noopener noreferrer" class="btn btn-outline-primary btn-pill px-4">More Details</a>
+              <a href="{% url 'biz_form' %}" class="btn btn-light btn-pill px-4">Price list</a>
             </div>
           </div>
         </div>

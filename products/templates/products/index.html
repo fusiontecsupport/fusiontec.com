@@ -878,7 +878,7 @@
                                 <p class="card-text text-muted mb-4">Class 3 DSC for GST, MCA, Income Tax, Tender submissions, EPFO filings, and more.</p>
                                 <div class="d-flex flex-wrap gap-2">
                                     <a href="{% url 'dsc_form' %}" class="btn btn-primary">View</a>
-                                    <button type="button" class="btn btn-light" onclick="showQuoteForm(0, 'Digital Signature Certificate')">Get Quote</button>
+                                    <button type="button" class="btn btn-light" onclick="showQuoteForm({{ dsc_type.id|default:0 }}, 'Digital Signature Certificate')">Get Quote</button>
                                 </div>
                             </div>
                         </div>
