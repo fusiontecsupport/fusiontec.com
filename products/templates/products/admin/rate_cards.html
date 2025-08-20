@@ -1,6 +1,6 @@
 {% extends 'products/admin/base.html' %}
 
-{% block title %}Rate Cards - {{ simple_product.prdt_desc }}{% endblock %}
+{% block title %}Rate Cards - {{ simple_product.subprdt_desc }}{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -73,7 +73,7 @@
     <div>
       <h2 class="mb-1"><i class="fas fa-receipt text-primary"></i> Rate Cards</h2>
       <p class="text-muted mb-0">
-        {{ simple_product.product_type.prdt_desc }} → {{ simple_product.prdt_desc }}
+        {{ simple_product.product.product_type.prdt_desc }} → {{ simple_product.product.prdt_desc }} → {{ simple_product.subprdt_desc }}
       </p>
     </div>
     <div>

@@ -725,6 +725,32 @@ class ProductMasterV2(models.Model):
         return self.prdt_desc
 
 
+class ProductSubMaster(BaseTimestampModel):
+    """Sub-product type linked to `ProductMasterV2`.
+
+    Exact table name 'ProductSubMaster'. Columns:
+    - PrdtSubId (pk)
+    - PrdtId (FK to ProductMaster)
+    - SubPrdtDesc (description)
+    """
+
+    product = models.ForeignKey(
+        ProductMasterV2,
+        on_delete=models.CASCADE,
+        related_name='sub_products',
+        verbose_name='PrdtId',
+    )
+    subprdt_desc = models.CharField(max_length=255, verbose_name='SubPrdtDesc')
+
+    class Meta:
+        db_table = 'ProductSubMaster'
+        verbose_name = 'Product Sub Master'
+        verbose_name_plural = 'Product Sub Master'
+        ordering = ['id']
+
+    def __str__(self) -> str:
+        return self.subprdt_desc
+
 class RateCardEntry(BaseTimestampModel):
     """Rate card table linked directly to ProductMasterV2.
 
@@ -733,11 +759,25 @@ class RateCardEntry(BaseTimestampModel):
     `nett_amt` is auto-computed on save.
     """
 
+    # Legacy product field retained for backwards compatibility and data migration
     product = models.ForeignKey(
         ProductMasterV2,
+        on_delete=models.SET_NULL,
+        related_name='rate_cards_legacy',
+        verbose_name='PrdtId',
+        blank=True,
+        null=True,
+        help_text='Legacy link to ProductMaster (kept for migration/backward compatibility)'
+    )
+
+    sub_product = models.ForeignKey(
+        ProductSubMaster,
         on_delete=models.CASCADE,
         related_name='rate_cards',
-        verbose_name='PrdtId',
+        verbose_name='PrdtSubId',
+        db_column='PrdtSubId',
+        blank=True,
+        null=True,
     )
     rate_date = models.DateField(verbose_name='RateCDate')
     base_amt = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='BaseAmt')
@@ -767,11 +807,11 @@ class RateCardEntry(BaseTimestampModel):
 
     class Meta:
         db_table = 'RateCardMaster'
-        ordering = ['-rate_date', 'product__id']
+        ordering = ['-rate_date', 'sub_product__id']
         verbose_name = 'Rate Card'
         verbose_name_plural = 'Rate Cards'
         constraints = [
-            models.UniqueConstraint(fields=['product', 'rate_date'], name='unique_rate_per_product_and_date'),
+            models.UniqueConstraint(fields=['sub_product', 'rate_date'], name='unique_rate_per_product_and_date'),
         ]
 
     def save(self, *args, **kwargs):
@@ -814,7 +854,17 @@ class RateCardEntry(BaseTimestampModel):
         super().save(*args, **kwargs)
 
     def __str__(self) -> str:
-        return f"{self.product.prdt_desc} @ {self.rate_date}"
+        name = None
+        if self.sub_product:
+            name = self.sub_product.subprdt_desc
+        elif self.product:
+            try:
+                name = self.product.prdt_desc
+            except Exception:
+                name = 'Unknown Product'
+        else:
+            name = 'Unassigned'
+        return f"{name} @ {self.rate_date}"
 
 # ============================================================================
 # PRODUCT FORM SUBMISSIONS

@@ -5,7 +5,7 @@ from django.utils.safestring import mark_safe
 from .models import (
     ProductMaster, ProductType, ProductItem, RateCardMaster, Customer, QuoteSubmission,
     ContactSubmission, PaymentTransaction, PaymentSettings, Applicant,
-    ProductTypeMaster, ProductMasterV2, RateCardEntry, ProductFormSubmission, QuoteRequest,
+    ProductTypeMaster, ProductMasterV2, ProductSubMaster, RateCardEntry, ProductFormSubmission, QuoteRequest,
 )
 
 # ============================================================================
@@ -381,15 +381,22 @@ class ProductMasterV2Admin(admin.ModelAdmin):
     search_fields = ['prdt_desc']
 
 
+@admin.register(ProductSubMaster)
+class ProductSubMasterAdmin(admin.ModelAdmin):
+    list_display = ['id', 'product', 'subprdt_desc']
+    list_filter = ['product__product_type', 'product']
+    search_fields = ['subprdt_desc', 'product__prdt_desc']
+
+
 @admin.register(RateCardEntry)
 class RateCardEntryAdmin(admin.ModelAdmin):
-    list_display = ['id', 'product', 'rate_date', 'base_amt', 'gst_percent', 'nett_amt', 'token_amount', 'installation_charge', 't_amount', 'created_at']
-    list_filter = ['rate_date', 'product__product_type']
-    search_fields = ['product__prdt_desc', 'token_desc']
+    list_display = ['id', 'sub_product', 'rate_date', 'base_amt', 'gst_percent', 'nett_amt', 'token_amount', 'installation_charge', 't_amount', 'created_at']
+    list_filter = ['rate_date', 'sub_product__product__product_type']
+    search_fields = ['sub_product__subprdt_desc', 'sub_product__product__prdt_desc', 'token_desc']
     readonly_fields = ['nett_amt', 'cgst', 'sgst', 'token_total', 'token_cgst', 'token_sgst', 'installation_total', 'installation_cgst', 'installation_sgst', 't_amount', 'created_at', 'updated_at']
     fieldsets = (
         ('Basic Information', {
-            'fields': ('product', 'rate_date', 'rate_code')
+            'fields': ('sub_product', 'rate_date', 'rate_code')
         }),
         ('Base Pricing', {
             'fields': ('base_amt', 'gst_percent', 'nett_amt', 'cgst', 'sgst')

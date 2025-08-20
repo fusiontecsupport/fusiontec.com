@@ -169,14 +169,8 @@
          {% if available_products.count > 1 %}
            <select id="productSelector" name="product_id" class="form-select" required>
              <option value="">-- Select a Product --</option>
-             {% for prod_data in products_with_rates %}
-               <option value="{{ prod_data.product.id }}" 
-                       data-basic-amount="{{ prod_data.rate_card.base_amt|default:'0' }}"
-                       data-gst="{{ prod_data.rate_card.gst_percent|default:'0' }}"
-                       data-token-amount="{{ prod_data.rate_card.token_amount|default:'0' }}"
-                       data-installation-charges="{{ prod_data.rate_card.installation_charge|default:'0' }}">
-                 {{ prod_data.product.prdt_desc }}
-               </option>
+             {% for prod in available_products %}
+               <option value="{{ prod.id }}">{{ prod.prdt_desc }}</option>
              {% endfor %}
            </select>
          {% else %}
@@ -184,6 +178,25 @@
            <input type="hidden" id="productSelector" value="{{ product.id }}" />
          {% endif %}
          <div class="error-message" id="error-productSelector"></div>
+       </div>
+
+       <div class="form-section">
+         <label for="subProductSelector" class="form-label">Select Sub Product <span style="color:red">*</span></label>
+         <select id="subProductSelector" class="form-select" required>
+           <option value="">-- Select a Sub Product --</option>
+           {% for p in products_with_rates %}
+             {% for s in p.subs %}
+               <option value="{{ s.sub.id }}" data-product-id="{{ p.product.id }}"
+                       data-basic-amount="{{ s.rate_card.base_amt|default:'0' }}"
+                       data-gst="{{ s.rate_card.gst_percent|default:'0' }}"
+                       data-token-amount="{{ s.rate_card.token_amount|default:'0' }}"
+                       data-installation-charges="{{ s.rate_card.installation_charge|default:'0' }}">
+                 {{ p.product.prdt_desc }} — {{ s.sub.subprdt_desc }}
+               </option>
+             {% endfor %}
+           {% endfor %}
+         </select>
+         <div class="error-message" id="error-subProductSelector"></div>
        </div>
 
        <!-- Rate Card Details (Hidden by default) -->
@@ -289,26 +302,18 @@
 <!-- Rate Card Data -->
 <script>
   const rateCardData = {
-    {% if products_with_rates %}
-      {% for prod_data in products_with_rates %}
-        {{ prod_data.product.id }}: {
-          basic_amount: {{ prod_data.rate_card.base_amt|default:0 }},
-          gst_percent: {{ prod_data.rate_card.gst_percent|default:0 }},
-          token_amount: {{ prod_data.rate_card.token_amount|default:0 }},
-          installation_charge: {{ prod_data.rate_card.installation_charge|default:0 }},
-          product_name: "{{ prod_data.product.prdt_desc }}"
-        }{% if not forloop.last %},{% endif %}
+    {% for p in products_with_rates %}
+      {% for s in p.subs %}
+        {{ s.sub.id }}: {
+          product_id: {{ p.product.id }},
+          basic_amount: {{ s.rate_card.base_amt|default:0 }},
+          gst_percent: {{ s.rate_card.gst_percent|default:0 }},
+          token_amount: {{ s.rate_card.token_amount|default:0 }},
+          installation_charge: {{ s.rate_card.installation_charge|default:0 }},
+          product_name: "{{ p.product.prdt_desc }} — {{ s.sub.subprdt_desc }}"
+        }{% if not forloop.last or not forloop.parentloop.last %},{% endif %}
       {% endfor %}
-    {% else %}
-      // Default data if no rate cards exist
-      1: {
-        basic_amount: 0,
-        gst_percent: 0,
-        token_amount: 0,
-        installation_charge: 0,
-        product_name: "{{ product.prdt_desc }}"
-      }
-    {% endif %}
+    {% endfor %}
   };
   
   // Debug: Log the rate card data
@@ -346,11 +351,19 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
 
-  // Product selector change handler
+  // Product selector change handler – filter sub-products for this product
   const productSelector = document.getElementById('productSelector');
+  const subProductSelector = document.getElementById('subProductSelector');
   if (productSelector.tagName === 'SELECT') {
     productSelector.addEventListener('change', function() {
-      updateProductInfo();
+      // filter sub products
+      const pid = this.value;
+      Array.from(subProductSelector.options).forEach((opt, idx) => {
+        if (idx === 0) return; // keep placeholder
+        opt.style.display = (!pid || opt.dataset.productId === pid) ? 'block' : 'none';
+      });
+      subProductSelector.value = '';
+      hideRateCard();
       calculateTotal();
       // Update heading text to selected product
       const headingEl = document.getElementById('formHeading');
@@ -363,6 +376,12 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
   }
+
+  // Sub product change → update rate info
+  subProductSelector.addEventListener('change', function() {
+    updateProductInfoFromSub();
+    calculateTotal();
+  });
 
   // Quantity change handler
   const quantityInput = document.getElementById('quantity');
@@ -398,95 +417,44 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 
-function updateProductInfo() {
-  const productSelector = document.getElementById('productSelector');
-  const selectedProductInfo = document.getElementById('selectedProductInfo');
-  const defaultProductInfo = document.getElementById('defaultProductInfo');
-  const selectedProductName = document.getElementById('selectedProductName');
-  const selectedProductAmount = document.getElementById('selectedProductAmount');
+function hideRateCard(){
   const rateCardDetails = document.getElementById('rateCardDetails');
-  
-  console.log('updateProductInfo called');
-  console.log('Product selector:', productSelector);
-  console.log('Product selector value:', productSelector ? productSelector.value : 'N/A');
-  
-  if (productSelector.tagName === 'SELECT' && productSelector.value) {
-    const selectedOption = productSelector.options[productSelector.selectedIndex];
-    const basicAmount = parseFloat(selectedOption.dataset.basicAmount) || 0;
-    const gstRate = parseFloat(selectedOption.dataset.gst) || 0;
-    const tokenAmount = parseFloat(selectedOption.dataset.tokenAmount) || 0;
-    const installCharges = parseFloat(selectedOption.dataset.installationCharges) || 0;
-    
-    console.log('Selected option data:', {
-      basicAmount: selectedOption.dataset.basicAmount,
-      gst: selectedOption.dataset.gst,
-      tokenAmount: selectedOption.dataset.tokenAmount,
-      installCharges: selectedOption.dataset.installationCharges
-    });
-    
-    // Update product info (if those elements exist)
-    if (selectedProductName) selectedProductName.textContent = selectedOption.text;
-    if (selectedProductAmount) selectedProductAmount.textContent = basicAmount.toFixed(2);
-    
-    // Update rate card details
-    document.getElementById('rateBaseAmount').textContent = basicAmount.toFixed(2);
-    document.getElementById('rateGst').textContent = gstRate.toFixed(2);
-    
-    const totalGst = basicAmount + (basicAmount * gstRate / 100);
-    document.getElementById('rateTotalGst').textContent = totalGst.toFixed(2);
-    
-    document.getElementById('rateTokenAmount').textContent = tokenAmount.toFixed(2);
-    document.getElementById('rateInstallCharges').textContent = installCharges.toFixed(2);
-    
-    const finalTotal = totalGst + tokenAmount + installCharges;
-    document.getElementById('rateFinalTotal').textContent = finalTotal.toFixed(2);
-    
-    // Show sections (if those containers exist)
-    if (selectedProductInfo) selectedProductInfo.style.display = 'block';
-    if (defaultProductInfo) defaultProductInfo.style.display = 'none';
-    rateCardDetails.style.display = 'block';
-    
-    console.log('Rate card details updated and shown');
-  } else {
-    // Hide sections (if those containers exist)
-    if (selectedProductInfo) selectedProductInfo.style.display = 'none';
-    if (defaultProductInfo) defaultProductInfo.style.display = 'block';
-    rateCardDetails.style.display = 'none';
-    
-    console.log('Rate card details hidden');
-  }
+  rateCardDetails.style.display = 'none';
+}
+
+function updateProductInfoFromSub() {
+  const subSelect = document.getElementById('subProductSelector');
+  const rateCardDetails = document.getElementById('rateCardDetails');
+  if (!subSelect.value) { hideRateCard(); return; }
+  const opt = subSelect.options[subSelect.selectedIndex];
+  const basicAmount = parseFloat(opt.dataset.basicAmount) || 0;
+  const gstRate = parseFloat(opt.dataset.gst) || 0;
+  const tokenAmount = parseFloat(opt.dataset.tokenAmount) || 0;
+  const installCharges = parseFloat(opt.dataset.installationCharges) || 0;
+  document.getElementById('rateBaseAmount').textContent = basicAmount.toFixed(2);
+  document.getElementById('rateGst').textContent = gstRate.toFixed(2);
+  const totalGst = basicAmount + (basicAmount * gstRate / 100);
+  document.getElementById('rateTotalGst').textContent = totalGst.toFixed(2);
+  document.getElementById('rateTokenAmount').textContent = tokenAmount.toFixed(2);
+  document.getElementById('rateInstallCharges').textContent = installCharges.toFixed(2);
+  const finalTotal = totalGst + tokenAmount + installCharges;
+  document.getElementById('rateFinalTotal').textContent = finalTotal.toFixed(2);
+  rateCardDetails.style.display = 'block';
 }
 
 function calculateTotal() {
   const quantity = parseInt(document.getElementById('quantity').value) || 1;
   
-  // Get pricing data from selected product
+  // Get pricing data from selected sub product
   let basicAmount, gstRate, tokenAmount, installCharges;
-  
-  const productSelector = document.getElementById('productSelector');
-  if (productSelector.tagName === 'SELECT' && productSelector.value) {
-    // Get data from selected option
-    const selectedOption = productSelector.options[productSelector.selectedIndex];
-    basicAmount = parseFloat(selectedOption.dataset.basicAmount) || 0;
-    gstRate = parseFloat(selectedOption.dataset.gst) || 0;
-    tokenAmount = parseFloat(selectedOption.dataset.tokenAmount) || 0;
-    installCharges = parseFloat(selectedOption.dataset.installationCharges) || 0;
-  } else {
-    // Fallback to default values - get from rate card data if available
-    const productId = document.getElementById('productSelector').value;
-    if (productId && rateCardData[productId]) {
-      const rateData = rateCardData[productId];
-      basicAmount = parseFloat(rateData.basic_amount) || 0;
-      gstRate = parseFloat(rateData.gst_percent) || 0;
-      tokenAmount = parseFloat(rateData.token_amount) || 0;
-      installCharges = parseFloat(rateData.installation_charge) || 0;
-    } else {
-      basicAmount = 0;
-      gstRate = 0;
-      tokenAmount = 0;
-      installCharges = 0;
-    }
-  }
+  const subSelect = document.getElementById('subProductSelector');
+  if (subSelect.value && rateCardData[subSelect.value]) {
+    const rateData = rateCardData[subSelect.value];
+    basicAmount = parseFloat(rateData.basic_amount) || 0;
+    gstRate = parseFloat(rateData.gst_percent) || 0;
+    tokenAmount = parseFloat(rateData.token_amount) || 0;
+    installCharges = parseFloat(rateData.installation_charge) || 0;
+  } else { basicAmount = gstRate = tokenAmount = installCharges = 0; }
 
   const totalBasic = basicAmount * quantity;
   const gst = (totalBasic * gstRate) / 100;
@@ -625,32 +593,17 @@ function generatePIContent() {
   // Get pricing data from selected product
   let basicAmount, gstRate, tokenAmount, installCharges, productName;
   
-  const productSelector = document.getElementById('productSelector');
-  if (productSelector.tagName === 'SELECT' && productSelector.value) {
-    // Get data from selected option
-    const selectedOption = productSelector.options[productSelector.selectedIndex];
-    basicAmount = parseFloat(selectedOption.dataset.basicAmount) || 0;
-    gstRate = parseFloat(selectedOption.dataset.gst) || 0;
-    tokenAmount = parseFloat(selectedOption.dataset.tokenAmount) || 0;
-    installCharges = parseFloat(selectedOption.dataset.installationCharges) || 0;
-    productName = selectedOption.text;
+  const subSelect2 = document.getElementById('subProductSelector');
+  if (subSelect2.value && rateCardData[subSelect2.value]) {
+    const rateData = rateCardData[subSelect2.value];
+    basicAmount = parseFloat(rateData.basic_amount) || 0;
+    gstRate = parseFloat(rateData.gst_percent || 0) || 0;
+    tokenAmount = parseFloat(rateData.token_amount) || 0;
+    installCharges = parseFloat(rateData.installation_charge) || 0;
+    productName = rateData.product_name;
   } else {
-    // Fallback to default values - get from rate card data if available
-    const productId = document.getElementById('productSelector').value;
-    if (productId && rateCardData[productId]) {
-      const rateData = rateCardData[productId];
-      basicAmount = parseFloat(rateData.basic_amount) || 0;
-      gstRate = parseFloat(rateData.gst) || 0;
-      tokenAmount = parseFloat(rateData.token_amount) || 0;
-      installCharges = parseFloat(rateData.installation_charge) || 0;
-      productName = rateData.product_name;
-    } else {
-      basicAmount = 0;
-      gstRate = 0;
-      tokenAmount = 0;
-      installCharges = 0;
-      productName = '{{ product.prdt_desc }}';
-    }
+    basicAmount = gstRate = tokenAmount = installCharges = 0;
+    productName = '{{ product.prdt_desc }}';
   }
 
   const includeToken = tokenAmount > 0 && document.getElementById('add_token')?.checked;
@@ -895,6 +848,7 @@ async function saveToDatabase() {
       district: document.getElementById('district').value,
       pincode: document.getElementById('pincode').value.trim(),
       product_id: document.getElementById('productSelector').value,
+      sub_product_id: document.getElementById('subProductSelector').value,
       quantity: parseInt(document.getElementById('quantity').value) || 1,
       basic_amount: parseFloat(document.getElementById('basicAmount').textContent) || 0,
       gst: parseFloat(document.getElementById('gst').textContent) || 0,

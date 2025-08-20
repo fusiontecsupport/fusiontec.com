@@ -520,6 +520,25 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                     <button type="submit" class="btn btn-success w-100">Add Product</button>
                 </form>
+                <hr/>
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="form_type" value="subproduct">
+                    <div class="mb-3">
+                        <label class="form-label">Product *</label>
+                        <select class="form-select" name="product_id" required>
+                            <option value="">Select...</option>
+                            {% for p in simple_products %}
+                                <option value="{{ p.id }}">{{ p.product_type.prdt_desc }} → {{ p.prdt_desc }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Sub Product Description *</label>
+                        <input type="text" class="form-control" name="subprdt_desc" placeholder="e.g., Single User / Gold / Starter" required>
+                    </div>
+                    <button type="submit" class="btn btn-warning w-100">Add Sub Product</button>
+                </form>
             </div>
         </div>
     </div>
@@ -613,7 +632,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                     <th>Type (PrdtTId)</th>
                                     <th>PrdtDesc</th>
                                     <th>Created</th>
-                                    <th>Rate Cards</th>
+                                    <th>Sub Products</th>
                                     <th>Actions</th>
                                 </tr>
                                 {% if selected_type %}
@@ -652,19 +671,24 @@ document.addEventListener('DOMContentLoaded', function() {
                                         </div>
                                     </td>
                                     <td>
-                                        <div class="rate-cards-count">
-                                            <span class="badge bg-gradient-info">
-                                                <i class="fas fa-receipt me-1"></i>
-                                                {{ p.rate_cards.count }} rates
-                                            </span>
-                                        </div>
+                                        {% if p.sub_products.all %}
+                                            <ul class="mb-0">
+                                            {% for sp in p.sub_products.all %}
+                                                <li>
+                                                    {{ sp.subprdt_desc }}
+                                                    <a class="btn btn-xs btn-outline-primary ms-2" href="{% url 'admin_rate_cards' sp.id %}">
+                                                        Rates
+                                                    </a>
+                                                </li>
+                                            {% empty %}
+                                                <span class="text-muted">No sub products</span>
+                                            {% endfor %}
+                                            </ul>
+                                        {% endif %}
                                     </td>
                                     <td>
                                         <div class="action-buttons">
-                                            <a class="btn btn-sm btn-outline-primary action-btn" href="{% url 'admin_rate_cards' p.id %}" title="Manage Rate Cards">
-                                                <i class="fas fa-receipt"></i>
-                                                <span class="btn-text">Rates</span>
-                                            </a>
+                                            <!-- Rate cards now managed per sub product -->
                                             <button class="btn btn-sm btn-outline-danger action-btn" onclick="deleteProduct({{ p.id }})" title="Delete Product">
                                                 <i class="fas fa-trash"></i>
                                                 <span class="btn-text">Delete</span>

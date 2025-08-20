@@ -19,7 +19,7 @@ from .models import (
     ProductMaster, ProductType, ProductItem, RateCardMaster, Customer, 
     QuoteSubmission, ContactSubmission, PaymentTransaction, 
     PaymentSettings, Applicant,
-    ProductTypeMaster, ProductMasterV2, RateCardEntry,
+    ProductTypeMaster, ProductMasterV2, ProductSubMaster, RateCardEntry,
     ProductFormSubmission, DscPrice,
 )
 
@@ -187,63 +187,33 @@ def product_type_products(request, type_id):
     return render(request, 'products/product_type.html', context)
 
 def product_type_form(request, type_id):
-    """Display product form for a specific product type"""
+    """Display product form for a specific product type with Sub Products and rates per sub product."""
     product_type = get_object_or_404(ProductTypeMaster, id=type_id)
     
-    # Get all available products for this type
-    available_products = ProductMasterV2.objects.filter(product_type=product_type)
+    # All products for this type
+    available_products = ProductMasterV2.objects.filter(product_type=product_type).order_by('id')
     
-    # Get the first available product item for this type, or create a dummy one
-    try:
-        product_item = available_products.first()
-        if not product_item:
-            # Create a dummy product item for display purposes
-            product_item = type('DummyProduct', (), {
-                'prdt_desc': product_type.prdt_desc,
-                'basic_amount': 0,
-                'cgst': 0,
-                'sgst': 0,
-                'token_amount': 0,
-                'installing_charges': 0
-            })()
-    except:
-        product_item = type('DummyProduct', (), {
-            'prdt_desc': product_type.prdt_desc,
-            'basic_amount': 0,
-            'cgst': 0,
-            'sgst': 0,
-            'token_amount': 0,
-            'installing_charges': 0
-        })()
+    # Fallback display object
+    product_item = available_products.first() or type('DummyProduct', (), {
+        'prdt_desc': product_type.prdt_desc,
+        'id': 0,
+    })()
     
-    # Get rate card data for each product
+    # Build nested data: each product → list of sub products with latest rate
     products_with_rates = []
     for product in available_products:
-        # Get the latest rate card for this product
-        latest_rate = RateCardEntry.objects.filter(product=product).order_by('-rate_date').first()
-        
-        if latest_rate:
-            products_with_rates.append({
-                'product': product,
-                'rate_card': latest_rate
-            })
-        else:
-            # If no rate card, create a default one
-            products_with_rates.append({
-                'product': product,
-                'rate_card': type('DefaultRate', (), {
+        subs_data = []
+        for sp in product.sub_products.all().order_by('id'):
+            latest_rate = RateCardEntry.objects.filter(sub_product=sp).order_by('-rate_date').first()
+            if latest_rate is None:
+                latest_rate = type('DefaultRate', (), {
                     'base_amt': 0,
-                    'cgst': 0,
-                    'sgst': 0,
+                    'gst_percent': 0,
                     'token_amount': 0,
-                    'installation_charge': 0
+                    'installation_charge': 0,
                 })()
-            })
-    
-    # Debug: Print what we're getting
-    print(f"Debug: Found {len(products_with_rates)} products with rates")
-    for pw in products_with_rates:
-        print(f"Product: {pw['product'].prdt_desc}, Rate: {pw['rate_card']}")
+            subs_data.append({'sub': sp, 'rate_card': latest_rate})
+        products_with_rates.append({'product': product, 'subs': subs_data})
     
     context = {
         'product': product_item,
@@ -450,8 +420,15 @@ def save_product_submission(request):
                 customer.pincode = data.get('pincode', '')
                 customer.save()
             
-            # Get product item
+            # Get product and optional sub product
             product_item = ProductMasterV2.objects.get(id=data.get('product_id'))
+            sub_product_id = data.get('sub_product_id')
+            sub_product_obj = None
+            if sub_product_id:
+                try:
+                    sub_product_obj = ProductSubMaster.objects.get(id=sub_product_id)
+                except ProductSubMaster.DoesNotExist:
+                    sub_product_obj = None
             
             # Calculate GST rates from amounts
             basic_amount = data.get('basic_amount', 0)
@@ -503,7 +480,7 @@ def save_product_submission(request):
                 'state': data.get('state', ''),
                 'district': data.get('district', ''),
                 'pincode': data.get('pincode', ''),
-                'product_name': product_item.prdt_desc,
+                'product_name': f"{product_item.prdt_desc} — {sub_product_obj.subprdt_desc}" if sub_product_obj else product_item.prdt_desc,
                 'quantity': data.get('quantity', 1),
                 'basic_amount': basic_amount,
                 'cgst_amount': cgst_amount,
@@ -526,7 +503,7 @@ def save_product_submission(request):
             try:
                 # Send to admin
                 admin_email = EmailMessage(
-                    subject=f"[Fusiontec Product Form] - {product_item.prdt_desc} - {data.get('customer_name')}",
+                    subject=f"[Fusiontec Product Form] - {product_item.prdt_desc}{(' — ' + sub_product_obj.subprdt_desc) if sub_product_obj else ''} - {data.get('customer_name')}",
                     body=admin_email_content,
                     from_email=settings.DEFAULT_FROM_EMAIL,
                     to=[settings.CONTACT_FORM_RECIPIENT],
@@ -1311,6 +1288,7 @@ def custom_admin_products(request):
 
     - Create ProductTypeMaster (if form_type = 'type')
     - Create ProductMasterV2 (if form_type = 'product')
+    - Create ProductSubMaster (if form_type = 'subproduct')
     - Edit/Delete functionality
     """
     if request.method == 'POST':
@@ -1378,6 +1356,16 @@ def custom_admin_products(request):
                     ProductMasterV2.objects.create(product_type=pt, prdt_desc=prdt_desc)
                     messages.success(request, 'Product created.')
                     return redirect('custom_admin_products')
+            elif form_type == 'subproduct':
+                product_id = request.POST.get('product_id')
+                subprdt_desc = (request.POST.get('subprdt_desc') or '').strip()
+                if not product_id or not subprdt_desc:
+                    messages.error(request, 'Product and Sub Product description are required.')
+                else:
+                    prod = ProductMasterV2.objects.get(id=int(product_id))
+                    ProductSubMaster.objects.create(product=prod, subprdt_desc=subprdt_desc)
+                    messages.success(request, 'Sub Product created.')
+                    return redirect('custom_admin_products')
         except Exception as exc:
             messages.error(request, f'Failed to save: {exc}')
 
@@ -1402,6 +1390,7 @@ def custom_admin_products(request):
         'simple_types': types,
         'simple_products': products,
         'selected_type': selected_type,
+        'sub_products': ProductSubMaster.objects.select_related('product').all().order_by('id'),
     }
     return render(request, 'products/admin/products.html', context)
 
@@ -1507,8 +1496,8 @@ def admin_product_items(request, type_id):
 
 @admin_required
 def admin_rate_cards(request, item_id):
-    """New schema: manage rate cards for ProductMasterV2 by ID."""
-    product = get_object_or_404(ProductMasterV2, id=item_id)
+    """Manage rate cards for ProductSubMaster by ID."""
+    sub_product = get_object_or_404(ProductSubMaster, id=item_id)
 
     if request.method == 'POST':
         action = request.POST.get('action')
@@ -1518,7 +1507,7 @@ def admin_rate_cards(request, item_id):
             try:
                 RateCardEntry.objects.get(id=rate_id).delete()
                 messages.success(request, 'Rate card deleted.')
-                return redirect('admin_rate_cards', item_id=product.id)
+                return redirect('admin_rate_cards', item_id=sub_product.id)
             except Exception as exc:
                 messages.error(request, f'Failed to delete rate card: {exc}')
         elif action == 'edit_rate':
@@ -1542,7 +1531,7 @@ def admin_rate_cards(request, item_id):
                 rate_dt = datetime.strptime(rate_date, '%Y-%m-%d').date()
             except Exception:
                 messages.error(request, 'Invalid Rate Date. Use YYYY-MM-DD format.')
-                return redirect('admin_rate_cards', item_id=product.id)
+                return redirect('admin_rate_cards', item_id=sub_product.id)
 
             try:
                 base_amt = float(base_amount)
@@ -1574,7 +1563,7 @@ def admin_rate_cards(request, item_id):
                 else:
                     # Different date - create a new entry for history
                     RateCardEntry.objects.create(
-                        product=product,
+                        sub_product=sub_product,
                         rate_date=rate_dt,
                         base_amt=base_amt,
                         gst_percent=gst_pct,
@@ -1586,13 +1575,13 @@ def admin_rate_cards(request, item_id):
                     )
                     messages.success(request, 'Rate card updated successfully (new entry created for new date).')
                 
-                return redirect('admin_rate_cards', item_id=product.id)
+                return redirect('admin_rate_cards', item_id=sub_product.id)
             except RateCardEntry.DoesNotExist:
                 messages.error(request, 'Rate card not found.')
-                return redirect('admin_rate_cards', item_id=product.id)
+                return redirect('admin_rate_cards', item_id=sub_product.id)
             except Exception as exc:
                 messages.error(request, f'Failed to update rate card: {exc}')
-                return redirect('admin_rate_cards', item_id=product.id)
+                return redirect('admin_rate_cards', item_id=sub_product.id)
         else:
             # Handle new rate card creation
             rate_date = (request.POST.get('rate_date') or '').strip()
@@ -1613,7 +1602,7 @@ def admin_rate_cards(request, item_id):
                 rate_dt = datetime.strptime(rate_date, '%Y-%m-%d').date()
             except Exception:
                 messages.error(request, 'Invalid Rate Date. Use YYYY-MM-DD format.')
-                return redirect('admin_rate_cards', item_id=product.id)
+                return redirect('admin_rate_cards', item_id=sub_product.id)
 
             try:
                 base_amt = float(base_amount)
@@ -1628,7 +1617,7 @@ def admin_rate_cards(request, item_id):
 
             try:
                 RateCardEntry.objects.create(
-                    product=product,
+                    sub_product=sub_product,
                     rate_date=rate_dt,
                     base_amt=base_amt,
                     gst_percent=gst_pct,
@@ -1639,13 +1628,13 @@ def admin_rate_cards(request, item_id):
                     installation_gst_percent=install_gst_pct,
                 )
                 messages.success(request, 'Rate card added successfully.')
-                return redirect('admin_rate_cards', item_id=product.id)
+                return redirect('admin_rate_cards', item_id=sub_product.id)
             except Exception as exc:
                 messages.error(request, f'Failed to add rate card: {exc}')
 
-    cards = product.rate_cards.all().order_by('-rate_date')
+    cards = sub_product.rate_cards.all().order_by('-rate_date')
     context = {
-        'simple_product': product,
+        'simple_product': sub_product,
         'cards': cards,
     }
     return render(request, 'products/admin/rate_cards.html', context)
