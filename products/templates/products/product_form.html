@@ -319,6 +319,15 @@
   // Debug: Log the rate card data
   console.log('Rate Card Data:', rateCardData);
   console.log('Products with rates count:', {{ products_with_rates|length }});
+  console.log('Available products count:', {{ available_products.count }});
+  
+  // Log each product and its sub products
+  {% for p in products_with_rates %}
+    console.log('Product {{ p.product.id }}: {{ p.product.prdt_desc }}');
+    {% for s in p.subs %}
+      console.log('  Sub {{ s.sub.id }}: {{ s.sub.subprdt_desc }} - Rate: {{ s.rate_card.base_amt|default:0 }}');
+    {% endfor %}
+  {% endfor %}
 </script>
 
 <script>
@@ -417,6 +426,15 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 
+function updateProductInfo() {
+  // This function updates the product info display when the page loads
+  // It's called once to initialize the display
+  const subSelect = document.getElementById('subProductSelector');
+  if (subSelect.value) {
+    updateProductInfoFromSub();
+  }
+}
+
 function hideRateCard(){
   const rateCardDetails = document.getElementById('rateCardDetails');
   rateCardDetails.style.display = 'none';
@@ -426,11 +444,22 @@ function updateProductInfoFromSub() {
   const subSelect = document.getElementById('subProductSelector');
   const rateCardDetails = document.getElementById('rateCardDetails');
   if (!subSelect.value) { hideRateCard(); return; }
+  
+  console.log('Updating product info from sub product:', subSelect.value);
+  
+  // Get data from the selected option's data attributes
   const opt = subSelect.options[subSelect.selectedIndex];
+  console.log('Selected option:', opt);
+  console.log('Option dataset:', opt.dataset);
+  
   const basicAmount = parseFloat(opt.dataset.basicAmount) || 0;
   const gstRate = parseFloat(opt.dataset.gst) || 0;
   const tokenAmount = parseFloat(opt.dataset.tokenAmount) || 0;
   const installCharges = parseFloat(opt.dataset.installationCharges) || 0;
+  
+  console.log('Parsed values:', { basicAmount, gstRate, tokenAmount, installCharges });
+  
+  // Update rate card display
   document.getElementById('rateBaseAmount').textContent = basicAmount.toFixed(2);
   document.getElementById('rateGst').textContent = gstRate.toFixed(2);
   const totalGst = basicAmount + (basicAmount * gstRate / 100);
@@ -444,17 +473,25 @@ function updateProductInfoFromSub() {
 
 function calculateTotal() {
   const quantity = parseInt(document.getElementById('quantity').value) || 1;
+  console.log('Calculating total for quantity:', quantity);
   
   // Get pricing data from selected sub product
   let basicAmount, gstRate, tokenAmount, installCharges;
   const subSelect = document.getElementById('subProductSelector');
+  console.log('Sub product selector value:', subSelect.value);
+  console.log('Rate card data:', rateCardData);
+  
   if (subSelect.value && rateCardData[subSelect.value]) {
     const rateData = rateCardData[subSelect.value];
+    console.log('Rate data found:', rateData);
     basicAmount = parseFloat(rateData.basic_amount) || 0;
     gstRate = parseFloat(rateData.gst_percent) || 0;
     tokenAmount = parseFloat(rateData.token_amount) || 0;
     installCharges = parseFloat(rateData.installation_charge) || 0;
-  } else { basicAmount = gstRate = tokenAmount = installCharges = 0; }
+  } else { 
+    console.log('No rate data found for sub product:', subSelect.value);
+    basicAmount = gstRate = tokenAmount = installCharges = 0; 
+  }
 
   const totalBasic = basicAmount * quantity;
   const gst = (totalBasic * gstRate) / 100;
@@ -498,10 +535,14 @@ function calculateTotal() {
 }
 
 async function generatePI() {
+  console.log('Generate PI button clicked');
+  
   // Validate form
   if (!validateForm()) {
+    console.log('Form validation failed');
     return;
   }
+  console.log('Form validation passed');
 
   // Show loading state
   const generateBtn = document.getElementById('generatePiBtn');
@@ -513,8 +554,11 @@ async function generatePI() {
   generateBtnSpinner.style.display = 'inline-block';
 
   try {
+    console.log('Attempting to save to database...');
     // Save to database first
     const saveResult = await saveToDatabase();
+    console.log('Save result:', saveResult);
+    
     if (!saveResult.success) {
       alert('Error saving submission: ' + saveResult.message);
       return;
@@ -563,6 +607,13 @@ function validateForm() {
     isValid = false;
   }
 
+  // Sub-product selection validation
+  const subProductSelector = document.getElementById('subProductSelector');
+  if (!subProductSelector.value) {
+    document.getElementById('error-subProductSelector').textContent = 'Please select a sub product';
+    isValid = false;
+  }
+
   // GST validation
   const gstSelector = document.getElementById('gstSelector');
   if (gstSelector.value === 'yes') {
@@ -584,24 +635,34 @@ function validateForm() {
 }
 
 function generatePIContent() {
+  console.log('Generating PI content...');
+  
   const customerName = document.getElementById('customerName').value;
   const companyName = document.getElementById('companyName').value;
   const mobile = document.getElementById('mobile').value;
   const email = document.getElementById('email').value;
   const quantity = document.getElementById('quantity').value;
   
+  console.log('Form data:', { customerName, companyName, mobile, email, quantity });
+  
   // Get pricing data from selected product
   let basicAmount, gstRate, tokenAmount, installCharges, productName;
   
   const subSelect2 = document.getElementById('subProductSelector');
+  console.log('Sub product selector value:', subSelect2.value);
+  console.log('Rate card data available:', Object.keys(rateCardData));
+  
   if (subSelect2.value && rateCardData[subSelect2.value]) {
     const rateData = rateCardData[subSelect2.value];
+    console.log('PI - Rate data found:', rateData);
     basicAmount = parseFloat(rateData.basic_amount) || 0;
     gstRate = parseFloat(rateData.gst_percent || 0) || 0;
     tokenAmount = parseFloat(rateData.token_amount) || 0;
     installCharges = parseFloat(rateData.installation_charge) || 0;
     productName = rateData.product_name;
+    console.log('PI - Parsed values:', { basicAmount, gstRate, tokenAmount, installCharges, productName });
   } else {
+    console.log('PI - No rate data found, using defaults');
     basicAmount = gstRate = tokenAmount = installCharges = 0;
     productName = '{{ product.prdt_desc }}';
   }
@@ -653,6 +714,8 @@ function generatePIContent() {
 }
 
 function downloadPDF() {
+  console.log('Download PDF button clicked');
+  
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ unit: 'pt', format: 'a4' });
   const pageWidth = doc.internal.pageSize.getWidth();
@@ -674,26 +737,34 @@ function downloadPDF() {
     email: document.getElementById('email').value,
   };
 
-  // Pricing source
-  const productSelector = document.getElementById('productSelector');
+  // Pricing source - Get data from selected sub product
+  const subProductSelector = document.getElementById('subProductSelector');
   let unitPrice, gstRate, tokenAmount, installCharges, productName;
   const quantity = parseInt(document.getElementById('quantity').value) || 1;
 
-  if (productSelector.tagName === 'SELECT' && productSelector.value) {
-    const opt = productSelector.options[productSelector.selectedIndex];
-    unitPrice = parseFloat(opt.dataset.basicAmount) || 0;
-    gstRate = parseFloat(opt.dataset.gst || 0) || 0;
-    tokenAmount = parseFloat(opt.dataset.tokenAmount) || 0;
-    installCharges = parseFloat(opt.dataset.installationCharges) || 0;
-    productName = opt.text;
+  if (subProductSelector.value && rateCardData[subProductSelector.value]) {
+    const rateData = rateCardData[subProductSelector.value];
+    console.log('PDF - Rate data from sub product:', rateData);
+    unitPrice = parseFloat(rateData.basic_amount) || 0;
+    gstRate = parseFloat(rateData.gst_percent) || 0;
+    tokenAmount = parseFloat(rateData.token_amount) || 0;
+    installCharges = parseFloat(rateData.installation_charge) || 0;
+    productName = rateData.product_name;
+    console.log('PDF - Parsed values:', { unitPrice, gstRate, tokenAmount, installCharges, productName });
   } else {
-    const productId = document.getElementById('productSelector').value;
-    const rateData = productId && rateCardData[productId] ? rateCardData[productId] : null;
-    unitPrice = parseFloat(rateData?.basic_amount || 0);
-    gstRate = parseFloat(rateData?.gst || 0);
-    tokenAmount = parseFloat(rateData?.token_amount || 0);
-    installCharges = parseFloat(rateData?.installation_charge || 0);
-    productName = rateData?.product_name || '{{ product.prdt_desc }}';
+    // Fallback to product selector if sub product not selected
+    const productSelector = document.getElementById('productSelector');
+    if (productSelector.tagName === 'SELECT' && productSelector.value) {
+      const opt = productSelector.options[productSelector.selectedIndex];
+      unitPrice = parseFloat(opt.dataset.basicAmount) || 0;
+      gstRate = parseFloat(opt.dataset.gst || 0) || 0;
+      tokenAmount = parseFloat(opt.dataset.tokenAmount) || 0;
+      installCharges = parseFloat(opt.dataset.installationCharges) || 0;
+      productName = opt.text;
+    } else {
+      unitPrice = gstRate = tokenAmount = installCharges = 0;
+      productName = '{{ product.prdt_desc }}';
+    }
   }
 
   const includeToken = tokenAmount > 0 && document.getElementById('add_token')?.checked;
@@ -835,6 +906,8 @@ function downloadPDF() {
 
 async function saveToDatabase() {
   try {
+    console.log('Collecting form data...');
+    
     // Get form data
     const formData = {
       customer_name: document.getElementById('customerName').value.trim(),
@@ -853,12 +926,15 @@ async function saveToDatabase() {
       basic_amount: parseFloat(document.getElementById('basicAmount').textContent) || 0,
       gst: parseFloat(document.getElementById('gst').textContent) || 0,
       total_amount: parseFloat(document.getElementById('totalPrice').textContent) || 0,
-      token_amount: parseFloat(document.getElementById('tokenAmountDetail').textContent.replace('₹', '')) || 0,
-      installing_charges: parseFloat(document.getElementById('installAmountDetail').textContent.replace('₹', '')) || 0,
+      token_amount: parseFloat(document.getElementById('tokenAmountDetail')?.textContent?.replace('₹', '') || '0') || 0,
+      installing_charges: parseFloat(document.getElementById('installAmountDetail')?.textContent?.replace('₹', '') || '0') || 0,
       grand_total: parseFloat(document.getElementById('finalTotal').textContent) || 0
     };
+    
+    console.log('Form data collected:', formData);
 
     // Send to server
+    console.log('Sending request to /save-product-submission/');
     const response = await fetch('/save-product-submission/', {
       method: 'POST',
       headers: {
@@ -868,10 +944,12 @@ async function saveToDatabase() {
       body: JSON.stringify(formData)
     });
 
+    console.log('Response status:', response.status);
     const result = await response.json();
+    console.log('Response data:', result);
     
     if (result.status === 'success') {
-      return { success: true, quote_id: result.quote_id };
+      return { success: true, form_submission_id: result.form_submission_id };
     } else {
       return { success: false, message: result.message };
     }
