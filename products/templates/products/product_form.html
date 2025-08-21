@@ -960,9 +960,102 @@ async function saveToDatabase() {
   }
 }
 
-function initiatePayment() {
-  // This would integrate with your payment system
-  alert('Payment integration would go here. Please contact support for payment processing.');
+async function initiatePayment() {
+  try {
+    // Build context
+    const customerName = document.getElementById('customerName').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const mobile = document.getElementById('mobile').value.trim();
+    const quantity = parseInt(document.getElementById('quantity').value) || 1;
+    const subId = document.getElementById('subProductSelector').value;
+
+    if (!customerName || !email || !mobile || !subId) {
+      alert('Please fill customer details and select a sub product before paying.');
+      return;
+    }
+
+    // Determine amount and product name from selected sub product
+    let unit = 0, gstRate = 0, tokenAmt = 0, installAmt = 0, productName = 'Product';
+    if (subId && rateCardData[subId]) {
+      const r = rateCardData[subId];
+      unit = parseFloat(r.basic_amount) || 0;
+      gstRate = parseFloat(r.gst_percent) || 0;
+      tokenAmt = parseFloat(r.token_amount) || 0;
+      installAmt = parseFloat(r.installation_charge) || 0;
+      productName = r.product_name;
+    }
+    const lineBasic = unit * quantity;
+    const lineGst = (lineBasic * gstRate) / 100;
+    const totalWithGst = lineBasic + lineGst;
+    const includeToken = tokenAmt > 0 && document.getElementById('add_token')?.checked;
+    const includeInstall = installAmt > 0 && document.getElementById('add_installation')?.checked;
+    const grandTotal = totalWithGst + (includeToken ? tokenAmt : 0) + (includeInstall ? installAmt : 0);
+
+    const formSubmissionId = document.getElementById('quoteIdDisplay')?.textContent?.trim() || null;
+
+    // Create order via backend
+    const resp = await fetch('/api/payments/create-order/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value },
+      body: JSON.stringify({
+        amount: grandTotal,
+        customer_name: customerName,
+        email,
+        mobile,
+        product_name: productName,
+        form_submission_id: formSubmissionId,
+      })
+    });
+    const data = await resp.json();
+    if (data.status !== 'success') {
+      alert('Failed to create payment order: ' + (data.message || 'Unknown error'));
+      return;
+    }
+
+    const options = {
+      key: data.key,
+      amount: data.amount,
+      currency: data.currency || 'INR',
+      name: 'FusionTec Software',
+      description: productName,
+      order_id: data.order_id,
+      prefill: { name: customerName, email, contact: mobile },
+      notes: { form_submission_id: formSubmissionId || '' },
+      handler: async function (response) {
+        try {
+          const verifyResp = await fetch('/api/payments/verify/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value },
+            body: JSON.stringify({
+              ...response,
+              amount: grandTotal,
+              customer_name: customerName,
+              email,
+              mobile,
+              form_submission_id: formSubmissionId,
+            })
+          });
+          const verifyData = await verifyResp.json();
+          if (verifyData.status === 'success') {
+            alert('Payment successful! Thank you.');
+            window.location.href = '/';
+          } else {
+            alert('Payment verification failed: ' + (verifyData.message || 'Unknown error'));
+          }
+        } catch (err) {
+          console.error('Verification error', err);
+          alert('Error verifying payment.');
+        }
+      },
+      theme: { color: '#0d6efd' }
+    };
+
+    const rzp = new Razorpay(options);
+    rzp.open();
+  } catch (e) {
+    console.error('initiatePayment error', e);
+    alert('Could not initiate payment.');
+  }
 }
 
 // API for dynamic dropdown

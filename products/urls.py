@@ -13,6 +13,8 @@ urlpatterns = [
     path('product-type/<int:type_id>/', views.product_type_products, name='product_type_products'),
     path('product-form/<int:type_id>/', views.product_type_form, name='product_type_form'),
     path('save-product-submission/', views.save_product_submission, name='save_product_submission'),
+    path('api/payments/create-order/', views.create_payment_order, name='create_payment_order'),
+    path('api/payments/verify/', views.verify_payment, name='verify_payment'),
     path('submit-quote/', views.submit_quote, name='submit_quote'),
     # DSC form (e-Mudhra-like)
     path('dsc/', views.dsc_form, name='dsc_form'),

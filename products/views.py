@@ -542,6 +542,142 @@ def save_product_submission(request):
     return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=405)
 
 # ============================================================================
+# PAYMENTS: Razorpay integration for product form modal
+# ============================================================================
+
+from django.views.decorators.csrf import csrf_exempt
+
+@csrf_exempt
+def create_payment_order(request):
+    """Create a Razorpay order for the given amount and return order details.
+
+    Expects JSON body: { amount, customer_name, email, mobile, product_name, form_submission_id }
+    Returns: { order_id, key, amount, currency }
+    """
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=405)
+
+    try:
+        import json as _json
+        payload = _json.loads(request.body or '{}')
+
+        amount = float(payload.get('amount') or 0)
+        customer_name = (payload.get('customer_name') or '').strip()
+        email = (payload.get('email') or '').strip()
+        mobile = (payload.get('mobile') or '').strip()
+        product_name = (payload.get('product_name') or '').strip()
+        form_submission_id = payload.get('form_submission_id')
+
+        if amount <= 0:
+            return JsonResponse({'status': 'error', 'message': 'Invalid amount'}, status=400)
+
+        # Create order with Razorpay
+        import razorpay as _razorpay
+        client = _razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
+
+        amount_paise = int(round(amount * 100))
+        order = client.order.create({
+            'amount': amount_paise,
+            'currency': 'INR',
+            'payment_capture': 1,
+            'notes': {
+                'form_submission_id': str(form_submission_id or ''),
+                'customer_email': email,
+                'customer_name': customer_name,
+                'product_name': product_name,
+            }
+        })
+
+        return JsonResponse({
+            'status': 'success',
+            'order_id': order.get('id'),
+            'key': settings.RAZORPAY_KEY_ID,
+            'amount': amount_paise,
+            'currency': 'INR',
+        })
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': f'Failed to create order: {str(e)}'}, status=500)
+
+
+@csrf_exempt
+def verify_payment(request):
+    """Verify Razorpay payment signature and record transaction.
+
+    Expects JSON body with fields from Razorpay handler and customer context.
+    """
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=405)
+
+    try:
+        import json as _json
+        from decimal import Decimal
+        import razorpay as _razorpay
+
+        data = _json.loads(request.body or '{}')
+        payment_id = data.get('razorpay_payment_id')
+        order_id = data.get('razorpay_order_id')
+        signature = data.get('razorpay_signature')
+        amount = Decimal(str(data.get('amount') or '0'))
+        customer_name = (data.get('customer_name') or '').strip()
+        email = (data.get('email') or '').strip()
+        mobile = (data.get('mobile') or '').strip()
+        form_submission_id = data.get('form_submission_id')
+
+        if not (payment_id and order_id and signature):
+            return JsonResponse({'status': 'error', 'message': 'Missing Razorpay fields'}, status=400)
+
+        client = _razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
+
+        # Verify signature
+        client.utility.verify_payment_signature({
+            'razorpay_order_id': order_id,
+            'razorpay_payment_id': payment_id,
+            'razorpay_signature': signature,
+        })
+
+        # Create or update customer record
+        customer_obj, _ = Customer.objects.get_or_create(
+            email=email,
+            defaults={
+                'name': customer_name or (email or mobile) or 'Customer',
+                'company_name': '',
+                'mobile': mobile or '',
+                'has_gst': True,
+            }
+        )
+        if customer_name:
+            customer_obj.name = customer_name
+        if mobile:
+            customer_obj.mobile = mobile
+        customer_obj.save()
+
+        # Record transaction
+        PaymentTransaction.objects.create(
+            customer=customer_obj,
+            quote=None,
+            amount=amount,
+            payment_method='razorpay',
+            razorpay_payment_id=payment_id,
+            razorpay_order_id=order_id,
+            status='success',
+        )
+
+        # Optionally update form submission status
+        try:
+            if form_submission_id:
+                pfs = ProductFormSubmission.objects.filter(id=form_submission_id).first()
+                if pfs:
+                    pfs.status = 'approved'
+                    pfs.admin_notes = (pfs.admin_notes or '') + f"\nPayment received via Razorpay: {payment_id}"
+                    pfs.save()
+        except Exception:
+            pass
+
+        return JsonResponse({'status': 'success'})
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': f'Payment verification failed: {str(e)}'}, status=400)
+
+# ============================================================================
 # QUOTE & CONTACT FORMS
 # ============================================================================
 
