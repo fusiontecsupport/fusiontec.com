@@ -27,9 +27,8 @@
   .blob-1 { width: 220px; height: 220px; background: #ffd7ba; top: -40px; right: -40px; }
   .blob-2 { width: 180px; height: 180px; background: #cfe6ff; bottom: -30px; left: -30px; animation-delay: -3s; }
   @keyframes floatBlob { 0%,100% { transform: translateY(0) translateX(0) scale(1); } 50% { transform: translateY(-8px) translateX(6px) scale(1.03); } }
-  /* CTA buttons layout (reverted) */
-  .cta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; }
-  @media (max-width: 575.98px){ .cta-grid { grid-template-columns: 1fr; } }
+  /* CTA buttons layout */
+  .cta-grid { display: grid; grid-template-columns: 1fr; gap: .5rem; }
   /* Visual on right: fill available height */
   .dsc-visual { border: 1px solid #e9ecef; background: #fff; border-radius: .5rem; padding: 1rem; }
   .dsc-visual img { width: 100%; height: 100%; object-fit: contain; }
@@ -74,12 +73,7 @@
                   <div class="btn-group toggle-group" id="validityGroup" role="group"></div>
                 </div>
 
-                <div class="form-check mb-3">
-                  <input class="form-check-input" type="checkbox" value="" id="outsideIndia">
-                  <label class="form-check-label" for="outsideIndia">
-                    Residing outside India
-                  </label>
-                </div>
+
 
                 <div id="addOnsContainer" class="mb-3" style="display:none;">
                   <div class="fw-semibold mb-2">Optional add-ons</div>
@@ -113,7 +107,6 @@
 
                   <div class="cta-grid d-grid gap-2 mt-2">
                     <button class="btn btn-primary btn-lg" id="proceedBtn" type="button">Proceed to Buy</button>
-                    <button class="btn btn-outline-secondary" id="talkBtn" type="button">Talk to an Expert</button>
                   </div>
                 </div>
 
@@ -257,9 +250,7 @@
 <script>
 (function(){
   const proceedBtn = document.getElementById('proceedBtn');
-  const talkBtn = document.getElementById('talkBtn');
   const enquirySection = document.getElementById('enquirySection');
-  const outsideIndia = document.getElementById('outsideIndia');
   const priceEl = document.getElementById('priceValue');
   const notCfg = document.getElementById('notConfiguredHint');
   const addOnsContainer = document.getElementById('addOnsContainer');
@@ -288,19 +279,56 @@
   const FIXED_CERTS = ['signature', 'encryption', 'both'];
   const FIXED_VALIDS = ['1y', '2y', '3y'];
 
-  // Helper to render group buttons
-  function renderGroup(elId, values, activeVal, format){
-    const el = document.getElementById(elId);
-    if(!el) return;
-    el.innerHTML = '';
-    (values||[]).forEach(v=>{
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'btn ' + (v===activeVal ? 'btn-primary active' : 'btn-outline-primary');
-      btn.setAttribute('data-value', v);
-      btn.textContent = format ? format(v) : v;
-      el.appendChild(btn);
+  // Helper: set active button in a group by value
+  function setActive(groupId, value){
+    const group = document.getElementById(groupId);
+    if(!group) return;
+    [...group.querySelectorAll('button')].forEach(btn=>{
+      const v = btn.getAttribute('data-value');
+      if(v === value){
+        btn.classList.remove('btn-outline-primary');
+        btn.classList.add('btn-primary','active');
+      } else {
+        btn.classList.remove('btn-primary','active');
+        btn.classList.add('btn-outline-primary');
+      }
     });
+  }
+
+  // Helper: find first available combination for a class from _dscMap
+  function pickFirstAvailableForClass(classKey){
+    try{
+      const map = window._dscMap || {};
+      const byUser = map[classKey] || {};
+      // prefer fixed order
+      for(const user of FIXED_USERS){
+        const byCert = byUser[user];
+        if(!byCert) continue;
+        for(const cert of FIXED_CERTS){
+          const valids = byCert[cert];
+          if(Array.isArray(valids) && valids.length){
+            // choose first valid in preferred order
+            const pref = FIXED_VALIDS.find(v=>valids.includes(v)) || valids[0];
+            return { userType: user, certType: cert, validity: pref };
+          }
+        }
+      }
+    }catch(e){}
+    // fallback: keep current
+    return { userType: state.userType, certType: state.certType, validity: state.validity };
+  }
+
+  // Helper: check if a combination has a price configured
+  function hasPriceForCombination(classType, userType, certType, validity) {
+    try {
+      const map = window._dscMap || {};
+      const byUser = map[classType] || {};
+      const byCert = byUser[userType] || {};
+      const valids = byCert[certType] || [];
+      return valids.includes(validity);
+    } catch(e) {
+      return false;
+    }
   }
 
   // Fallback local price table if backend is not ready
@@ -359,9 +387,6 @@
     const includeInstall = install > 0 && (installCheckbox ? installCheckbox.checked : true);
     const base = dsc + (includeToken ? token : 0) + (includeInstall ? install : 0);
     let total = base * (1 + (gstPct/100));
-    if(outsideIndia && outsideIndia.checked){
-      total += parseFloat(lastSurcharge || 0);
-    }
     setPriceValue(total);
   }
 
@@ -372,7 +397,7 @@
         user_type: state.userType,
         cert_type: state.certType,
         validity: state.validity,
-        outside: outsideIndia && outsideIndia.checked ? '1' : '0'
+        outside: '0'
       });
       const resp = await fetch(`/api/dsc-price/?${params.toString()}`);
       const data = await resp.json();
@@ -410,10 +435,10 @@
 
         renderComputedPrice();
       } else {
-        throw new Error('Backend not configured');
+        throw new Error('Price not configured for this combination');
       }
     } catch(e){
-      // Fallback: use local table
+      // Fallback: use local table or show price not configured
       try {
         if(notCfg) notCfg.classList.remove('d-none');
         // Hide add-ons when DB/pricing not configured for this selection
@@ -434,12 +459,15 @@
           price = table[state.validity] || null;
         }
         if(price != null){
+          priceEl.classList.remove('text-muted');
           setPriceValue(price);
         } else {
-          priceEl.textContent = 'Price not configured';
+          priceEl.textContent = 'Price not configured for this combination';
+          priceEl.classList.add('text-muted');
         }
       } catch (err) {
-        priceEl.textContent = 'Price unavailable';
+        priceEl.textContent = 'Price not configured for this combination';
+        priceEl.classList.add('text-muted');
       }
     }
   }
@@ -458,8 +486,24 @@
       btn.classList.add('btn-primary','active');
       const val = btn.getAttribute('data-value');
       if(val) state[key] = val;
-      // No dependent rebuilds; fixed options remain visible always
+
+      if(key === 'classType'){
+        // Auto-pick first priced combo for this class
+        const picked = pickFirstAvailableForClass(state.classType);
+        state.userType = picked.userType;
+        state.certType = picked.certType;
+        state.validity = picked.validity;
+        // Reflect in UI groups
+        setActive('userTypeGroup', state.userType);
+        setActive('certTypeGroup', state.certType);
+        setActive('validityGroup', state.validity);
+      }
+      
+      // Update price and show/hide price warning
       updatePrice();
+      
+      // Update button styles based on price availability
+      updateButtonStyles();
     });
   }
 
@@ -468,16 +512,7 @@
   wireGroup('certTypeGroup','certType');
   wireGroup('validityGroup','validity');
 
-  if(outsideIndia){
-    outsideIndia.addEventListener('change', function(){
-      // Recompute locally using surcharge if we already have components
-      if(lastComponents){
-        renderComputedPrice();
-      } else {
-        updatePrice();
-      }
-    });
-  }
+
 
   if(tokenCheckbox){
     tokenCheckbox.addEventListener('change', renderComputedPrice);
@@ -512,7 +547,7 @@
         validity: state.validity,
         include_token: !!(tokenCheckbox && tokenCheckbox.checked),
         include_installation: !!(installCheckbox && installCheckbox.checked),
-        outside_india: !!(outsideIndia && outsideIndia.checked),
+        outside_india: false,
         quoted_price: quoted
       };
       try{
@@ -538,48 +573,167 @@
       }
     });
   }
-  // Build buttons dynamically from backend options
+  // Build buttons dynamically; fall back to fixed options if API fails or returns empty
   async function buildOptions(){
+    let classes = [];
+    let map = {};
+    let defaults = {};
     try{
       const resp = await fetch('/api/dsc-options/');
       const data = await resp.json();
-      if(!data.success) return;
-      const classes = data.classes || [];
-      const map = data.map || {};
-      window._dscMap = map; // expose for dynamic rebuilds
-      const defaults = data.defaults || {};
-      const classEl = document.getElementById('classTypeGroup');
-      const userEl = document.getElementById('userTypeGroup');
-      const certEl = document.getElementById('certTypeGroup');
-      const valEl = document.getElementById('validityGroup');
-
-      // pick defaults (normalize keys)
-      function norm(s){ return (s||'').toString().trim(); }
-      state.classType = norm(defaults.class_type) || classes[0] || 'class3';
-      state.userType = FIXED_USERS.includes(norm(defaults.user_type)) ? norm(defaults.user_type) : FIXED_USERS[0];
-      state.certType = FIXED_CERTS.includes(norm(defaults.cert_type)) ? norm(defaults.cert_type) : FIXED_CERTS[0];
-      state.validity = FIXED_VALIDS.includes(norm(defaults.validity)) ? norm(defaults.validity) : FIXED_VALIDS[1];
-
-      renderGroup('classTypeGroup', classes, state.classType, v=>{
-        if(v==='class3') return 'Class 3';
-        if(v==='dgft') return 'DGFT';
-        return v.charAt(0).toUpperCase()+v.slice(1);
-      });
-      renderGroup('userTypeGroup', FIXED_USERS, state.userType, v=> v==='individual'?'Individual':'Organization');
-      renderGroup('certTypeGroup', FIXED_CERTS, state.certType, v=> v.charAt(0).toUpperCase()+v.slice(1));
-      renderGroup('validityGroup', FIXED_VALIDS, state.validity, v=> ({'1y':'1 Year','2y':'2 Years','3y':'3 Years'}[v]||v));
-      if(valids && valids.length){
-        valEl.classList.remove('opacity-50');
-        valEl.style.pointerEvents = '';
-      } else {
-        valEl.classList.add('opacity-50');
-        valEl.style.pointerEvents = 'none';
+      if(data && data.success){
+        classes = Array.isArray(data.classes) ? data.classes : [];
+        map = data.map || {};
+        defaults = data.defaults || {};
       }
+    }catch(e){
+      // ignore; will fall back below
+    }
 
-      updatePrice();
-    } catch(e){
-      // If options API fails, keep existing UI but attempt price fetch
-      updatePrice();
+    // Fallbacks when API missing/empty
+    if(!classes || classes.length === 0){
+      classes = ['class3','dgft'];
+    }
+    window._dscMap = map || {};
+
+    // Normalize helper
+    function norm(s){ return (s||'').toString().trim(); }
+
+    // Seed state from defaults or sensible defaults
+    state.classType = norm(defaults.class_type) || classes[0] || 'class3';
+    // Default to fixed lists; auto-pick first in fixed list
+    state.userType = FIXED_USERS.includes(norm(defaults.user_type)) ? norm(defaults.user_type) : FIXED_USERS[0];
+    state.certType = FIXED_CERTS.includes(norm(defaults.cert_type)) ? norm(defaults.cert_type) : FIXED_CERTS[0];
+    state.validity = FIXED_VALIDS.includes(norm(defaults.validity)) ? norm(defaults.validity) : FIXED_VALIDS[1];
+
+    // Render groups
+    renderGroup('classTypeGroup', classes, state.classType, v=>{
+      if(v==='class3') return 'Class 3';
+      if(v==='dgft') return 'DGFT';
+      return v.charAt(0).toUpperCase()+v.slice(1);
+    });
+    renderGroup('userTypeGroup', FIXED_USERS, state.userType, v=> v==='individual'?'Individual':'Organization');
+    renderGroup('certTypeGroup', FIXED_CERTS, state.certType, v=> v.charAt(0).toUpperCase()+v.slice(1));
+    renderGroup('validityGroup', FIXED_VALIDS, state.validity, v=> ({'1y':'1 Year','2y':'2 Years','3y':'3 Years'}[v]||v));
+
+    // Initial price and button styles
+    updatePrice();
+    updateButtonStyles();
+  }
+
+  // Helper function to render button groups
+  function renderGroup(groupId, values, activeValue, formatter) {
+    const group = document.getElementById(groupId);
+    if (!group) return;
+    
+    group.innerHTML = '';
+    values.forEach(value => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'btn btn-outline-primary position-relative';
+      btn.setAttribute('data-value', value);
+      btn.textContent = formatter ? formatter(value) : value;
+      if (value === activeValue) {
+        btn.classList.remove('btn-outline-primary');
+        btn.classList.add('btn-primary', 'active');
+      }
+      group.appendChild(btn);
+    });
+  }
+
+  // Function to update button styles based on price availability
+  function updateButtonStyles() {
+    // Update user type buttons
+    const userGroup = document.getElementById('userTypeGroup');
+    if (userGroup) {
+      [...userGroup.querySelectorAll('button')].forEach(btn => {
+        const userType = btn.getAttribute('data-value');
+        const hasPrice = hasPriceForCombination(state.classType, userType, state.certType, state.validity);
+        if (hasPrice) {
+          btn.classList.remove('text-muted');
+          btn.style.opacity = '1';
+          btn.title = '';
+          // Add price indicator
+          if (!btn.querySelector('.price-indicator')) {
+            const indicator = document.createElement('span');
+            indicator.className = 'position-absolute top-0 start-100 translate-middle badge rounded-pill bg-success price-indicator';
+            indicator.style.fontSize = '0.5rem';
+            indicator.style.transform = 'translate(-50%, -50%)';
+            indicator.textContent = '₹';
+            indicator.title = 'Price available';
+            btn.appendChild(indicator);
+          }
+        } else {
+          btn.classList.add('text-muted');
+          btn.style.opacity = '0.6';
+          btn.title = 'Price not configured for this combination';
+          // Remove price indicator
+          const indicator = btn.querySelector('.price-indicator');
+          if (indicator) indicator.remove();
+        }
+      });
+    }
+
+    // Update certificate type buttons
+    const certGroup = document.getElementById('certTypeGroup');
+    if (certGroup) {
+      [...certGroup.querySelectorAll('button')].forEach(btn => {
+        const certType = btn.getAttribute('data-value');
+        const hasPrice = hasPriceForCombination(state.classType, state.userType, certType, state.validity);
+        if (hasPrice) {
+          btn.classList.remove('text-muted');
+          btn.style.opacity = '1';
+          btn.title = '';
+          // Add price indicator
+          if (!btn.querySelector('.price-indicator')) {
+            const indicator = document.createElement('span');
+            indicator.className = 'position-absolute top-0 start-100 translate-middle badge rounded-pill bg-success price-indicator';
+            indicator.style.fontSize = '0.5rem';
+            indicator.style.transform = 'translate(-50%, -50%)';
+            indicator.textContent = '₹';
+            indicator.title = 'Price available';
+            btn.appendChild(indicator);
+          }
+        } else {
+          btn.classList.add('text-muted');
+          btn.style.opacity = '0.6';
+          btn.title = 'Price not configured for this combination';
+          // Remove price indicator
+          const indicator = btn.querySelector('.price-indicator');
+          if (indicator) indicator.remove();
+        }
+      });
+    }
+
+    // Update validity buttons
+    const validityGroup = document.getElementById('validityGroup');
+    if (validityGroup) {
+      [...validityGroup.querySelectorAll('button')].forEach(btn => {
+        const validity = btn.getAttribute('data-value');
+        const hasPrice = hasPriceForCombination(state.classType, state.userType, state.certType, validity);
+        if (hasPrice) {
+          btn.classList.remove('text-muted');
+          btn.style.opacity = '1';
+          btn.title = '';
+          // Add price indicator
+          if (!btn.querySelector('.price-indicator')) {
+            const indicator = document.createElement('span');
+            indicator.className = 'position-absolute top-0 start-100 translate-middle badge rounded-pill bg-success price-indicator';
+            indicator.style.fontSize = '0.5rem';
+            indicator.style.transform = 'translate(-50%, -50%)';
+            indicator.textContent = '₹';
+            indicator.title = 'Price available';
+            btn.appendChild(indicator);
+          }
+        } else {
+          btn.classList.add('text-muted');
+          btn.style.opacity = '0.6';
+          btn.title = 'Price not configured for this combination';
+          // Remove price indicator
+          const indicator = btn.querySelector('.price-indicator');
+          if (indicator) indicator.remove();
+        }
+      });
     }
   }
 
@@ -592,7 +746,6 @@
     setTimeout(()=> enquirySection.classList.remove('ring'), 1500);
   }
   if(proceedBtn){ proceedBtn.addEventListener('click', scrollToEnquiry); }
-  if(talkBtn){ talkBtn.addEventListener('click', scrollToEnquiry); }
 
   // Reveal on scroll
   const revealEls = document.querySelectorAll('.reveal');
@@ -995,7 +1148,7 @@
 
         include_installation: !!(installCheckbox && installCheckbox.checked),
 
-        outside_india: !!(outsideIndia && outsideIndia.checked),
+        outside_india: false,
 
         quoted_price: quoted
 
