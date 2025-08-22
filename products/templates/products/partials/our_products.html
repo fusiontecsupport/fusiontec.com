@@ -2,6 +2,16 @@
 <!-- Products Section -->
 <section class="py-5" id="products">
   <div class="container px-4 px-lg-5 mb-5">
+    {% if messages %}
+    <div class="mt-2">
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      {% endfor %}
+    </div>
+    {% endif %}
     <div class="text-center mb-5">
       <h1 class="display-5 fw-bolder mb-0" data-aos="fade-up">
         <span class="text-gradient d-inline">Our Products</span>
@@ -88,7 +98,7 @@
             <div class="d-flex flex-wrap gap-2 justify-content-center">
               <button type="button" class="btn btn-primary btn-sm btn-pill" data-bs-toggle="modal" data-bs-target="#typeModal{{ pt.id }}">Details</button>
               <a href="{% url 'product_type_form' pt.id %}" class="btn btn-outline-primary btn-sm btn-pill">View</a>
-              <button type="button" class="btn btn-light btn-sm btn-pill" onclick="showQuoteForm({{ pt.id }}, '{{ pt.prdt_desc }}')">Get Quote</button>
+              <button type="button" class="btn btn-light btn-sm btn-pill" data-quote-btn data-pt-id="{{ pt.id }}" data-pt-name="{{ pt.prdt_desc|escapejs }}">Get Quote</button>
             </div>
           </div>
         </div>
@@ -96,7 +106,7 @@
       
       <!-- Modal: Product Type Details -->
       <div class="modal fade product-modal" id="typeModal{{ pt.id }}" tabindex="-1" aria-labelledby="typeModalLabel{{ pt.id }}" aria-hidden="true" data-bs-backdrop="false" data-bs-keyboard="true">
-        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
           <div class="modal-content rounded-4 shadow-lg">
             <div class="modal-header border-0 product-modal-header">
               <h5 class="modal-title" id="typeModalLabel{{ pt.id }}">{{ pt.prdt_desc }}</h5>
@@ -139,7 +149,7 @@
             </div>
             <div class="modal-footer border-0 pt-0">
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-              <button type="button" class="btn btn-primary" onclick="showQuoteForm({{ pt.id }}, '{{ pt.prdt_desc }}')">Get Quote</button>
+              <button type="button" class="btn btn-primary" data-quote-btn data-pt-id="{{ pt.id }}" data-pt-name="{{ pt.prdt_desc|escapejs }}">Get Quote</button>
             </div>
           </div>
         </div>
@@ -248,9 +258,7 @@
                             <div class="col-md-4">
                                 <div class="mb-3">
                                     <label class="form-label fw-semibold">District</label>
-                                    <select name="district" class="form-select" id="quote_district">
-                                        <option value="">Select District</option>
-                                    </select>
+                                    <input type="text" name="district" class="form-control" id="quote_district" placeholder="Enter District">
                                 </div>
                             </div>
                             <div class="col-md-4">
@@ -266,12 +274,13 @@
                             <textarea name="additional_requirements" class="form-control" rows="3" placeholder="Describe your specific requirements or any additional information"></textarea>
                         </div>
                     </div>
-                    <div class="modal-footer border-0">
+                    <div class="modal-footer border-0 d-flex align-items-center gap-3">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary">
+                        <button type="submit" id="quoteSubmitBtn" class="btn btn-primary">
                             <i class="bi bi-send me-2"></i>
                             Submit Quote Request
                         </button>
+                        <span id="quoteSuccessMsg" class="ms-2" style="display:none;"></span>
                     </div>
                 </form>
             </div>
@@ -419,6 +428,66 @@
   </div>
 </section>
 
+<style>
+  /* Clean popup look with normal Bootstrap backdrop and spacing */
+  .product-modal .modal-dialog {
+    width: min(1100px, 96vw);
+    max-width: none;
+    margin: 2vh auto;
+  }
+  .product-modal .modal-content { border-radius: 14px; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
+  .product-modal .modal-header { border-bottom: none; }
+  .product-modal .modal-footer { border-top: none; }
+
+  /* Horizontal, well-aligned items grid inside the popup */
+  .product-modal .product-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+  }
+  .product-modal .product-list .list-group-item {
+    border: 1px solid #eef2f6;
+    border-radius: 10px;
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #fff;
+  }
+  .product-modal .product-list .list-group-item i {
+    color: #2563eb;
+  }
+  .product-modal .product-title { margin-bottom: 12px; }
+
+  /* Disable internal scroll in the popup; let page scroll instead */
+  .product-modal .modal-content { max-height: none !important; }
+  .product-modal .modal-body { overflow: visible !important; max-height: none !important; }
+
+  /* Image panel styling */
+  .product-modal .product-modal-image { background: #fff; border: 1px solid #eef2f6; }
+  .product-modal .modal-body .row.g-4 { align-items: flex-start; }
+
+  /* Pill cards for product items */
+  .product-modal .product-list .list-group-item {
+    transition: transform .15s ease, box-shadow .15s ease;
+  }
+  .product-modal .product-list .list-group-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.06);
+  }
+
+  /* Responsive tweaks */
+  @media (max-width: 767.98px){
+    .product-modal .modal-dialog { width: 96vw; margin: 1.5vh auto; }
+    .product-modal .product-list { grid-template-columns: 1fr; }
+  }
+
+  /* Use default Bootstrap stacking/overlay; no overrides */
+</style>
+
 <script>
 // Function to show quote form modal
 function showQuoteForm(productTypeId, productTypeName) {
@@ -446,7 +515,6 @@ function showQuoteForm(productTypeId, productTypeName) {
 // Load states for the quote form
 function loadStates() {
     const stateSelect = document.getElementById('quote_state');
-    const districtSelect = document.getElementById('quote_district');
     
     // Only load if not already loaded
     if (stateSelect.options.length > 1) return;
@@ -465,33 +533,93 @@ function loadStates() {
         })
         .catch(error => console.error('Error loading states:', error));
 }
+// Delegate click for Get Quote buttons (no inline JS)
+document.addEventListener('click', function(e) {
+    const btn = e.target.closest('[data-quote-btn]');
+    if (!btn) return;
+    const ptId = btn.getAttribute('data-pt-id');
+    const ptName = btn.getAttribute('data-pt-name') || '';
+    showQuoteForm(ptId, ptName);
+});
 
-// Handle state change for districts
+// Handle quote form submit via AJAX to show inline success then redirect to #products
 document.addEventListener('DOMContentLoaded', function() {
-    const stateSelect = document.getElementById('quote_state');
-    const districtSelect = document.getElementById('quote_district');
-    
-    if (stateSelect) {
-        stateSelect.addEventListener('change', function() {
-            const selectedState = this.value;
-            districtSelect.innerHTML = '<option value="">Select District</option>';
-            
-            if (selectedState) {
-                fetch(`/api/districts/${encodeURIComponent(selectedState)}/`)
-                    .then(response => response.json())
-                    .then(data => {
-                        const districts = Array.isArray(data.districts) ? data.districts : [];
-                        districts.forEach(district => {
-                            const option = document.createElement('option');
-                            option.value = district;
-                            option.textContent = district;
-                            districtSelect.appendChild(option);
-                        });
-                    })
-                    .catch(error => console.error('Error loading districts:', error));
+    const form = document.getElementById('quoteForm');
+    if (!form) return;
+    const submitBtn = document.getElementById('quoteSubmitBtn');
+    const msgEl = document.getElementById('quoteSuccessMsg');
+
+    form.addEventListener('submit', async function(ev) {
+        ev.preventDefault();
+        try {
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Submitting...';
             }
-        });
-    }
+            if (msgEl) {
+                msgEl.style.display = 'none';
+                msgEl.className = 'ms-2';
+                msgEl.textContent = '';
+            }
+
+            const fd = new FormData(form);
+            const csrfToken = form.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
+            const resp = await fetch(form.action, {
+                method: 'POST',
+                headers: { 
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': csrfToken
+                },
+                body: fd
+            });
+            let data;
+            if (resp.ok) {
+                // Try to parse JSON; if not JSON, treat as error
+                try {
+                    data = await resp.json();
+                } catch (e) {
+                    data = { status: 'error', message: 'Unexpected response format' };
+                }
+            } else {
+                const text = await resp.text().catch(() => '');
+                data = { status: 'error', message: text || ('Request failed: ' + resp.status) };
+            }
+            if (data.status === 'success') {
+                if (msgEl) {
+                    msgEl.textContent = 'Form submitted successfully';
+                    msgEl.style.display = '';
+                    msgEl.classList.add('text-success', 'small');
+                }
+                // Mark success for landing page message
+                try { localStorage.setItem('quote_success', '1'); } catch (e) {}
+                // Close modal if open, then redirect
+                try {
+                    const modalEl = document.getElementById('quoteFormModal');
+                    const instance = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+                    instance.hide();
+                } catch (e) {}
+                setTimeout(() => { window.location.href = '/?submitted=1#products'; }, 1200);
+            } else {
+                if (msgEl) {
+                    msgEl.textContent = data.message || 'Submission failed. Please try again.';
+                    msgEl.style.display = '';
+                    msgEl.classList.add('text-danger', 'small');
+                }
+            }
+        } catch (err) {
+            if (msgEl) {
+                msgEl.textContent = 'Network error. Please try again.';
+                msgEl.style.display = '';
+                msgEl.classList.add('text-danger', 'small');
+            }
+        } finally {
+            // Always restore button (if we're redirecting, this is harmless)
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="bi bi-send me-2"></i>Submit Quote Request';
+            }
+        }
+    });
 });
 </script>
 

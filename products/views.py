@@ -232,9 +232,9 @@ def dsc_price_api(request):
     Params: class_type, user_type, cert_type, validity, outside (0/1)
     """
     class_type = request.GET.get('class_type', 'class3')
-    user_type = request.GET.get('user_type', 'individual')
-    cert_type = request.GET.get('cert_type', 'signature')
-    validity = request.GET.get('validity', '2y')
+    user_type = (request.GET.get('user_type', 'individual') or '').lower()
+    cert_type = (request.GET.get('cert_type', 'signature') or '').lower()
+    validity = (request.GET.get('validity', '2y') or '').lower()
     outside = request.GET.get('outside', '0') == '1'
 
     try:
@@ -245,9 +245,9 @@ def dsc_price_api(request):
         requested = canonical(class_type)
 
         qs = DscPrice.objects.filter(
-            user_type=user_type,
-            cert_type=cert_type,
-            validity=validity,
+            user_type__iexact=user_type,
+            cert_type__iexact=cert_type,
+            validity__iexact=validity,
             is_active=True,
         )
 
@@ -303,10 +303,11 @@ def dsc_options_api(request):
         for row in DscPrice.objects.filter(is_active=True).order_by('created_at'):
             if default_row is None:
                 default_row = row
-            c = row.class_type
-            u = row.user_type
-            t = row.cert_type
-            v = row.validity
+            # Normalize
+            c = (row.class_type or '').strip()
+            u = (row.user_type or '').strip().lower()
+            t = (row.cert_type or '').strip().lower()
+            v = (row.validity or '').strip().lower()
             if c not in options:
                 options[c] = {}
                 classes.append(c)
@@ -319,10 +320,10 @@ def dsc_options_api(request):
         if not classes:
             return JsonResponse({'success': True, 'classes': [], 'map': {}, 'defaults': {} })
         defaults = {
-            'class_type': default_row.class_type,
-            'user_type': default_row.user_type,
-            'cert_type': default_row.cert_type,
-            'validity': default_row.validity,
+            'class_type': (default_row.class_type or '').strip(),
+            'user_type': (default_row.user_type or '').strip().lower(),
+            'cert_type': (default_row.cert_type or '').strip().lower(),
+            'validity': (default_row.validity or '').strip().lower(),
         }
         return JsonResponse({'success': True, 'classes': classes, 'map': options, 'defaults': defaults})
     except Exception as e:
@@ -889,8 +890,11 @@ def submit_quote(request):
             
             # Validate required fields
             if not all([customer_name, mobile, email, product_type_id]):
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return JsonResponse({'status': 'error', 'message': 'Please fill all required fields.'})
                 messages.error(request, 'Please fill all required fields.')
-                return redirect('index')
+                referer = request.META.get('HTTP_REFERER')
+                return redirect(referer or 'index')
             
             # Get product type details
             try:
@@ -905,8 +909,11 @@ def submit_quote(request):
                 if not product_type:
                     product_type = ProductTypeMaster.objects.filter(prdt_desc__icontains='mudhra').first()
                 if not product_type:
+                    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                        return JsonResponse({'status': 'error', 'message': 'Product type not found.'})
                     messages.error(request, 'Product type not found.')
-                    return redirect('index')
+                    referer = request.META.get('HTTP_REFERER')
+                    return redirect(referer or 'index')
             
             # Create submission record
             from django.utils import timezone
@@ -1051,13 +1058,22 @@ def submit_quote(request):
                 print(f"No email credentials configured for product type: {product_type.prdt_desc}")
                 messages.success(request, 'Quote request submitted successfully! We will contact you soon.')
 
-            return redirect('index')
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({'status': 'success'})
+            referer = request.META.get('HTTP_REFERER')
+            return redirect(referer or 'index')
 
         except Exception as e:
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({'status': 'error', 'message': f'Error submitting quote: {str(e)}'})
             messages.error(request, f'Error submitting quote: {str(e)}')
-            return redirect('index')
+            referer = request.META.get('HTTP_REFERER')
+            return redirect(referer or 'index')
 
-    return redirect('index')
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({'status': 'error', 'message': 'Invalid request'})
+    referer = request.META.get('HTTP_REFERER')
+    return redirect(referer or 'index')
 
 # ============================================================================
 # ADMIN FUNCTIONS

@@ -138,9 +138,7 @@
             <div class="error-message" id="error-state"></div>
           </div>
           <div class="col-12 col-md-4">
-            <select id="district" name="district" class="form-select">
-              <option value="">Select District</option>
-            </select>
+            <input type="text" id="district" name="district" placeholder="District" class="form-control" />
             <div class="error-message" id="error-district"></div>
           </div>
           <div class="col-12 col-md-4">
@@ -411,17 +409,17 @@ document.addEventListener('DOMContentLoaded', function() {
   // Razorpay payment button
   document.getElementById('razorpayBtn').addEventListener('click', initiatePayment);
 
-  // Redirect to home when PI modal is closed or Close button is clicked
+  // Stay on the same page when PI modal is closed or Close button is clicked
   const piModalEl = document.getElementById('piModal');
   piModalEl.addEventListener('hidden.bs.modal', function () {
-    window.location.href = '/';
+    // no redirect
   });
   const piCloseBtn = document.getElementById('piCloseBtn');
   if (piCloseBtn) {
     piCloseBtn.addEventListener('click', function() {
       const modalInstance = bootstrap.Modal.getInstance(piModalEl);
       if (modalInstance) modalInstance.hide();
-      window.location.href = '/';
+      // no redirect
     });
   }
 });
@@ -1061,14 +1059,9 @@ async function initiatePayment() {
 // API for dynamic dropdown
 document.addEventListener("DOMContentLoaded", () => {
   const stateSelect = document.getElementById("state");
-  const districtSelect = document.getElementById("district");
+  if (!stateSelect) return;
 
-  if (!stateSelect || !districtSelect) {
-    console.error("State or district dropdown not found in the DOM");
-    return;
-  }
-
-  // Load states
+  // Load states only
   fetch("/api/states/")
     .then(res => res.json())
     .then(data => {
@@ -1082,29 +1075,6 @@ document.addEventListener("DOMContentLoaded", () => {
       console.error("Error loading states:", err);
       alert("Failed to load states. Please try again later.");
     });
-
-  // On state change: load districts
-  stateSelect.addEventListener("change", () => {
-    const state = stateSelect.value;
-    if (!state) return;
-
-    districtSelect.innerHTML = `<option>Loading...</option>`;
-
-    fetch(`/api/districts/${encodeURIComponent(state)}/`)
-      .then(res => res.json())
-      .then(data => {
-        if (!data.districts || !Array.isArray(data.districts)) {
-          throw new Error("Invalid districts data format");
-        }
-        districtSelect.innerHTML = `<option value="">Select District</option>` +
-          data.districts.map(d => `<option value="${d}">${d}</option>`).join('');
-      })
-      .catch(err => {
-        console.error("Error loading districts:", err);
-        districtSelect.innerHTML = `<option value="">Failed to load districts</option>`;
-        alert("Failed to load districts. Please try again.");
-      });
-  });
 });
 </script>
 

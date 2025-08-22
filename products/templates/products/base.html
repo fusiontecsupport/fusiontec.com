@@ -45,8 +45,8 @@
   <nav class="navbar fixed-top navbar-expand-lg navbar-light bg-white py-3 shadow" style="top: 4px;">
     <div class="container px-5">
       <!-- Logo -->
-      <a href="/admin/" target="_blank" class="navbar-brand d-flex flex-column align-items-center">
-        <img src="{% static 'products/img/logo.png' %}" class="logo" alt="Logo">
+      <a href="" class="navbar-brand d-flex flex-column align-items-center">
+        <img src="{% static 'products/img/fusiontec.png' %}" class="logo" alt="Logo">
         {% block logo_subtitle %}<span class="logo-subtitle">Simplifying Complexity</span>{% endblock %}
       </a>
       
@@ -69,7 +69,7 @@
               <li><a class="dropdown-item" href="#process">Process</a></li>
               <li><a class="dropdown-item" href="#products">Products</a></li>
               <li><a class="dropdown-item" href="#net_banking">Net Banking & Payment</a></li>
-              <li><a class="dropdown-item" href="{% url 'dsc_form' %}">DSC Form</a></li>
+              <li><a class="dropdown-item" href="/#dsc">DSC Form</a></li>
             </ul>
           </li>
           <li class="nav-item"><a class="nav-link" href="#footer">Contact</a></li>
@@ -202,10 +202,18 @@
     body {
       padding-top: 84px !important;
     }
+
+    /* Removed modal-open lock to restore old popup behavior */
   </style>
 
     <main>
     {% block content %}
+    <div class="container mt-3" id="globalMessageContainer" style="display:none;">
+      <div id="globalMessage" class="alert alert-success alert-dismissible fade show" role="alert" style="margin-bottom:0;">
+        <span id="globalMessageText"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    </div>
     
     {% endblock %}
   </main>
@@ -594,6 +602,22 @@
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
+  // Show cross-page success message if URL contains submitted=1
+  try {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('submitted') === '1') {
+      const box = document.getElementById('globalMessageContainer');
+      const text = document.getElementById('globalMessageText');
+      if (box && text) {
+        text.textContent = 'Form submitted successfully';
+        box.style.display = '';
+        setTimeout(() => { box.style.display = 'none'; }, 5000);
+      }
+      params.delete('submitted');
+      const url = window.location.pathname + (params.toString() ? ('?' + params.toString()) : '') + window.location.hash;
+      window.history.replaceState({}, '', url);
+    }
+  } catch (e) {}
   const form = document.getElementById('enquiryForm');
   const icon = document.getElementById('enquiryIcon');
   const closeBtn = document.getElementById('closeEnquiry');
