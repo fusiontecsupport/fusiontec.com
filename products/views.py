@@ -888,32 +888,100 @@ def submit_quote(request):
             quantity = int(request.POST.get('quantity', 1))
             additional_requirements = request.POST.get('additional_requirements', '').strip()
             
+            # Debug logging
+            print(f"Quote submission - product_type_id: {product_type_id}, customer: {customer_name}, email: {email}")
+            
             # Validate required fields
-            if not all([customer_name, mobile, email, product_type_id]):
+            if not all([customer_name, mobile, email]):
                 if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                     return JsonResponse({'status': 'error', 'message': 'Please fill all required fields.'})
                 messages.error(request, 'Please fill all required fields.')
                 referer = request.META.get('HTTP_REFERER')
                 return redirect(referer or 'index')
             
-            # Get product type details
-            try:
-                product_type = ProductTypeMaster.objects.get(id=product_type_id)
-            except ProductTypeMaster.DoesNotExist:
-                # Fallback: try to locate DSC type by name if an invalid id (e.g., 0) was sent
-                product_type = ProductTypeMaster.objects.filter(prdt_desc__icontains='dsc').first()
-                if not product_type:
-                    product_type = ProductTypeMaster.objects.filter(
-                        Q(prdt_desc__icontains='digital') & Q(prdt_desc__icontains='signature')
-                    ).first()
-                if not product_type:
-                    product_type = ProductTypeMaster.objects.filter(prdt_desc__icontains='mudhra').first()
-                if not product_type:
-                    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                        return JsonResponse({'status': 'error', 'message': 'Product type not found.'})
-                    messages.error(request, 'Product type not found.')
-                    referer = request.META.get('HTTP_REFERER')
-                    return redirect(referer or 'index')
+            # Get product type details - handle DSC case specially
+            product_type = None
+            is_dsc = False
+            
+            if product_type_id and product_type_id != '0':
+                # Check if this is the special DSC identifier
+                if product_type_id == 'dsc':
+                    is_dsc = True
+                    print("DSC submission detected via special identifier")
+                    # For DSC submissions, create or get a DSC product type
+                    product_type, created = ProductTypeMaster.objects.get_or_create(
+                        prdt_desc='Digital Signature Certificate (DSC)',
+                        defaults={
+                            'prdt_desc': 'Digital Signature Certificate (DSC)',
+                            'sender_email': 'dsc@fusiontec.com',
+                            'app_password': 'pcjn sxte zvci tljs'
+                        }
+                    )
+                    if created:
+                        print(f"Created new DSC product type with ID: {product_type.id}")
+                    else:
+                        print(f"Found existing DSC product type with ID: {product_type.id}")
+                else:
+                    try:
+                        product_type = ProductTypeMaster.objects.get(id=product_type_id)
+                        print(f"Found product type by ID: {product_type.id} - {product_type.prdt_desc}")
+                    except ProductTypeMaster.DoesNotExist:
+                        print(f"Product type with ID {product_type_id} not found")
+                        pass
+            
+            # If no valid product type found, check if this is a DSC submission
+            if not product_type:
+                # Check if this is coming from DSC section (either by referrer or by context)
+                referer = request.META.get('HTTP_REFERER', '')
+                is_dsc = (
+                    '/dsc/' in referer or 
+                    'dsc' in referer.lower() or
+                    'digital' in referer.lower()
+                )
+                
+                if is_dsc:
+                    print("DSC submission detected via referrer")
+                    # For DSC submissions, create or get a DSC product type
+                    product_type, created = ProductTypeMaster.objects.get_or_create(
+                        prdt_desc='Digital Signature Certificate (DSC)',
+                        defaults={
+                            'prdt_desc': 'Digital Signature Certificate (DSC)',
+                            'sender_email': 'dsc@fusiontec.com',
+                            'app_password': 'pcjn sxte zvci tljs'
+                        }
+                    )
+                    if created:
+                        print(f"Created new DSC product type with ID: {product_type.id}")
+                    else:
+                        print(f"Found existing DSC product type with ID: {product_type.id}")
+                else:
+                    # Try to find any product type as fallback
+                    product_type = ProductTypeMaster.objects.first()
+                    if not product_type:
+                        print("No product types found in system")
+                        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                            return JsonResponse({'status': 'error', 'message': 'No product types configured in system.'})
+                        messages.error(request, 'No product types configured in system.')
+                        referer = request.META.get('HTTP_REFERER')
+                        return redirect(referer or 'index')
+                    else:
+                        print(f"Using fallback product type: {product_type.id} - {product_type.prdt_desc}")
+            
+            # Determine if this is a DSC submission
+            if not is_dsc:
+                try:
+                    _name = (product_type.prdt_desc or '').strip().lower()
+                    is_dsc = (
+                        ('dsc' in _name) or
+                        ('digital' in _name and 'signature' in _name) or
+                        ('mudhra' in _name)
+                    )
+                    if is_dsc:
+                        print(f"DSC submission detected via product name: {_name}")
+                except Exception:
+                    is_dsc = False
+            
+            print(f"Final determination - is_dsc: {is_dsc}, product_type: {product_type.id} - {product_type.prdt_desc}")
             
             # Create submission record
             from django.utils import timezone
@@ -934,32 +1002,20 @@ def submit_quote(request):
                 status='new'
             )
             
-            # Resolve sender credentials
-            # For DSC, force the dedicated mailbox regardless of DB values
-            is_dsc = False
-            try:
-                _posted_id = (product_type_id or '').strip()
-            except Exception:
-                _posted_id = ''
-            try:
-                _name = (product_type.prdt_desc or '').strip().lower()
-                is_dsc = (
-                    _posted_id in ('', '0', None) or
-                    ('dsc' in _name) or
-                    ('digital' in _name and 'signature' in _name) or
-                    ('mudhra' in _name)
-                )
-            except Exception:
-                is_dsc = _posted_id in ('', '0', None)
-
+            print(f"Created quote request with ID: {quote_request.id}")
+            
+            # Set email credentials based on product type
             if is_dsc:
                 sender_email_cfg = 'dsc@fusiontec.com'
                 app_password_cfg = 'pcjn sxte zvci tljs'
+                print("Using DSC email credentials")
             else:
                 sender_email_cfg = (product_type.sender_email or '').strip()
                 app_password_cfg = (product_type.app_password or '').strip()
+                print(f"Using product type email credentials: {sender_email_cfg}")
+            
             # Gmail app passwords are often spaced for readability; strip any spaces
-            sanitized_password = app_password_cfg.replace(' ', '')
+            sanitized_password = app_password_cfg.replace(' ', '') if app_password_cfg else ''
 
             # Send email if email credentials are configured
             print(f"Checking email credentials: sender_email='{sender_email_cfg}', app_password='{'Yes' if sanitized_password else 'No'}'")
@@ -981,27 +1037,27 @@ def submit_quote(request):
 
                     # Create email body
                     email_body = f"""
- Dear {customer_name},
+Dear {customer_name},
 
- Thank you for your quote request for {product_type.prdt_desc}.
+Thank you for your quote request for {product_type.prdt_desc}.
 
- Your request details:
- - Product Type: {product_type.prdt_desc}
- - Quantity: {quantity}
- - Company: {company_name or 'Not specified'}
- - Contact: {mobile}
- - Email: {email}
- - Address: {address}
- - State: {state}
- - District: {district}
- - Pincode: {pincode}
- - GST Number: {gst_number or 'Not provided'}
- - Additional Requirements: {additional_requirements or 'None'}
+Your request details:
+- Product Type: {product_type.prdt_desc}
+- Quantity: {quantity}
+- Company: {company_name or 'Not specified'}
+- Contact: {mobile}
+- Email: {email}
+- Address: {address}
+- State: {state}
+- District: {district}
+- Pincode: {pincode}
+- GST Number: {gst_number or 'Not provided'}
+- Additional Requirements: {additional_requirements or 'None'}
 
- Our team will review your requirements and get back to you with a detailed quote within 24-48 hours.
+Our team will review your requirements and get back to you with a detailed quote within 24-48 hours.
 
- Best regards,
- FusionTec Team
+Best regards,
+FusionTec Team
                     """
 
                     # Send email to customer using custom backend
@@ -1018,18 +1074,18 @@ def submit_quote(request):
                     # Send notification to admin
                     admin_subject = f"New Quote Request - {product_type.prdt_desc}"
                     admin_body = f"""
- New quote request received:
+New quote request received:
 
- Customer: {customer_name}
- Product Type: {product_type.prdt_desc}
- Quantity: {quantity}
- Contact: {mobile} | {email}
- Company: {company_name or 'Not specified'}
+Customer: {customer_name}
+Product Type: {product_type.prdt_desc}
+Quantity: {quantity}
+Contact: {mobile} | {email}
+Company: {company_name or 'Not specified'}
 
- Additional Requirements:
- {additional_requirements or 'None'}
+Additional Requirements:
+{additional_requirements or 'None'}
 
- Quote Request ID: {quote_request.id}
+Quote Request ID: {quote_request.id}
                     """
 
                     admin_email = EmailMessage(
@@ -1046,6 +1102,7 @@ def submit_quote(request):
                     quote_request.email_sent_at = timezone.now()
                     quote_request.save()
 
+                    print("Email sent successfully")
                     messages.success(request, 'Quote request submitted successfully! We will contact you soon.')
 
                 except Exception as email_error:
@@ -1064,6 +1121,7 @@ def submit_quote(request):
             return redirect(referer or 'index')
 
         except Exception as e:
+            print(f"Error in submit_quote: {str(e)}")
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 return JsonResponse({'status': 'error', 'message': f'Error submitting quote: {str(e)}'})
             messages.error(request, f'Error submitting quote: {str(e)}')

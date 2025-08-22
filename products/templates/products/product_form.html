@@ -711,7 +711,7 @@ function generatePIContent() {
   `;
 }
 
-function downloadPDF() {
+async function downloadPDF() {
   console.log('Download PDF button clicked');
   
   const { jsPDF } = window.jspdf;
@@ -720,6 +720,36 @@ function downloadPDF() {
   const pageHeight = doc.internal.pageSize.getHeight();
   const M = 24; // tighter margin for fuller look
   const contentW = pageWidth - 2 * M;
+
+  // Helper to load image as data URL for jsPDF
+  async function loadImageAsDataURL(url) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = function () {
+        try {
+          const canvas = document.createElement('canvas');
+          canvas.width = img.width;
+          canvas.height = img.height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0);
+          const dataUrl = canvas.toDataURL('image/jpeg');
+          resolve(dataUrl);
+        } catch (e) {
+          resolve(null);
+        }
+      };
+      img.onerror = () => resolve(null);
+      img.src = url;
+    });
+  }
+
+  // Load FusionTec logo from static
+  const logoUrl = '/static/products/img/fusiontec.jpg';
+  const logoData = await loadImageAsDataURL(logoUrl);
+  const logoW = 40;
+  const logoH = 40;
+  const titleX = logoData ? (M + logoW + 10) : M; // shift title right if logo present
 
   // Helpers
   const fmt = (n) => {
@@ -730,7 +760,7 @@ function downloadPDF() {
   // Collect form/customer
   const customer = {
     name: document.getElementById('customerName').value,
-    company: document.getElementById('companyName').value || 'N/A',
+    company: document.getElementById('companyName').value || '',
     mobile: document.getElementById('mobile').value,
     email: document.getElementById('email').value,
   };
@@ -785,34 +815,47 @@ function downloadPDF() {
   doc.rect(0, 0, pageWidth, 70, 'F');
   doc.setTextColor(255, 255, 255);
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(16);
-  doc.text('PROFORMA INVOICE', M, 42);
+  doc.setFontSize(18);
+  if (logoData) {
+    doc.addImage(logoData, 'JPEG', M, 14, logoW, logoH);
+  }
+  doc.text('PROFORMA INVOICE', titleX, 46);
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
   doc.text(`Invoice No: ${invoiceNo}`, pageWidth - M, 26, { align: 'right' });
   doc.text(`Date: ${invoiceDate}`, pageWidth - M, 42, { align: 'right' });
 
-  // Subheader product line
+  // Subheader product line (to the right of logo)
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(12);
-  doc.text(String(productName || 'Product'), M, 26);
+  doc.setFontSize(11);
+  doc.text(String(productName || 'Product'), titleX, 26);
 
   let y = 90;
 
-  // Buyer/Seller blocks
+  // Buyer/Seller blocks with improved layout and better spacing
   doc.setFont('helvetica', 'bold');
   doc.setTextColor('#374151');
   doc.text('Seller', M, y);
   doc.text('Buyer', pageWidth / 2, y);
   doc.setFont('helvetica', 'normal');
-  y += 18;
-  const seller = ['FusionTec Software', 'www.fusiontec.com', 'info@fusiontec.com'];
-  const buyer = [customer.name, customer.company, `${customer.mobile} • ${customer.email}`];
-  seller.forEach((s, i) => doc.text(s, M, y + i * 14));
-  buyer.forEach((b, i) => doc.text(b, pageWidth / 2, y + i * 14));
+  y += 20; // Increased spacing for better readability
+  
+  // Seller details
+  const seller = ['FusionTec Software', 'www.fusiontec.com', 'sales@fusiontec.com'];
+  seller.forEach((s, i) => doc.text(s, M, y + i * 16)); // Increased line spacing
+  
+  // Buyer details with conditional company name and better spacing
+  const buyerDetails = [customer.name];
+  if (customer.company && customer.company.trim()) {
+    buyerDetails.push(customer.company);
+  }
+  buyerDetails.push(customer.mobile);
+  buyerDetails.push(customer.email);
+  
+  buyerDetails.forEach((b, i) => doc.text(b, pageWidth / 2, y + i * 16)); // Increased line spacing
 
-  // Items table
-  const tableY = y + 48;
+  // Items table with better positioning
+  const tableY = y + (buyerDetails.length * 16) + 20; // Better spacing based on actual content
   const body = [
     [productName, String(quantity), fmt(unitPrice), `${gstRate}%`, fmt(lineGst), fmt(lineTotal)],
   ];
@@ -850,15 +893,18 @@ function downloadPDF() {
       doc.rect(0, 0, pageWidth, 70, 'F');
       doc.setTextColor(255, 255, 255);
       doc.setFont('helvetica', 'bold');
-      doc.setFontSize(16);
-      doc.text('PROFORMA INVOICE', M, 42);
+      doc.setFontSize(18);
+      if (logoData) {
+        doc.addImage(logoData, 'JPEG', M, 14, logoW, logoH);
+      }
+      doc.text('PROFORMA INVOICE', titleX, 46);
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(10);
       doc.text(`Invoice No: ${invoiceNo}`, pageWidth - M, 26, { align: 'right' });
       doc.text(`Date: ${invoiceDate}`, pageWidth - M, 42, { align: 'right' });
       doc.setFont('helvetica', 'bold');
-      doc.setFontSize(12);
-      doc.text(String(productName || 'Product'), M, 26);
+      doc.setFontSize(11);
+      doc.text(String(productName || 'Product'), titleX, 26);
     },
   });
 

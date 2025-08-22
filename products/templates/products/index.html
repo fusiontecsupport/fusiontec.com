@@ -878,7 +878,7 @@
                                 <p class="card-text text-muted mb-4">Class 3 DSC for GST, MCA, Income Tax, Tender submissions, EPFO filings, and more.</p>
                                 <div class="d-flex flex-wrap gap-2">
                                     <a href="{% url 'dsc_form' %}" class="btn btn-primary">View</a>
-                                    <button type="button" class="btn btn-light" onclick="showQuoteForm({{ dsc_type.id|default:0 }}, 'Digital Signature Certificate')">Get Quote</button>
+                                    <button type="button" class="btn btn-light" onclick="showDscQuoteForm()">Get Quote</button>
                                 </div>
                             </div>
                         </div>
@@ -1050,6 +1050,73 @@ function showEnquiryForm() {
     form.classList.remove('hide');
     icon.style.display = 'none';
     form.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+}
+
+// Function to show DSC quote form
+function showDscQuoteForm() {
+  console.log('showDscQuoteForm called');
+  
+  // Check if the quote form modal exists
+  const quoteModal = document.getElementById('quoteFormModal');
+  if (quoteModal) {
+    console.log('Quote form modal found');
+    
+    // Set the product type information for DSC
+    const productTypeIdInput = document.getElementById('quote_product_type_id');
+    const productTypeNameInput = document.getElementById('quote_product_type_name');
+    
+    if (productTypeIdInput && productTypeNameInput) {
+      console.log('Setting DSC product type information');
+      
+      // For DSC, we'll use a special identifier
+      productTypeIdInput.value = 'dsc';
+      productTypeNameInput.value = 'Digital Signature Certificate (DSC)';
+      
+      // Set current date
+      const today = new Date();
+      const dateString = today.toLocaleDateString('en-US', { 
+          year: 'numeric', 
+          month: 'long', 
+          day: 'numeric' 
+      });
+      const dateInput = document.getElementById('quote_date');
+      if (dateInput) {
+        dateInput.value = dateString;
+        console.log('Date set:', dateString);
+      } else {
+        console.warn('Date input not found');
+      }
+      
+      // Load states if not already loaded
+      if (typeof loadStates === 'function') {
+        console.log('Loading states');
+        loadStates();
+      } else {
+        console.warn('loadStates function not available');
+      }
+      
+      // Show the modal
+      try {
+        const modal = new bootstrap.Modal(quoteModal);
+        modal.show();
+        console.log('Modal shown successfully');
+      } catch (error) {
+        console.error('Error showing modal:', error);
+        // Fallback: redirect to DSC form page
+        window.location.href = '/dsc/';
+      }
+    } else {
+      console.error('Quote form inputs not found');
+      console.log('productTypeIdInput:', productTypeIdInput);
+      console.log('productTypeNameInput:', productTypeNameInput);
+      // Fallback: redirect to DSC form page
+      window.location.href = '/dsc/';
+    }
+  } else {
+    console.log('Quote form modal not found, redirecting to DSC form page');
+    // If modal doesn't exist, redirect to DSC form page
+    window.location.href = '/dsc/';
   }
 }
 </script>
