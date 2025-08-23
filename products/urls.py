@@ -21,6 +21,9 @@ urlpatterns = [
     path('api/dsc-price/', views.dsc_price_api, name='dsc_price_api'),
     path('api/dsc-options/', views.dsc_options_api, name='dsc_options_api'),
     path('api/dsc-enquiry/', views.dsc_enquiry_api, name='dsc_enquiry_api'),
+    path('api/dsc-submission/', views.dsc_submission_api, name='dsc_submission_api'),
+    path('api/dsc-payment/create-order/', views.create_dsc_payment_order, name='create_dsc_payment_order'),
+    path('api/dsc-payment/verify/', views.verify_dsc_payment, name='verify_dsc_payment'),
     
     # ============================================================================
     # QUOTE & CONTACT FORMS
@@ -32,6 +35,7 @@ urlpatterns = [
     # ============================================================================
     # API ENDPOINTS
     # ============================================================================
+    path('api/test/', views.test_api, name='test_api'),
     path('api/states/', views.get_states, name='get_states'),
     path('api/districts/<str:state>/', views.get_districts, name='get_districts'),
     path('api/submission/<int:submission_id>/', views.get_submission_details, name='get_submission_details'),
@@ -45,6 +49,7 @@ urlpatterns = [
     path('admin/dashboard/data/', views.dashboard_data_api, name='dashboard_data_api'),
     path('admin-contacts/', views.custom_admin_contacts, name='custom_admin_contacts'),
     path('admin-dsc-enquiries/', views.custom_admin_dsc_enquiries, name='custom_admin_dsc_enquiries'),
+    path('admin-dsc-submissions/', views.custom_admin_dsc_submissions, name='custom_admin_dsc_submissions'),
     path('admin-quotes/', views.custom_admin_quotes, name='custom_admin_quotes'),
     path('admin-form-submissions/', views.custom_admin_form_submissions, name='custom_admin_form_submissions'),
     path('admin-quote-requests/', views.custom_admin_quote_requests, name='custom_admin_quote_requests'),

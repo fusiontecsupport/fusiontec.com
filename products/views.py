@@ -14,18 +14,23 @@ from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db.models import Q
 import json
+import razorpay
 
 from .models import (
     ProductMaster, ProductType, ProductItem, RateCardMaster, Customer, 
     QuoteSubmission, ContactSubmission, PaymentTransaction, 
     PaymentSettings, Applicant,
     ProductTypeMaster, ProductMasterV2, ProductSubMaster, RateCardEntry,
-    ProductFormSubmission, DscPrice,
+    ProductFormSubmission, DscPrice, DscSubmission,
 )
 
 # ============================================================================
 # UTILITY FUNCTIONS
 # ============================================================================
+
+def test_api(request):
+    """Simple test endpoint to check if the server is working."""
+    return JsonResponse({'status': 'success', 'message': 'API is working'})
 
 def admin_required(view_func):
     """Custom decorator to check if admin is logged in via session"""
@@ -374,6 +379,214 @@ def dsc_enquiry_api(request):
     except Exception as exc:
         return JsonResponse({'success': False, 'message': str(exc)}, status=500)
 
+@csrf_exempt
+def dsc_submission_api(request):
+    """Create a DSC submission for actual purchase with payment."""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'message': 'Method not allowed'}, status=405)
+    
+    try:
+        print(f"DSC submission API called. Request body: {request.body}")
+        print(f"Request content type: {request.content_type}")
+        
+        # Try to parse JSON first
+        try:
+            payload = json.loads(request.body or '{}')
+            print(f"JSON payload parsed successfully: {payload}")
+        except json.JSONDecodeError as e:
+            print(f"JSON decode error: {e}, falling back to POST data")
+            # Fallback to POST data if JSON parsing fails
+            payload = request.POST
+            print(f"POST data: {payload}")
+        
+        name = (payload.get('name') or '').strip()
+        email = (payload.get('email') or '').strip()
+        mobile = (payload.get('mobile') or '').strip()
+        address = (payload.get('address') or '').strip() or None
+        company_name = (payload.get('company_name') or '').strip() or None
+        gst_number = (payload.get('gst_number') or '').strip() or None
+        class_type = payload.get('class_type')
+        user_type = payload.get('user_type')
+        cert_type = payload.get('cert_type')
+        validity = payload.get('validity')
+        include_token = bool(payload.get('include_token'))
+        include_installation = bool(payload.get('include_installation'))
+        outside_india = bool(payload.get('outside_india'))
+        quoted_price = float(payload.get('quoted_price') or 0)
+
+        print(f"Parsed data - name: {name}, email: {email}, mobile: {mobile}, price: {quoted_price}")
+
+        if not (name and email and mobile):
+            return JsonResponse({'success': False, 'message': 'Name, Email and Mobile are required.'}, status=400)
+
+        submission = DscSubmission.objects.create(
+            name=name,
+            email=email,
+            mobile=mobile,
+            address=address,
+            company_name=company_name,
+            gst_number=gst_number,
+            class_type=class_type or '',
+            user_type=user_type or '',
+            cert_type=cert_type or '',
+            validity=validity or '',
+            include_token=include_token,
+            include_installation=include_installation,
+            outside_india=outside_india,
+            quoted_price=quoted_price,
+        )
+        
+        print(f"DSC submission created successfully with ID: {submission.id}")
+        return JsonResponse({'success': True, 'id': submission.id, 'submission_id': submission.id})
+    except Exception as exc:
+        print(f"Error in dsc_submission_api: {exc}")
+        return JsonResponse({'success': False, 'message': f'Server error: {str(exc)}'}, status=500)
+
+@csrf_exempt
+def create_dsc_payment_order(request):
+    """Create Razorpay order for DSC purchase."""
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=405)
+    
+    try:
+        # Log the request for debugging
+        print(f"Creating DSC payment order. Request body: {request.body}")
+        
+        data = json.loads(request.body or '{}')
+        submission_id = data.get('submission_id')
+        amount = data.get('amount')
+        
+        print(f"Parsed data - submission_id: {submission_id}, amount: {amount}")
+        
+        if not submission_id or not amount:
+            return JsonResponse({'status': 'error', 'message': 'Missing submission_id or amount'}, status=400)
+        
+        # Verify submission exists
+        submission = DscSubmission.objects.get(id=submission_id)
+        print(f"Found submission: {submission.name} - {submission.email}")
+        
+        # Convert amount to paise (Razorpay expects amount in paise)
+        amount_paise = int(float(amount) * 100)
+        print(f"Amount in paise: {amount_paise}")
+        
+        # Check Razorpay credentials
+        print(f"Razorpay Key ID: {settings.RAZORPAY_KEY_ID}")
+        print(f"Razorpay Key Secret: {'*' * len(settings.RAZORPAY_KEY_SECRET) if settings.RAZORPAY_KEY_SECRET else 'None'}")
+        
+        # Create Razorpay client
+        try:
+            client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
+            print("Razorpay client created successfully")
+        except Exception as client_error:
+            print(f"Failed to create Razorpay client: {client_error}")
+            return JsonResponse({
+                'status': 'error', 
+                'message': f'Failed to create Razorpay client: {str(client_error)}'
+            }, status=500)
+        
+        # Create order
+        order_data = {
+            'amount': amount_paise,
+            'currency': 'INR',
+            'receipt': f'dsc_submission_{submission_id}',
+            'notes': {
+                'submission_id': str(submission_id),
+                'customer_name': submission.name,
+                'customer_email': submission.email,
+                'dsc_type': f"{submission.class_type}/{submission.user_type}/{submission.cert_type}/{submission.validity}"
+            }
+        }
+        
+        print(f"Creating Razorpay order with data: {order_data}")
+        
+        try:
+            order = client.order.create(data=order_data)
+            print(f"Razorpay order created successfully: {order['id']}")
+        except Exception as order_error:
+            print(f"Failed to create Razorpay order: {order_error}")
+            return JsonResponse({
+                'status': 'error', 
+                'message': f'Failed to create Razorpay order: {str(order_error)}'
+            }, status=500)
+        
+        response_data = {
+            'status': 'success',
+            'order_id': order['id'],
+            'amount': amount_paise,
+            'currency': 'INR',
+            'key': settings.RAZORPAY_KEY_ID
+        }
+        
+        print(f"Returning success response: {response_data}")
+        return JsonResponse(response_data)
+        
+    except DscSubmission.DoesNotExist:
+        print(f"Submission not found with ID: {submission_id}")
+        return JsonResponse({'status': 'error', 'message': 'Submission not found'}, status=404)
+    except json.JSONDecodeError as e:
+        print(f"JSON decode error: {e}")
+        return JsonResponse({'status': 'error', 'message': f'Invalid JSON data: {str(e)}'}, status=400)
+    except Exception as e:
+        print(f"Unexpected error in create_dsc_payment_order: {e}")
+        return JsonResponse({'status': 'error', 'message': f'Failed to create order: {str(e)}'}, status=500)
+
+@csrf_exempt
+def verify_dsc_payment(request):
+    """Verify Razorpay payment for DSC submission."""
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=405)
+
+    try:
+        data = json.loads(request.body or '{}')
+        payment_id = data.get('razorpay_payment_id')
+        order_id = data.get('razorpay_order_id')
+        signature = data.get('razorpay_signature')
+        submission_id = data.get('submission_id')
+
+        if not (payment_id and order_id and signature and submission_id):
+            return JsonResponse({'status': 'error', 'message': 'Missing required fields'}, status=400)
+
+        # Create Razorpay client
+        try:
+            client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
+        except Exception as client_error:
+            return JsonResponse({
+                'status': 'error', 
+                'message': f'Failed to create Razorpay client: {str(client_error)}'
+            }, status=500)
+
+        # Verify signature
+        try:
+            client.utility.verify_payment_signature({
+                'razorpay_order_id': order_id,
+                'razorpay_payment_id': payment_id,
+                'razorpay_signature': signature,
+            })
+        except razorpay.errors.SignatureVerificationError:
+            return JsonResponse({'status': 'error', 'message': 'Invalid payment signature'}, status=400)
+        except Exception as verify_error:
+            return JsonResponse({
+                'status': 'error', 
+                'message': f'Payment signature verification failed: {str(verify_error)}'
+            }, status=500)
+
+        # Update submission
+        submission = DscSubmission.objects.get(id=submission_id)
+        submission.razorpay_payment_id = payment_id
+        submission.razorpay_order_id = order_id
+        submission.payment_status = 'completed'
+        submission.status = 'payment_received'
+        submission.save()
+
+        return JsonResponse({'status': 'success'})
+        
+    except DscSubmission.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'Submission not found'}, status=404)
+    except json.JSONDecodeError as e:
+        return JsonResponse({'status': 'error', 'message': f'Invalid JSON data: {str(e)}'}, status=400)
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': f'Payment verification failed: {str(e)}'}, status=500)
+
 @admin_required
 def custom_admin_dsc_enquiries(request):
     """List DSC enquiries in custom admin."""
@@ -384,6 +597,17 @@ def custom_admin_dsc_enquiries(request):
     page_obj = paginator.get_page(page_number)
     context = { 'page_obj': page_obj }
     return render(request, 'products/admin/dsc_enquiries.html', context)
+
+@admin_required
+def custom_admin_dsc_submissions(request):
+    """List DSC submissions (actual purchases) in custom admin."""
+    from .models import DscSubmission
+    submissions = DscSubmission.objects.all().order_by('-created_at')
+    paginator = Paginator(submissions, 20)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    context = { 'page_obj': page_obj }
+    return render(request, 'products/admin/dsc_submissions.html', context)
 
 @csrf_exempt
 def save_product_submission(request):

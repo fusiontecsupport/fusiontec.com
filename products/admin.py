@@ -6,6 +6,7 @@ from .models import (
     ProductMaster, ProductType, ProductItem, RateCardMaster, Customer, QuoteSubmission,
     ContactSubmission, PaymentTransaction, PaymentSettings, Applicant,
     ProductTypeMaster, ProductMasterV2, ProductSubMaster, RateCardEntry, ProductFormSubmission, QuoteRequest,
+    DscEnquiry, DscSubmission,
 )
 
 # ============================================================================
@@ -563,3 +564,95 @@ class QuoteRequestAdmin(admin.ModelAdmin):
         updated = queryset.update(status='closed')
         self.message_user(request, f'{updated} quote request(s) marked as closed.')
     mark_closed.short_description = "Mark selected as closed"
+
+# ============================================================================
+# DSC MODELS ADMIN
+# ============================================================================
+
+@admin.register(DscEnquiry)
+class DscEnquiryAdmin(admin.ModelAdmin):
+    list_display = [
+        'id', 'name', 'email', 'mobile', 'class_type', 'user_type', 
+        'cert_type', 'validity', 'quoted_price', 'created_at'
+    ]
+    list_filter = ['class_type', 'user_type', 'cert_type', 'validity', 'created_at']
+    search_fields = ['name', 'email', 'mobile']
+    ordering = ['-created_at']
+    readonly_fields = ['created_at', 'updated_at']
+    
+    fieldsets = (
+        ('Customer Information', {
+            'fields': ('name', 'email', 'mobile', 'address')
+        }),
+        ('DSC Configuration', {
+            'fields': ('class_type', 'user_type', 'cert_type', 'validity')
+        }),
+        ('Options', {
+            'fields': ('include_token', 'include_installation', 'outside_india')
+        }),
+        ('Pricing', {
+            'fields': ('quoted_price',)
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+
+@admin.register(DscSubmission)
+class DscSubmissionAdmin(admin.ModelAdmin):
+    list_display = [
+        'id', 'name', 'email', 'mobile', 'class_type', 'user_type', 
+        'cert_type', 'validity', 'quoted_price', 'payment_status', 'status', 'created_at'
+    ]
+    list_filter = ['class_type', 'user_type', 'cert_type', 'validity', 'payment_status', 'status', 'created_at']
+    search_fields = ['name', 'email', 'mobile', 'razorpay_payment_id', 'razorpay_order_id']
+    ordering = ['-created_at']
+    readonly_fields = ['created_at', 'updated_at']
+    
+    fieldsets = (
+        ('Customer Information', {
+            'fields': ('name', 'email', 'mobile', 'address', 'company_name', 'gst_number')
+        }),
+        ('DSC Configuration', {
+            'fields': ('class_type', 'user_type', 'cert_type', 'validity')
+        }),
+        ('Options', {
+            'fields': ('include_token', 'include_installation', 'outside_india')
+        }),
+        ('Pricing', {
+            'fields': ('quoted_price',)
+        }),
+        ('Payment Details', {
+            'fields': ('razorpay_payment_id', 'razorpay_order_id', 'payment_status')
+        }),
+        ('Status & Notes', {
+            'fields': ('status', 'admin_notes')
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    actions = ['mark_payment_received', 'mark_processing', 'mark_completed', 'mark_cancelled']
+    
+    def mark_payment_received(self, request, queryset):
+        updated = queryset.update(status='payment_received', payment_status='completed')
+        self.message_user(request, f'{updated} submission(s) marked as payment received.')
+    mark_payment_received.short_description = "Mark as payment received"
+    
+    def mark_processing(self, request, queryset):
+        updated = queryset.update(status='processing')
+        self.message_user(request, f'{updated} submission(s) marked as processing.')
+    mark_processing.short_description = "Mark as processing"
+    
+    def mark_completed(self, request, queryset):
+        updated = queryset.update(status='completed')
+        self.message_user(request, f'{updated} submission(s) marked as completed.')
+    mark_completed.short_description = "Mark as completed"
+    
+    def mark_cancelled(self, request, queryset):
+        updated = queryset.update(status='cancelled')
+        self.message_user(request, f'{updated} submission(s) marked as cancelled.')
+    mark_cancelled.short_description = "Mark as cancelled"

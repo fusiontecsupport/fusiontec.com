@@ -3,6 +3,10 @@
 
 {% block title %}Buy Digital Signature Certificate | FusionTec{% endblock %}
 
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+{% endblock %}
+
 {% block content %}
 <style>
   :root { --anim-fast: .2s; --anim-med: .45s; --anim-slow: .9s; }
@@ -100,27 +104,58 @@
                 <div class="border rounded-3 p-3 bg-white">
                   <div class="d-flex justify-content-between align-items-center mb-2">
                     <div class="fw-semibold">Price</div>
-                    <a href="#" class="text-decoration-none">DSC Price List</a>
+                    <a href="{% static 'products/dsc_price_list.pdf' %}" target="_blank" class="text-decoration-none">DSC Price List</a>
                   </div>
                   <div id="priceValue" class="display-6 fw-bold text-primary mb-2">₹ 1,500</div>
                   <div id="notConfiguredHint" class="text-danger small d-none">Price not configured for this selection.</div>
-
-                  <div class="cta-grid d-grid gap-2 mt-2">
-                    <button class="btn btn-primary btn-lg" id="proceedBtn" type="button">Proceed to Buy</button>
-                  </div>
                 </div>
 
-                <!-- Enquiry Form -->
-                <div class="mt-3" id="enquirySection">
-                  <h6 class="fw-semibold mb-2">Quick Enquiry</h6>
-                  <div class="row g-2">
-                    <div class="col-12 col-md-6"><input type="text" id="enqName" class="form-control" placeholder="Your Name"></div>
-                    <div class="col-12 col-md-6"><input type="email" id="enqEmail" class="form-control" placeholder="Email"></div>
-                    <div class="col-12 col-md-6"><input type="tel" id="enqMobile" class="form-control" placeholder="Mobile Number"></div>
-                    <div class="col-12 col-md-6"><input type="text" id="enqAddress" class="form-control" placeholder="Address (optional)"></div>
-                    <div class="col-12"><button id="enqSubmit" class="btn btn-success w-100">Send Enquiry</button></div>
+                <!-- Enhanced Enquiry Form -->
+                <div class="mt-4" id="enquirySection">
+                  <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                      <h6 class="fw-semibold mb-0"><i class="fas fa-envelope me-2"></i>Quick Enquiry & Purchase</h6>
+                    </div>
+                    <div class="card-body p-4">
+                      <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                          <label class="form-label fw-semibold">Full Name *</label>
+                          <input type="text" id="enqName" class="form-control form-control-lg" placeholder="Enter your full name">
+                        </div>
+                        <div class="col-12 col-md-6">
+                          <label class="form-label fw-semibold">Email Address *</label>
+                          <input type="email" id="enqEmail" class="form-control form-control-lg" placeholder="Enter your email">
+                        </div>
+                        <div class="col-12 col-md-6">
+                          <label class="form-label fw-semibold">Mobile Number *</label>
+                          <input type="tel" id="enqMobile" class="form-control form-control-lg" placeholder="Enter mobile number">
+                        </div>
+                        <div class="col-12 col-md-6">
+                          <label class="form-label fw-semibold">Company Name</label>
+                          <input type="text" id="enqCompany" class="form-control form-control-lg" placeholder="Company name (optional)">
+                        </div>
+                        <div class="col-12 col-md-6">
+                          <label class="form-label fw-semibold">GST Number</label>
+                          <input type="text" id="enqGst" class="form-control form-control-lg" placeholder="GST number (optional)">
+                        </div>
+                        <div class="col-12 col-md-6">
+                          <label class="form-label fw-semibold">Address</label>
+                          <input type="text" id="enqAddress" class="form-control form-control-lg" placeholder="Address (optional)">
+                        </div>
+                        <div class="col-12">
+                          <div class="d-grid gap-2">
+                            <button id="enqSubmit" class="btn btn-success btn-lg">
+                              <i class="fas fa-paper-plane me-2"></i>Send Enquiry
+                            </button>
+                            <button id="proceedBtn" class="btn btn-primary btn-lg">
+                              <i class="fas fa-credit-card me-2"></i>Proceed to Buy
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                      <div id="enqMsg" class="alert mt-3" style="display: none;"></div>
+                    </div>
                   </div>
-                  <div id="enqMsg" class="small mt-2"></div>
                 </div>
               </div>
             </div>
@@ -265,6 +300,8 @@
   const enqName = document.getElementById('enqName');
   const enqEmail = document.getElementById('enqEmail');
   const enqMobile = document.getElementById('enqMobile');
+  const enqCompany = document.getElementById('enqCompany');
+  const enqGst = document.getElementById('enqGst');
   const enqAddress = document.getElementById('enqAddress');
 
   const state = {
@@ -523,23 +560,33 @@
 
   if(enqSubmit){
     enqSubmit.addEventListener('click', async function(){
+      enqMsg.style.display = 'block';
       enqMsg.textContent = '';
+      enqMsg.className = 'alert mt-3';
+      
       const name = (enqName?.value || '').trim();
       const email = (enqEmail?.value || '').trim();
       const mobileNo = (enqMobile?.value || '').trim();
+      const company = (enqCompany?.value || '').trim();
+      const gst = (enqGst?.value || '').trim();
       const address = (enqAddress?.value || '').trim();
+      
       if(!name || !email || !mobileNo){
         enqMsg.textContent = 'Please fill Name, Email and Mobile.';
-        enqMsg.className = 'small mt-2 text-danger';
+        enqMsg.className = 'alert alert-danger mt-3';
         return;
       }
+      
       // Compute current quoted price number from UI text (safe fallback)
       const totalStr = priceEl.textContent.replace(/[^0-9.]/g,'');
       const quoted = parseFloat(totalStr || '0') || 0;
+      
       const payload = {
         name,
         email,
         mobile: mobileNo,
+        company_name: company,
+        gst_number: gst,
         address,
         class_type: state.classType,
         user_type: state.userType,
@@ -550,6 +597,7 @@
         outside_india: false,
         quoted_price: quoted
       };
+      
       try{
         const resp = await fetch('/api/dsc-enquiry/', {
           method: 'POST',
@@ -559,17 +607,19 @@
         const data = await resp.json();
         if(data.success){
           enqMsg.textContent = 'Enquiry submitted successfully. We will contact you soon.';
-          enqMsg.className = 'small mt-2 text-success';
+          enqMsg.className = 'alert alert-success mt-3';
           enqName.value = '';
           enqEmail.value = '';
           enqMobile.value = '';
+          enqCompany.value = '';
+          enqGst.value = '';
           enqAddress.value = '';
         } else {
           throw new Error(data.message || 'Failed to submit');
         }
       } catch(err){
         enqMsg.textContent = 'Failed to submit enquiry. Please try again.';
-        enqMsg.className = 'small mt-2 text-danger';
+        enqMsg.className = 'alert alert-danger mt-3';
       }
     });
   }
@@ -739,13 +789,152 @@
 
   buildOptions();
 
+  // Payment functionality for "Proceed to Buy" button
+  if(proceedBtn){
+    proceedBtn.addEventListener('click', async function(){
+      enqMsg.style.display = 'block';
+      enqMsg.textContent = '';
+      enqMsg.className = 'alert mt-3';
+      
+      const name = (enqName?.value || '').trim();
+      const email = (enqEmail?.value || '').trim();
+      const mobileNo = (enqMobile?.value || '').trim();
+      const company = (enqCompany?.value || '').trim();
+      const gst = (enqGst?.value || '').trim();
+      const address = (enqAddress?.value || '').trim();
+      
+      if(!name || !email || !mobileNo){
+        enqMsg.textContent = 'Please fill Name, Email and Mobile to proceed with payment.';
+        enqMsg.className = 'alert alert-danger mt-3';
+        return;
+      }
+      
+      // Compute current quoted price
+      const totalStr = priceEl.textContent.replace(/[^0-9.]/g,'');
+      const quoted = parseFloat(totalStr || '0') || 0;
+      
+      if(quoted <= 0){
+        enqMsg.textContent = 'Please select valid DSC options to proceed with payment.';
+        enqMsg.className = 'alert alert-warning mt-3';
+        return;
+      }
+      
+      try{
+        // First create submission
+        const submissionPayload = {
+          name,
+          email,
+          mobile: mobileNo,
+          company_name: company,
+          gst_number: gst,
+          address,
+          class_type: state.classType,
+          user_type: state.userType,
+          cert_type: state.certType,
+          validity: state.validity,
+          include_token: !!(tokenCheckbox && tokenCheckbox.checked),
+          include_installation: !!(installCheckbox && installCheckbox.checked),
+          outside_india: false,
+          quoted_price: quoted
+        };
+        
+        const submissionResp = await fetch('/api/dsc-submission/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(submissionPayload)
+        });
+        
+        const submissionData = await submissionResp.json();
+        if(!submissionData.success){
+          throw new Error(submissionData.message || 'Failed to create submission');
+        }
+        
+        // Create payment order
+        const orderPayload = {
+          submission_id: submissionData.submission_id,
+          amount: quoted
+        };
+        
+        const orderResp = await fetch('/api/dsc-payment/create-order/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(orderPayload)
+        });
+        
+        const orderData = await orderResp.json();
+        if(orderData.status !== 'success'){
+          throw new Error(orderData.message || 'Failed to create payment order');
+        }
+        
+        // Initialize Razorpay payment
+        const options = {
+          key: orderData.key,
+          amount: orderData.amount,
+          currency: orderData.currency,
+          name: 'FusionTec Solutions',
+          description: `DSC ${state.classType.toUpperCase()} - ${state.userType} - ${state.certType} - ${state.validity}`,
+          order_id: orderData.order_id,
+          handler: async function (response) {
+            try{
+              // Verify payment
+              const verifyPayload = {
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_signature: response.razorpay_signature,
+                submission_id: submissionData.submission_id
+              };
+              
+              const verifyResp = await fetch('/api/dsc-payment/verify/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(verifyPayload)
+              });
+              
+              const verifyData = await verifyResp.json();
+              if(verifyData.status === 'success'){
+                enqMsg.textContent = 'Payment successful! Your DSC order has been placed. We will contact you soon.';
+                enqMsg.className = 'alert alert-success mt-3';
+                // Clear form
+                enqName.value = '';
+                enqEmail.value = '';
+                enqMobile.value = '';
+                enqCompany.value = '';
+                enqGst.value = '';
+                enqAddress.value = '';
+              } else {
+                throw new Error(verifyData.message || 'Payment verification failed');
+              }
+            } catch(err){
+              enqMsg.textContent = `Payment verification failed: ${err.message}`;
+              enqMsg.className = 'alert alert-danger mt-3';
+            }
+          },
+          prefill: {
+            name: name,
+            email: email,
+            contact: mobileNo
+          },
+          theme: {
+            color: '#2563eb'
+          }
+        };
+        
+        const rzp = new Razorpay(options);
+        rzp.open();
+        
+      } catch(err){
+        enqMsg.textContent = `Payment initialization failed: ${err.message}`;
+        enqMsg.className = 'alert alert-danger mt-3';
+      }
+    });
+  }
+
   function scrollToEnquiry(){
     if(!enquirySection) return;
     enquirySection.scrollIntoView({ behavior: 'smooth', block: 'start' });
     enquirySection.classList.add('ring');
     setTimeout(()=> enquirySection.classList.remove('ring'), 1500);
   }
-  if(proceedBtn){ proceedBtn.addEventListener('click', scrollToEnquiry); }
 
   // Reveal on scroll
   const revealEls = document.querySelectorAll('.reveal');
@@ -760,16 +949,11 @@
   revealEls.forEach(el=> io.observe(el));
 })();
 </script>
-{% endblock %}
-{% comment %}
 
+<!-- Razorpay Script -->
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
-
-
-
-
-
-
+<script>
   let lastGST = 0;
 
   let lastSurcharge = 0;
@@ -1366,11 +1550,3 @@
 
 </script>
 {% endblock %}
-{% endcomment %}
-
-
-
-
-
-
-

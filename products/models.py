@@ -635,8 +635,72 @@ class DscEnquiry(BaseTimestampModel):
         verbose_name = 'DSC Enquiry'
         verbose_name_plural = 'DSC Enquiries'
 
-    def __str__(self) -> str:
+    def __str__(self):
         return f"{self.name} - {self.class_type}/{self.user_type}/{self.cert_type}/{self.validity}"
+
+# ============================================================================
+# DSC SUBMISSIONS (ACTUAL PURCHASES)
+# ============================================================================
+
+class DscSubmission(BaseTimestampModel):
+    """Stores actual DSC purchase submissions with payment details."""
+
+    # Customer details
+    name = models.CharField(max_length=255)
+    email = models.EmailField(max_length=255)
+    mobile = models.CharField(max_length=20)
+    address = models.TextField(blank=True, null=True)
+    company_name = models.CharField(max_length=255, blank=True, null=True)
+    gst_number = models.CharField(max_length=20, blank=True, null=True)
+
+    # Selected options
+    class_type = models.CharField(max_length=20)
+    user_type = models.CharField(max_length=20)
+    cert_type = models.CharField(max_length=20)
+    validity = models.CharField(max_length=5)
+    include_token = models.BooleanField(default=False)
+    include_installation = models.BooleanField(default=False)
+    outside_india = models.BooleanField(default=False)
+
+    # Pricing snapshot
+    quoted_price = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    
+    # Payment details
+    razorpay_payment_id = models.CharField(max_length=100, blank=True, null=True)
+    razorpay_order_id = models.CharField(max_length=100, blank=True, null=True)
+    payment_status = models.CharField(
+        max_length=20, 
+        choices=[
+            ('pending', 'Pending'),
+            ('completed', 'Completed'),
+            ('failed', 'Failed'),
+            ('refunded', 'Refunded')
+        ],
+        default='pending'
+    )
+    
+    # Status tracking
+    status = models.CharField(
+        max_length=20,
+        choices=[
+            ('submitted', 'Submitted'),
+            ('payment_received', 'Payment Received'),
+            ('processing', 'Processing'),
+            ('completed', 'Completed'),
+            ('cancelled', 'Cancelled')
+        ],
+        default='submitted'
+    )
+    
+    admin_notes = models.TextField(blank=True, null=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'DSC Submission'
+        verbose_name_plural = 'DSC Submissions'
+
+    def __str__(self):
+        return f"{self.name} - {self.class_type}/{self.user_type}/{self.cert_type}/{self.validity} - {self.payment_status}"
 
 # ============================================================================
 # APPLICANT DOCUMENTS
