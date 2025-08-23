@@ -26,6 +26,23 @@
   .cta-grid .btn:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(0,0,0,0.08); }
   .reveal { opacity: 0; transform: translateY(16px); transition: opacity var(--anim-med) ease, transform var(--anim-med) ease; }
   .reveal.is-visible { opacity: 1; transform: none; }
+  
+  /* Price breakdown cards styling */
+  .price-breakdown-card {
+    transition: all 0.3s ease;
+    border: 1px solid #e9ecef;
+  }
+  
+  .price-breakdown-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  }
+  
+  .price-breakdown-card.total-card {
+    border: 2px solid #1f3c88;
+    box-shadow: 0 4px 20px rgba(31, 60, 136, 0.15);
+  }
+  
   /* Decorative soft blobs */
   .soft-blob { position: absolute; border-radius: 999px; filter: blur(25px); opacity: .25; animation: floatBlob 12s ease-in-out infinite; }
   .blob-1 { width: 220px; height: 220px; background: #ffd7ba; top: -40px; right: -40px; }
@@ -103,14 +120,36 @@
               <div class="col-12">
                 <div class="border rounded-3 p-4 bg-white shadow-sm">
                   <div class="d-flex justify-content-between align-items-center mb-3">
-                    <div class="fw-semibold fs-5">Price</div>
+                    <div class="fw-semibold fs-5">Price Breakdown</div>
                     <a href="{% static 'products/dsc_price_list.pdf' %}" target="_blank" 
                        class="btn btn-outline-primary btn-sm d-flex align-items-center gap-2">
                       <i class="fas fa-file-pdf"></i>
                       <span>View Price List</span>
                     </a>
                   </div>
-                  <div id="priceValue" class="display-6 fw-bold text-primary mb-2">₹ 1,500</div>
+                  
+                  <!-- Price Breakdown Card -->
+                  <div class="row g-3 mb-3">
+                    <div class="col-md-4">
+                      <div class="text-center p-3 rounded-3 price-breakdown-card" style="background: #f8f9fa;">
+                        <div class="small text-muted mb-1">Base Amount</div>
+                        <div id="baseAmount" class="h5 fw-bold text-primary mb-0">₹ 0</div>
+                      </div>
+                    </div>
+                    <div class="col-md-4">
+                      <div class="text-center p-3 rounded-3 price-breakdown-card" style="background: #f8f9fa;">
+                        <div class="small text-muted mb-1">GST (18%)</div>
+                        <div id="gstAmount" class="h5 fw-bold text-warning mb-0">₹ 0</div>
+                      </div>
+                    </div>
+                    <div class="col-md-4">
+                      <div class="text-center p-3 rounded-3 price-breakdown-card total-card" style="background: linear-gradient(135deg, #1f3c88 0%, #2563eb 100%); color: white;">
+                        <div class="small mb-1">Total Amount</div>
+                        <div id="priceValue" class="h4 fw-bold mb-0">₹ 0</div>
+                      </div>
+                    </div>
+                  </div>
+                  
                   <div id="notConfiguredHint" class="text-danger small d-none">Price not configured for this selection.</div>
                   
                   <!-- Price breakdown info -->
@@ -402,11 +441,27 @@
   let lastSurcharge = 0;
   let currentDisplayedPrice = 0;
 
-  function setPriceValue(value){
+  function setPriceValue(value, baseAmount = null, gstAmount = null){
     const target = Number(value) || 0;
     const start = Number(String(priceEl.textContent).replace(/[^0-9.]/g,'')) || currentDisplayedPrice || 0;
     const duration = 450;
     const startTime = performance.now();
+    
+    // Update base amount and GST amount if provided
+    if (baseAmount !== null) {
+      const baseEl = document.getElementById('baseAmount');
+      if (baseEl) {
+        baseEl.textContent = `₹ ${Number(baseAmount).toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
+      }
+    }
+    
+    if (gstAmount !== null) {
+      const gstEl = document.getElementById('gstAmount');
+      if (gstEl) {
+        gstEl.textContent = `₹ ${Number(gstAmount).toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
+      }
+    }
+    
     priceEl.classList.add('price-pulse');
     function step(now){
       const t = Math.min(1, (now - startTime) / duration);
@@ -435,7 +490,8 @@
     const includeInstall = install > 0 && (installCheckbox ? installCheckbox.checked : true);
     const base = dsc + (includeToken ? token : 0) + (includeInstall ? install : 0);
     let total = base * (1 + (gstPct/100));
-    setPriceValue(total);
+    const gstAmount = total - base;
+    setPriceValue(total, base, gstAmount);
   }
 
   async function updatePrice(){
@@ -508,7 +564,10 @@
         }
         if(price != null){
           priceEl.classList.remove('text-muted');
-          setPriceValue(price);
+          // Calculate breakdown for fallback prices (assuming 18% GST)
+          const baseAmount = price / 1.18; // Remove GST to get base amount
+          const gstAmount = price - baseAmount;
+          setPriceValue(price, baseAmount, gstAmount);
         } else {
           priceEl.textContent = 'Price not configured for this combination';
           priceEl.classList.add('text-muted');
@@ -634,6 +693,18 @@
       }
     });
   }
+  // Initialize price breakdown display
+  function initializePriceDisplay() {
+    // Set initial values
+    const baseEl = document.getElementById('baseAmount');
+    const gstEl = document.getElementById('gstAmount');
+    const priceEl = document.getElementById('priceValue');
+    
+    if (baseEl) baseEl.textContent = '₹ 0';
+    if (gstEl) gstEl.textContent = '₹ 0';
+    if (priceEl) priceEl.textContent = '₹ 0';
+  }
+
   // Build buttons dynamically; fall back to fixed options if API fails or returns empty
   async function buildOptions(){
     let classes = [];
@@ -799,6 +870,9 @@
   }
 
   buildOptions();
+
+  // Initialize price display
+  initializePriceDisplay();
 
   // Payment functionality for "Proceed to Buy" button
   if(proceedBtn){

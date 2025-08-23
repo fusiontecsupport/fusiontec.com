@@ -30,8 +30,8 @@ def create_dsc_price_list_pdf():
     title_style = ParagraphStyle(
         'CustomTitle',
         parent=styles['Heading1'],
-        fontSize=24,
-        spaceAfter=30,
+        fontSize=28,
+        spaceAfter=20,
         alignment=TA_CENTER,
         textColor=colors.HexColor('#1f3c88')
     )
@@ -39,8 +39,8 @@ def create_dsc_price_list_pdf():
     subtitle_style = ParagraphStyle(
         'CustomSubtitle',
         parent=styles['Heading2'],
-        fontSize=16,
-        spaceAfter=20,
+        fontSize=18,
+        spaceAfter=15,
         alignment=TA_CENTER,
         textColor=colors.HexColor('#2563eb')
     )
@@ -48,20 +48,20 @@ def create_dsc_price_list_pdf():
     header_style = ParagraphStyle(
         'CustomHeader',
         parent=styles['Heading3'],
-        fontSize=12,
-        spaceAfter=10,
+        fontSize=14,
+        spaceAfter=8,
         alignment=TA_CENTER,
         textColor=colors.white,
         backColor=colors.HexColor('#1f3c88')
     )
     
-    # Add company logo
+    # Add company logo with reduced top spacing
     logo_path = "products/static/products/img/fusiontec.png"
     if os.path.exists(logo_path):
-        logo = Image(logo_path, width=2*inch, height=1*inch)
+        logo = Image(logo_path, width=1.8*inch, height=0.9*inch)
         logo.hAlign = 'CENTER'
         story.append(logo)
-        story.append(Spacer(1, 20))
+        story.append(Spacer(1, 15))  # Reduced spacing
     
     # Add title
     title = Paragraph("Digital Signature Certificate (DSC) Price List", title_style)
@@ -76,7 +76,7 @@ def create_dsc_price_list_pdf():
                        styles['Normal'])
     tagline.alignment = TA_CENTER
     story.append(tagline)
-    story.append(Spacer(1, 30))
+    story.append(Spacer(1, 25))  # Reduced spacing
     
     # Define the pricing data based on the screenshot
     pricing_data = [
@@ -92,31 +92,31 @@ def create_dsc_price_list_pdf():
         ['DGFT - 1 Year', '₹1,800', '₹600', '₹499', '₹2,899', '₹522', '₹3,421'],
         ['DGFT - 2 Year', '₹2,000', '₹600', '₹499', '₹3,099', '₹558', '₹3,657'],
         ['', '', '', '', '', '', ''],
-        ['Hyp2003 (HyperSecu / ePass) Auto Token', '₹600', '₹600', '', '₹1,200', '₹216', '₹1,416'],
+        ['Hyp2003 (HyperSecu / ePass) Auto Token', '₹600', '₹600', '-', '₹1,200', '₹216', '₹1,416'],
         ['', '', '', '', '', '', ''],
         ['Foreign Class 3 - 2 Years', '₹10,000', '₹600', '₹2,000', '₹12,600', '₹2,268', '₹14,868'],
         ['Foreign Class 3 Combo - 2 Years', '₹15,000', '₹600', '₹2,000', '₹17,600', '₹3,168', '₹20,768']
     ]
     
-    # Create the table
-    table = Table(pricing_data, colWidths=[2.2*inch, 1.2*inch, 0.8*inch, 1.2*inch, 1.0*inch, 1.0*inch, 1.2*inch])
+    # Create the table with better column widths
+    table = Table(pricing_data, colWidths=[2.4*inch, 1.1*inch, 0.8*inch, 1.1*inch, 1.0*inch, 1.0*inch, 1.2*inch])
     
-    # Define table style
+    # Define improved table style
     table_style = TableStyle([
         # Header row styling
         ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1f3c88')),
         ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
         ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, 0), 12),
+        ('FONTSIZE', (0, 0), (-1, 0), 11),
         ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
         ('VALIGN', (0, 0), (-1, 0), 'MIDDLE'),
-        ('GRID', (0, 0), (-1, -1), 1, colors.black),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.black),
         
         # Data rows styling
         ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
-        ('FONTSIZE', (0, 1), (-1, -1), 10),
+        ('FONTSIZE', (0, 1), (-1, -1), 9),
         ('ALIGN', (0, 1), (0, -1), 'LEFT'),  # Product column left-aligned
-        ('ALIGN', (1, 1), (-1, -1), 'CENTER'),  # Other columns center-aligned
+        ('ALIGN', (1, 1), (-1, -1), 'RIGHT'),  # Price columns right-aligned
         ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
         
         # Alternating row colors
@@ -136,27 +136,32 @@ def create_dsc_price_list_pdf():
         ('BACKGROUND', (0, 14), (-1, 14), colors.white),
         
         # Border styling
-        ('BOX', (0, 0), (-1, -1), 2, colors.HexColor('#1f3c88')),
-        ('LINEBELOW', (0, 0), (-1, 0), 2, colors.HexColor('#1f3c88')),
+        ('BOX', (0, 0), (-1, -1), 1.5, colors.HexColor('#1f3c88')),
+        ('LINEBELOW', (0, 0), (-1, 0), 1.5, colors.HexColor('#1f3c88')),
         
         # Column specific styling
         ('FONTNAME', (0, 1), (0, -1), 'Helvetica-Bold'),  # Product names in bold
         ('FONTNAME', (1, 1), (-1, -1), 'Helvetica'),  # Prices in regular font
         
-        # Price columns right-aligned for better readability
-        ('ALIGN', (1, 1), (-1, -1), 'RIGHT'),
+        # Row heights
+        ('ROWBACKGROUNDS', (0, 0), (-1, -1), [colors.white, colors.HexColor('#f8f9fa')]),
+        
+        # Cell padding
+        ('TOPPADDING', (0, 0), (-1, -1), 8),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+        ('LEFTPADDING', (0, 0), (-1, -1), 6),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 6),
     ])
     
     table.setStyle(table_style)
     story.append(table)
     
-    # Add additional information
-    story.append(Spacer(1, 30))
+    # Add additional information with side-by-side layout
+    story.append(Spacer(1, 25))
     
-    # Add features section
+    # Create a proper two-column layout for features and contact info
+    # Left column: Key Features & Benefits
     features_title = Paragraph("Key Features & Benefits", header_style)
-    story.append(features_title)
-    
     features = [
         "✓ Government Licensed Certifying Authority Partner",
         "✓ Used for GST, MCA, Income Tax, Tenders, EPFO and more",
@@ -166,17 +171,8 @@ def create_dsc_price_list_pdf():
         "✓ Trusted by businesses from MSMEs to enterprises across India"
     ]
     
-    for feature in features:
-        feature_para = Paragraph(feature, styles['Normal'])
-        story.append(feature_para)
-        story.append(Spacer(1, 5))
-    
-    story.append(Spacer(1, 20))
-    
-    # Add contact information
+    # Right column: Contact Information
     contact_title = Paragraph("Contact Information", header_style)
-    story.append(contact_title)
-    
     contact_info = [
         "📧 Email: info@fusiontec.com",
         "📱 Phone: +91-XXXXXXXXXX",
@@ -184,10 +180,44 @@ def create_dsc_price_list_pdf():
         "📍 Address: [Your Company Address]"
     ]
     
-    for contact in contact_info:
-        contact_para = Paragraph(contact, styles['Normal'])
-        story.append(contact_para)
-        story.append(Spacer(1, 5))
+    # Create the two-column data structure
+    # Each row will contain left and right content
+    two_column_data = []
+    
+    # Add titles row
+    two_column_data.append([features_title, contact_title])
+    
+    # Add features and contact info in parallel rows
+    max_items = max(len(features), len(contact_info))
+    for i in range(max_items):
+        left_item = Paragraph(features[i], styles['Normal']) if i < len(features) else Paragraph("", styles['Normal'])
+        right_item = Paragraph(contact_info[i], styles['Normal']) if i < len(contact_info) else Paragraph("", styles['Normal'])
+        two_column_data.append([left_item, right_item])
+    
+    # Create the two-column table
+    two_column_table = Table(two_column_data, colWidths=[3.2*inch, 3.2*inch])
+    
+    # Style the two-column table
+    two_column_style = TableStyle([
+        # Remove all borders and grids
+        ('GRID', (0, 0), (-1, -1), 0, colors.white),  # White grid (invisible)
+        ('BOX', (0, 0), (-1, -1), 0, colors.white),    # White border (invisible)
+        
+        # Align content to top
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        
+        # Remove padding to allow natural spacing
+        ('LEFTPADDING', (0, 0), (-1, -1), 0),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 0),
+        ('TOPPADDING', (0, 0), (-1, -1), 0),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 0),
+        
+        # Add some spacing between columns
+        ('LEFTPADDING', (1, 0), (1, -1), 20),  # Right column left padding
+    ])
+    
+    two_column_table.setStyle(two_column_style)
+    story.append(two_column_table)
     
     # Build the PDF
     doc.build(story)
