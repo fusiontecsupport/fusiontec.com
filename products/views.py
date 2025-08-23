@@ -229,8 +229,12 @@ def product_type_form(request, type_id):
     return render(request, 'products/product_form.html', context)
 
 def dsc_form(request):
-    """Dedicated DSC landing/form page similar to eMudhra's buy page."""
+    """DSC form page with pricing and purchase options."""
     return render(request, 'products/dsc_form.html')
+
+def dsc_price_list_page(request):
+    """DSC price list page with detailed pricing information."""
+    return render(request, 'products/type_of_dsc.html')
 
 def dsc_price_api(request):
     """Return price for a DSC combination.

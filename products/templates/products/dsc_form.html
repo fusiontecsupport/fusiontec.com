@@ -101,13 +101,24 @@
 
             <div class="row mt-3">
               <div class="col-12">
-                <div class="border rounded-3 p-3 bg-white">
-                  <div class="d-flex justify-content-between align-items-center mb-2">
-                    <div class="fw-semibold">Price</div>
-                    <a href="{% static 'products/dsc_price_list.pdf' %}" target="_blank" class="text-decoration-none">DSC Price List</a>
+                <div class="border rounded-3 p-4 bg-white shadow-sm">
+                  <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="fw-semibold fs-5">Price</div>
+                    <a href="{% static 'products/dsc_price_list.pdf' %}" target="_blank" 
+                       class="btn btn-outline-primary btn-sm d-flex align-items-center gap-2">
+                      <i class="fas fa-file-pdf"></i>
+                      <span>View Price List</span>
+                    </a>
                   </div>
                   <div id="priceValue" class="display-6 fw-bold text-primary mb-2">₹ 1,500</div>
                   <div id="notConfiguredHint" class="text-danger small d-none">Price not configured for this selection.</div>
+                  
+                  <!-- Price breakdown info -->
+                  <div class="small text-muted mt-2">
+                    <i class="fas fa-info-circle me-1"></i>
+                    Price includes DSC charges, token, service charges & GST. 
+                    <a href="/dsc/price-list/" class="text-decoration-none">View detailed breakdown</a>
+                  </div>
                 </div>
 
                 <!-- Enhanced Enquiry Form -->
