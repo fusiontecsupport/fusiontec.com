@@ -1,46 +1,53 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="UTF-8">
-    <title>Quote Request Received</title>
-  </head>
-  <body style="margin: 0; padding: 20px; font-family: Arial, sans-serif; background-color: #f8f9fa; color: #333;">
+{% extends 'products/email_base.html' %}
+{% block title %}Quote Request Received - Fusiontec{% endblock %}
 
-    <div style="max-width: 600px; margin: auto; background-color: #ffffff; border: 1px solid #dee2e6; border-radius: 6px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.05); padding: 20px;">
-      <div style="text-align: center; margin-bottom: 30px;">
-        <h2 style="color: #263A85; margin-bottom: 10px;">Thank You for Your Quote Request!</h2>
-        <p style="color: #6c757d; font-size: 16px;">Dear {{ customer_name }},</p>
-      </div>
+{% block content %}
+<h1 class="content-title">Thank You for Your Quote Request!</h1>
+<p class="content-subtitle">We've received your quote request and will prepare it shortly</p>
 
-      <div style="background-color: #f8f9fa; padding: 20px; border-radius: 6px; margin-bottom: 20px;">
-        <p style="margin: 0 0 15px 0; font-size: 16px; line-height: 1.6;">
-          We have successfully received your quote request for <strong>{{ product_name }}</strong>. Our team will review your requirements and get back to you within 24-48 hours with a detailed quote.
-        </p>
-        
-        <p style="margin: 0 0 15px 0; font-size: 16px; line-height: 1.6;">
-          <strong>Quote Details:</strong><br>
-          • Product: {{ product_name }}<br>
-          • Quantity: {{ quantity }}<br>
-          • Quote ID: {{ quote_id }}
-        </p>
-        
-        <p style="margin: 0; font-size: 16px; line-height: 1.6;">
-          If you have any urgent questions, please don't hesitate to contact us at <a href="mailto:support@fusiontec.com" style="color: #263A85;">support@fusiontec.com</a> or call us directly.
-        </p>
-      </div>
+<div class="info-card">
+    <h3>👋 Hello {{ customer_name }},</h3>
+    <p>Thank you for submitting your quote request to <strong>Fusiontec Software</strong>. We have successfully received your request and our team will review your requirements shortly.</p>
+    <p>We appreciate your interest in our products and will get back to you within 24-48 hours with a detailed quote and proposal.</p>
+</div>
 
-      <div style="text-align: center; margin-top: 30px;">
-        <p style="color: #6c757d; font-size: 14px; margin-bottom: 10px;">
-          Best regards,<br>
-          <strong>The Fusiontec Team</strong>
-        </p>
-        <p style="color: #6c757d; font-size: 12px;">
-          Fusiontec - Your Trusted Technology Partner<br>
-          Email: support@fusiontec.com<br>
-          Website: www.fusiontec.com
-        </p>
-      </div>
-    </div>
+<div class="info-card">
+    <h3>📦 Quote Request Details</h3>
+    <p><strong>Product:</strong> {{ product_name }}</p>
+    <p><strong>Quantity:</strong> {{ quantity }}</p>
+    <p><strong>Quote ID:</strong> <span class="status-badge status-info">{{ quote_id }}</span></p>
+</div>
 
-  </body>
-</html>
+<div class="info-card">
+    <h3>📧 What Happens Next?</h3>
+    <ul style="margin: 0; padding-left: 20px; color: #495057;">
+        <li>Our team will analyze your requirements</li>
+        <li>We'll prepare a detailed quote with pricing</li>
+        <li>You'll receive a comprehensive proposal</li>
+        <li>We'll discuss implementation options and timeline</li>
+    </ul>
+</div>
+
+<div style="text-align: center; margin-top: 30px;">
+    <a href="https://fusiontec.com" class="btn">Visit Our Website</a>
+    <a href="mailto:support@fusiontec.com" class="btn btn-secondary">Contact Support</a>
+</div>
+
+<div style="margin-top: 30px; padding: 20px; background-color: #d4edda; border-radius: 8px; border-left: 4px solid #28a745;">
+    <h4 style="margin: 0 0 10px 0; color: #155724;">💡 Quick Tips</h4>
+    <p style="margin: 0; color: #155724; font-size: 14px;">
+        <strong>Need immediate assistance?</strong><br>
+        • Call us: <a href="tel:+919876543210" style="color: #155724;">+91 98765 43210</a><br>
+        • Email: <a href="mailto:support@fusiontec.com" style="color: #155724;">support@fusiontec.com</a><br>
+        • Business hours: Monday - Friday, 9:00 AM - 6:00 PM IST
+    </p>
+</div>
+
+<div style="margin-top: 30px; text-align: center; padding: 20px; background-color: #f8f9fa; border-radius: 8px;">
+    <p style="margin: 0; color: #6c757d; font-size: 14px;">
+        <strong>Best regards,</strong><br>
+        The Fusiontec Software Team<br>
+        <span style="color: #1f3c88;">Your Trusted Technology Partner</span>
+    </p>
+</div>
+{% endblock %}

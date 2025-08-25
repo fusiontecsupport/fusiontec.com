@@ -1,104 +1,89 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="UTF-8">
-    <title>Product Form Submission</title>
-  </head>
-  <body style="margin: 0; padding: 20px; font-family: Arial, sans-serif; background-color: #f8f9fa; color: #333;">
+{% extends 'products/email_base.html' %}
+{% block title %}Product Form Submission - Fusiontec{% endblock %}
 
-    <div style="max-width: 600px; margin: auto; background-color: #ffffff; border: 1px solid #dee2e6; border-radius: 6px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.05); padding: 20px;">
-      <h2 style="color: #263A85; text-align: center; margin-bottom: 20px;">From fusiontec.com Product Form</h2>
-      <h4 style="color: #263A85; text-align: center; margin-bottom: 20px;">New Product Form Submission</h4>
+{% block content %}
+<h1 class="content-title">New Product Form Submission</h1>
+<p class="content-subtitle">A new product form has been submitted from fusiontec.com</p>
 
-      <table style="width: 100%; border-collapse: collapse;">
-        <tr style="background-color: #263A85; color: #ffffff;">
-          <th style="text-align: left; padding: 10px; border: 1px solid #dee2e6;">Field</th>
-          <th style="text-align: left; padding: 10px; border: 1px solid #dee2e6;">Details</th>
-        </tr>
-        <tr style="background-color: #f8f9fa;">
-          <td style="padding: 10px; border: 1px solid #dee2e6;">Customer Name</td>
-          <td style="padding: 10px; border: 1px solid #dee2e6;">{{ customer_name }}</td>
-        </tr>
-        <tr>
-          <td style="padding: 10px; border: 1px solid #dee2e6;">Company Name</td>
-          <td style="padding: 10px; border: 1px solid #dee2e6;">{{ company_name|default:"Not provided" }}</td>
-        </tr>
-        <tr style="background-color: #f8f9fa;">
-          <td style="padding: 10px; border: 1px solid #dee2e6;">Email</td>
-          <td style="padding: 10px; border: 1px solid #dee2e6;">{{ email }}</td>
-        </tr>
-        <tr>
-          <td style="padding: 10px; border: 1px solid #dee2e6;">Mobile</td>
-          <td style="padding: 10px; border: 1px solid #dee2e6;">{{ mobile }}</td>
-        </tr>
-        <tr style="background-color: #f8f9fa;">
-          <td style="padding: 10px; border: 1px solid #dee2e6;">Has GST</td>
-          <td style="padding: 10px; border: 1px solid #dee2e6;">{{ has_gst }}</td>
-        </tr>
-        <tr>
-          <td style="padding: 10px; border: 1px solid #dee2e6;">GST Number</td>
-          <td style="padding: 10px; border: 1px solid #dee2e6;">{{ gst_number|default:"Not provided" }}</td>
-        </tr>
-        <tr style="background-color: #f8f9fa;">
-          <td style="padding: 10px; border: 1px solid #dee2e6;">Address</td>
-          <td style="padding: 10px; border: 1px solid #dee2e6;">{{ address|default:"Not provided" }}</td>
-        </tr>
-        <tr>
-          <td style="padding: 10px; border: 1px solid #dee2e6;">State</td>
-          <td style="padding: 10px; border: 1px solid #dee2e6;">{{ state|default:"Not provided" }}</td>
-        </tr>
-        <tr style="background-color: #f8f9fa;">
-          <td style="padding: 10px; border: 1px solid #dee2e6;">District</td>
-          <td style="padding: 10px; border: 1px solid #dee2e6;">{{ district|default:"Not provided" }}</td>
-        </tr>
-        <tr>
-          <td style="padding: 10px; border: 1px solid #dee2e6;">Pincode</td>
-          <td style="padding: 10px; border: 1px solid #dee2e6;">{{ pincode|default:"Not provided" }}</td>
-        </tr>
-        <tr style="background-color: #f8f9fa;">
-          <td style="padding: 10px; border: 1px solid #dee2e6;">Product</td>
-          <td style="padding: 10px; border: 1px solid #dee2e6;">{{ product_name }}</td>
-        </tr>
-        <tr>
-          <td style="padding: 10px; border: 1px solid #dee2e6;">Quantity</td>
-          <td style="padding: 10px; border: 1px solid #dee2e6;">{{ quantity }}</td>
-        </tr>
-        <tr style="background-color: #f8f9fa;">
-          <td style="padding: 10px; border: 1px solid #dee2e6;">Basic Amount</td>
-          <td style="padding: 10px; border: 1px solid #dee2e6;">₹{{ basic_amount }}</td>
-        </tr>
-        <tr>
-          <td style="padding: 10px; border: 1px solid #dee2e6;">CGST</td>
-          <td style="padding: 10px; border: 1px solid #dee2e6;">₹{{ cgst_amount }}</td>
-        </tr>
-        <tr style="background-color: #f8f9fa;">
-          <td style="padding: 10px; border: 1px solid #dee2e6;">SGST</td>
-          <td style="padding: 10px; border: 1px solid #dee2e6;">₹{{ sgst_amount }}</td>
-        </tr>
-        <tr>
-          <td style="padding: 10px; border: 1px solid #dee2e6;">Total with GST</td>
-          <td style="padding: 10px; border: 1px solid #dee2e6;">₹{{ total_with_gst }}</td>
-        </tr>
-        <tr style="background-color: #f8f9fa;">
-          <td style="padding: 10px; border: 1px solid #dee2e6;">Token Amount</td>
-          <td style="padding: 10px; border: 1px solid #dee2e6;">₹{{ token_amount }}</td>
-        </tr>
-        <tr>
-          <td style="padding: 10px; border: 1px solid #dee2e6;">Installation Charges</td>
-          <td style="padding: 10px; border: 1px solid #dee2e6;">₹{{ installation_charges }}</td>
-        </tr>
-        <tr style="background-color: #f8f9fa;">
-          <td style="padding: 10px; border: 1px solid #dee2e6;">Grand Total</td>
-          <td style="padding: 10px; border: 1px solid #dee2e6;"><strong>₹{{ grand_total }}</strong></td>
-        </tr>
-        <tr>
-          <td style="padding: 10px; border: 1px solid #dee2e6;">Submission ID</td>
-          <td style="padding: 10px; border: 1px solid #dee2e6;">{{ submission_id }}</td>
-        </tr>
-      </table>
+<div class="info-card">
+    <h3>👤 Customer Information</h3>
+    <p><strong>Name:</strong> {{ customer_name }}</p>
+    <p><strong>Company:</strong> {{ company_name|default:"Not provided" }}</p>
+    <p><strong>Email:</strong> <a href="mailto:{{ email }}">{{ email }}</a></p>
+    <p><strong>Mobile:</strong> <a href="tel:{{ mobile }}">{{ mobile }}</a></p>
+</div>
 
-      <p style="margin-top: 30px; font-size: 14px; text-align: center; color: #6c757d;">This email was generated automatically from the Fusiontec product form.</p>
-    </div>
+<div class="info-card">
+    <h3>🏢 Business Details</h3>
+    <p><strong>GST Status:</strong> 
+        <span class="status-badge {% if has_gst == 'Yes' %}status-success{% else %}status-info{% endif %}">
+            {{ has_gst }}
+        </span>
+    </p>
+    {% if gst_number %}
+    <p><strong>GST Number:</strong> {{ gst_number }}</p>
+    {% endif %}
+    <p><strong>Address:</strong> {{ address|default:"Not provided" }}</p>
+    <p><strong>Location:</strong> {{ district }}, {{ state }} - {{ pincode }}</p>
+</div>
 
-  </body>
-</html>
+<div class="info-card">
+    <h3>📦 Product Details</h3>
+    <p><strong>Product:</strong> {{ product_name }}</p>
+    <p><strong>Quantity:</strong> {{ quantity }}</p>
+</div>
+
+<table class="data-table">
+    <thead>
+        <tr>
+            <th>Item</th>
+            <th>Amount (₹)</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Basic Amount</td>
+            <td class="amount">₹{{ basic_amount }}</td>
+        </tr>
+        <tr>
+            <td>CGST</td>
+            <td class="amount">₹{{ cgst_amount }}</td>
+        </tr>
+        <tr>
+            <td>SGST</td>
+            <td class="amount">₹{{ sgst_amount }}</td>
+        </tr>
+        <tr>
+            <td>Total with GST</td>
+            <td class="amount">₹{{ total_with_gst }}</td>
+        </tr>
+        <tr>
+            <td>Token Amount</td>
+            <td class="amount">₹{{ token_amount }}</td>
+        </tr>
+        <tr>
+            <td>Installation Charges</td>
+            <td class="amount">₹{{ installation_charges }}</td>
+        </tr>
+        <tr class="highlight">
+            <td><strong>Grand Total</strong></td>
+            <td class="total-amount"><strong>₹{{ grand_total }}</strong></td>
+        </tr>
+    </tbody>
+</table>
+
+<div style="text-align: center; margin-top: 30px;">
+    <a href="mailto:{{ email }}" class="btn">Reply to Customer</a>
+    <a href="https://fusiontec.com/admin" class="btn btn-secondary">View in Admin</a>
+</div>
+
+<div style="margin-top: 30px; padding: 20px; background-color: #e3f2fd; border-radius: 8px; border-left: 4px solid #2196f3;">
+    <h4 style="margin: 0 0 10px 0; color: #1976d2;">📋 Submission Summary</h4>
+    <p style="margin: 0; color: #1565c0; font-size: 14px;">
+        <strong>Form:</strong> Product Form<br>
+        <strong>Submission ID:</strong> {{ submission_id }}<br>
+        <strong>Date:</strong> {% now "F j, Y, g:i a" %}<br>
+        <strong>Source:</strong> fusiontec.com
+    </p>
+</div>
+{% endblock %}

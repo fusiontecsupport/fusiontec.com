@@ -1,0 +1,91 @@
+{% extends 'products/email_base.html' %}
+{% block title %}{{ form_title|default:"Form Submission" }} - Fusiontec{% endblock %}
+
+{% block content %}
+<h1 class="content-title">{{ form_title|default:"New Form Submission" }}</h1>
+<p class="content-subtitle">{{ form_subtitle|default:"A new form has been submitted from fusiontec.com" }}</p>
+
+{% if customer_info %}
+<div class="info-card">
+    <h3>👤 Customer Information</h3>
+    {% for field, value in customer_info.items %}
+    <p><strong>{{ field|title }}:</strong> 
+        {% if field == 'email' %}
+            <a href="mailto:{{ value }}">{{ value }}</a>
+        {% elif field == 'mobile' or field == 'phone' %}
+            <a href="tel:{{ value }}">{{ value }}</a>
+        {% else %}
+            {{ value|default:"Not provided" }}
+        {% endif %}
+    </p>
+    {% endfor %}
+</div>
+{% endif %}
+
+{% if product_info %}
+<div class="info-card">
+    <h3>📦 Product Information</h3>
+    {% for field, value in product_info.items %}
+    <p><strong>{{ field|title }}:</strong> {{ value }}</p>
+    {% endfor %}
+</div>
+{% endif %}
+
+{% if pricing_info %}
+<div class="info-card">
+    <h3>💰 Pricing Information</h3>
+    {% for field, value in pricing_info.items %}
+    <p><strong>{{ field|title }}:</strong> 
+        {% if 'amount' in field or 'price' in field or 'total' in field %}
+            <span class="amount">₹{{ value }}</span>
+        {% else %}
+            {{ value }}
+        {% endif %}
+    </p>
+    {% endfor %}
+</div>
+{% endif %}
+
+{% if additional_info %}
+<div class="info-card">
+    <h3>📋 Additional Details</h3>
+    {% for field, value in additional_info.items %}
+    <p><strong>{{ field|title }}:</strong> {{ value|default:"Not provided" }}</p>
+    {% endfor %}
+</div>
+{% endif %}
+
+{% if custom_content %}
+{{ custom_content|safe }}
+{% endif %}
+
+<div style="text-align: center; margin-top: 30px;">
+    {% if customer_email %}
+    <a href="mailto:{{ customer_email }}" class="btn">Reply to Customer</a>
+    {% endif %}
+    <a href="https://fusiontec.com/admin" class="btn btn-secondary">View in Admin</a>
+</div>
+
+<div style="margin-top: 30px; padding: 20px; background-color: #e3f2fd; border-radius: 8px; border-left: 4px solid #2196f3;">
+    <h4 style="margin: 0 0 10px 0; color: #1976d2;">📋 Submission Summary</h4>
+    <p style="margin: 0; color: #1565c0; font-size: 14px;">
+        <strong>Form:</strong> {{ form_name|default:"General Form" }}<br>
+        {% if submission_id %}
+        <strong>Submission ID:</strong> {{ submission_id }}<br>
+        {% endif %}
+        <strong>Date:</strong> {% now "F j, Y, g:i a" %}<br>
+        <strong>Source:</strong> fusiontec.com
+    </p>
+</div>
+
+{% if priority_high %}
+<div style="margin-top: 20px; padding: 20px; background-color: #fff3cd; border-radius: 8px; border-left: 4px solid #ffc107;">
+    <h4 style="margin: 0 0 10px 0; color: #856404;">⚡ High Priority</h4>
+    <p style="margin: 0; color: #856404; font-size: 14px;">
+        <strong>Action Required:</strong> This submission requires immediate attention.<br>
+        Please review and respond within 24 hours.
+    </p>
+</div>
+{% endif %}
+{% endblock %}
+

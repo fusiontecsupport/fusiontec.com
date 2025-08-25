@@ -1,0 +1,74 @@
+{% extends 'products/email_base.html' %}
+{% block title %}DSC Form Submission - Fusiontec{% endblock %}
+
+{% block content %}
+<h1 class="content-title">New DSC Form Submission</h1>
+<p class="content-subtitle">A new Digital Signature Certificate form has been submitted from fusiontec.com</p>
+
+<div class="info-card">
+    <h3>👤 Customer Information</h3>
+    <p><strong>Name:</strong> {{ name }}</p>
+    <p><strong>Company:</strong> {{ company_name|default:"Not provided" }}</p>
+    <p><strong>Email:</strong> <a href="mailto:{{ email }}">{{ email }}</a></p>
+    <p><strong>Mobile:</strong> <a href="tel:{{ mobile }}">{{ mobile }}</a></p>
+    {% if gst_number %}
+    <p><strong>GST Number:</strong> {{ gst_number }}</p>
+    {% endif %}
+    <p><strong>Address:</strong> {{ address|default:"Not provided" }}</p>
+</div>
+
+<div class="info-card">
+    <h3>🔐 DSC Configuration</h3>
+    <p><strong>Class Type:</strong> {{ class_type }}</p>
+    <p><strong>User Type:</strong> {{ user_type }}</p>
+    <p><strong>Certificate Type:</strong> {{ cert_type }}</p>
+    <p><strong>Validity:</strong> {{ validity }}</p>
+    <p><strong>Include Token:</strong> 
+        <span class="status-badge {% if include_token %}status-success{% else %}status-info{% endif %}">
+            {{ include_token|yesno:"Yes,No" }}
+        </span>
+    </p>
+    <p><strong>Include Installation:</strong> 
+        <span class="status-badge {% if include_installation %}status-success{% else %}status-info{% endif %}">
+            {{ include_installation|yesno:"Yes,No" }}
+        </span>
+    </p>
+    {% if outside_india %}
+    <p><strong>Outside India:</strong> 
+        <span class="status-badge status-info">Yes</span>
+    </p>
+    {% endif %}
+</div>
+
+<div class="info-card">
+    <h3>💰 Pricing Information</h3>
+    <p><strong>Quoted Price:</strong> <span class="total-amount">₹{{ quoted_price }}</span></p>
+</div>
+
+<div style="text-align: center; margin-top: 30px;">
+    <a href="mailto:{{ email }}" class="btn">Reply to Customer</a>
+    <a href="https://fusiontec.com/admin" class="btn btn-secondary">View in Admin</a>
+</div>
+
+<div style="margin-top: 30px; padding: 20px; background-color: #e3f2fd; border-radius: 8px; border-left: 4px solid #2196f3;">
+    <h4 style="margin: 0 0 10px 0; color: #1976d2;">📋 Submission Summary</h4>
+    <p style="margin: 0; color: #1565c0; font-size: 14px;">
+        <strong>Form:</strong> Digital Signature Certificate (DSC) Form<br>
+        <strong>Date:</strong> {% now "F j, Y, g:i a" %}<br>
+        <strong>Source:</strong> fusiontec.com<br>
+        <strong>Priority:</strong> High (DSC applications require quick processing)
+    </p>
+</div>
+
+<div style="margin-top: 20px; padding: 20px; background-color: #fff3cd; border-radius: 8px; border-left: 4px solid #ffc107;">
+    <h4 style="margin: 0 0 10px 0; color: #856404;">⚡ Action Required</h4>
+    <p style="margin: 0; color: #856404; font-size: 14px;">
+        <strong>Next Steps:</strong><br>
+        • Review DSC requirements and documentation<br>
+        • Verify customer eligibility for selected class type<br>
+        • Prepare detailed quote with all applicable charges<br>
+        • Contact customer within 24 hours for next steps
+    </p>
+</div>
+{% endblock %}
+

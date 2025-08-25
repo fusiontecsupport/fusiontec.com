@@ -1,0 +1,73 @@
+{% extends 'products/email_base.html' %}
+{% block title %}DSC Application Received - Fusiontec{% endblock %}
+
+{% block content %}
+<h1 class="content-title">Thank You for Your DSC Application!</h1>
+<p class="content-subtitle">We've received your Digital Signature Certificate application and will process it shortly</p>
+
+<div class="info-card">
+    <h3>👋 Hello {{ name }},</h3>
+    <p>Thank you for submitting your <strong>Digital Signature Certificate (DSC)</strong> application to <strong>Fusiontec Software</strong>. We have successfully received your application and our team will review your requirements shortly.</p>
+    <p>We appreciate your trust in us for your DSC needs and will get back to you within 24 hours with detailed information and next steps.</p>
+</div>
+
+<div class="info-card">
+    <h3>🔐 Application Details</h3>
+    <p><strong>Class Type:</strong> {{ class_type }}</p>
+    <p><strong>User Type:</strong> {{ user_type }}</p>
+    <p><strong>Certificate Type:</strong> {{ cert_type }}</p>
+    <p><strong>Validity:</strong> {{ validity }}</p>
+    {% if include_token %}
+    <p><strong>Token:</strong> <span class="status-badge status-success">Included</span></p>
+    {% endif %}
+    {% if include_installation %}
+    <p><strong>Installation:</strong> <span class="status-badge status-success">Included</span></p>
+    {% endif %}
+</div>
+
+<div class="info-card">
+    <h3>📧 What Happens Next?</h3>
+    <ul style="margin: 0; padding-left: 20px; color: #495057;">
+        <li>Our DSC experts will review your application</li>
+        <li>We'll verify eligibility for your selected class type</li>
+        <li>You'll receive a detailed quote with all charges</li>
+        <li>We'll guide you through documentation requirements</li>
+        <li>Application processing will begin upon confirmation</li>
+    </ul>
+</div>
+
+<div style="text-align: center; margin-top: 30px;">
+    <a href="https://fusiontec.com" class="btn">Visit Our Website</a>
+    <a href="mailto:dsc@fusiontec.com" class="btn btn-secondary">DSC Support</a>
+</div>
+
+<div style="margin-top: 30px; padding: 20px; background-color: #d4edda; border-radius: 8px; border-left: 4px solid #28a745;">
+    <h4 style="margin: 0 0 10px 0; color: #155724;">💡 Important Information</h4>
+    <p style="margin: 0; color: #155724; font-size: 14px;">
+        <strong>DSC Processing Time:</strong> 3-5 business days<br>
+        <strong>Required Documents:</strong> PAN, Aadhaar, Photo, Business Proof<br>
+        <strong>Support:</strong> <a href="mailto:dsc@fusiontec.com" style="color: #155724;">dsc@fusiontec.com</a> | <a href="tel:+919876543210" style="color: #155724;">+91 98765 43210</a>
+    </p>
+</div>
+
+<div style="margin-top: 20px; padding: 20px; background-color: #fff3cd; border-radius: 8px; border-left: 4px solid #ffc107;">
+    <h4 style="margin: 0 0 10px 0; color: #856404;">📋 Next Steps</h4>
+    <p style="margin: 0; color: #856404; font-size: 14px;">
+        <strong>Please prepare:</strong><br>
+        • Valid PAN Card copy<br>
+        • Aadhaar Card copy<br>
+        • Recent passport size photograph<br>
+        • Business registration documents (if applicable)<br>
+        • Authorization letter (for company applications)
+    </p>
+</div>
+
+<div style="margin-top: 30px; text-align: center; padding: 20px; background-color: #f8f9fa; border-radius: 8px;">
+    <p style="margin: 0; color: #6c757d; font-size: 14px;">
+        <strong>Best regards,</strong><br>
+        The Fusiontec DSC Team<br>
+        <span style="color: #1f3c88;">Your Trusted Digital Signature Partner</span>
+    </p>
+</div>
+{% endblock %}
+

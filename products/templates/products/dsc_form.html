@@ -5,6 +5,7 @@
 
 {% block extra_head %}
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<script src="{% static 'products/js/scripts.js' %}"></script>
 {% endblock %}
 
 {% block content %}
@@ -442,23 +443,26 @@
   let currentDisplayedPrice = 0;
 
   function setPriceValue(value, baseAmount = null, gstAmount = null){
-    const target = Number(value) || 0;
+    // Round the final value to nearest integer for display
+    const target = roundTax(Number(value) || 0);
     const start = Number(String(priceEl.textContent).replace(/[^0-9.]/g,'')) || currentDisplayedPrice || 0;
     const duration = 450;
     const startTime = performance.now();
     
-    // Update base amount and GST amount if provided
+    // Update base amount and GST amount if provided (with proper rounding)
     if (baseAmount !== null) {
       const baseEl = document.getElementById('baseAmount');
       if (baseEl) {
-        baseEl.textContent = `₹ ${Number(baseAmount).toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
+        const roundedBase = roundTax(Number(baseAmount));
+        baseEl.textContent = `₹ ${roundedBase.toLocaleString('en-IN')}`;
       }
     }
     
     if (gstAmount !== null) {
       const gstEl = document.getElementById('gstAmount');
       if (gstEl) {
-        gstEl.textContent = `₹ ${Number(gstAmount).toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
+        const roundedGST = roundTax(Number(gstAmount));
+        gstEl.textContent = `₹ ${roundedGST.toLocaleString('en-IN')}`;
       }
     }
     
@@ -467,7 +471,8 @@
       const t = Math.min(1, (now - startTime) / duration);
       const eased = t * (2 - t);
       const val = start + (target - start) * eased;
-      priceEl.textContent = `₹ ${Number(val).toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
+      // Display rounded value without decimal places
+      priceEl.textContent = `₹ ${roundTax(val).toLocaleString('en-IN')}`;
       if(t < 1){
         requestAnimationFrame(step);
       } else {
@@ -489,8 +494,11 @@
     const includeToken = token > 0 && (tokenCheckbox ? tokenCheckbox.checked : true);
     const includeInstall = install > 0 && (installCheckbox ? installCheckbox.checked : true);
     const base = dsc + (includeToken ? token : 0) + (includeInstall ? install : 0);
-    let total = base * (1 + (gstPct/100));
-    const gstAmount = total - base;
+    
+    // Calculate GST with proper rounding (456.49 → 456, 456.50 → 457)
+    const gstAmount = roundTaxAmount((base * gstPct) / 100);
+    const total = base + gstAmount;
+    
     setPriceValue(total, base, gstAmount);
   }
 
@@ -522,7 +530,8 @@
         }
         if(tokenVal > 0){
           tokenRow.style.display = '';
-          tokenAmtLabel.textContent = `₹${Number(tokenVal).toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
+          const roundedToken = roundTax(tokenVal);
+          tokenAmtLabel.textContent = `₹${roundedToken.toLocaleString('en-IN')}`;
           if(tokenCheckbox) tokenCheckbox.checked = true;
         } else {
           tokenRow.style.display = 'none';
@@ -530,7 +539,8 @@
         }
         if(installVal > 0){
           installRow.style.display = '';
-          installAmtLabel.textContent = `₹${Number(installVal).toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
+          const roundedInstall = roundTax(installVal);
+          installAmtLabel.textContent = `₹${roundedInstall.toLocaleString('en-IN')}`;
           if(installCheckbox) installCheckbox.checked = true;
         } else {
           installRow.style.display = 'none';
@@ -564,10 +574,11 @@
         }
         if(price != null){
           priceEl.classList.remove('text-muted');
-          // Calculate breakdown for fallback prices (assuming 18% GST)
+          // Calculate breakdown for fallback prices (assuming 18% GST) with proper rounding
           const baseAmount = price / 1.18; // Remove GST to get base amount
-          const gstAmount = price - baseAmount;
-          setPriceValue(price, baseAmount, gstAmount);
+          const gstAmount = roundTaxAmount(price - baseAmount);
+          const roundedBase = roundTax(baseAmount);
+          setPriceValue(price, roundedBase, gstAmount);
         } else {
           priceEl.textContent = 'Price not configured for this combination';
           priceEl.classList.add('text-muted');
