@@ -98,64 +98,19 @@
               <h5 class="product-title mb-2">{{ pt.prdt_desc }}</h5>
               <p class="card-text small text-muted mb-3">Explore solutions under {{ pt.prdt_desc }}.</p>
               <div class="d-flex flex-wrap gap-2 justify-content-center">
-                <button type="button" class="btn btn-primary btn-sm btn-pill" data-bs-toggle="modal" data-bs-target="#typeModal{{ pt.id }}">Details</button>
-                <a href="{% url 'product_type_form' pt.id %}" class="btn btn-outline-primary btn-sm btn-pill">View</a>
+                {# Details button disabled as requested #}
+                {# <button type="button" class="btn btn-primary btn-sm btn-pill" data-bs-toggle="modal" data-bs-target="#typeModal{{ pt.id }}">Details</button> #}
+                <a href="{% url 'product_type_form' pt.id %}" class="btn btn-outline-primary btn-sm btn-pill">Buy Online</a>
                 <button type="button" class="btn btn-get-quote btn-sm" data-quote-btn data-pt-id="{{ pt.id }}" data-pt-name="{{ pt.prdt_desc|escapejs }}">Get Quote</button>
               </div>
             </div>
           </div>
         </div>
         
-        <!-- Modal: Product Type Details -->
         <div class="modal fade product-modal" id="typeModal{{ pt.id }}" tabindex="-1" aria-labelledby="typeModalLabel{{ pt.id }}" aria-hidden="true" data-bs-backdrop="false" data-bs-keyboard="true">
-          <div class="modal-dialog modal-dialog-centered modal-lg">
-            <div class="modal-content rounded-4 shadow-lg">
-              <div class="modal-header border-0 product-modal-header">
-                <h5 class="modal-title" id="typeModalLabel{{ pt.id }}">{{ pt.prdt_desc }}</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-              </div>
-              <div class="modal-body pt-0">
-                <div class="row g-4 align-items-center">
-                  <div class="col-md-5">
-                    <div class="ratio ratio-16x9 rounded-3 overflow-hidden border product-modal-image" style="background:#ffffff;">
-                      {% if pt.image %}
-                        <img src="{{ pt.image.url }}" alt="{{ pt.prdt_desc }}" class="w-100 h-100" style="object-fit: contain; object-position: center;" />
-                      {% else %}
-                        <div class="d-flex align-items-center justify-content-center w-100 h-100" style="background:#f3f6f9;">
-                          <i class="bi bi-image text-muted" style="font-size:2rem;"></i>
-                        </div>
-                      {% endif %}
-                    </div>
-                  </div>
-                  <div class="col-md-7">
-                    <p class="text-muted mb-3">Explore solutions under {{ pt.prdt_desc }}.</p>
-                    {% with items=pt.products.all %}
-                      {% if items %}
-                        <div class="mb-2 fw-semibold">Products</div>
-                        <ul class="list-group list-group-flush product-list">
-                          {% for item in items %}
-                            <li class="list-group-item px-0 d-flex align-items-center">
-                              <i class="bi bi-box me-2 text-primary"></i>
-                              <span>{{ item.prdt_desc }}</span>
-                            </li>
-                          {% empty %}
-                            <li class="list-group-item px-0 text-muted">No products available under this type yet.</li>
-                          {% endfor %}
-                        </ul>
-                      {% else %}
-                        <div class="text-muted">No products available under this type yet.</div>
-                      {% endif %}
-                    {% endwith %}
-                  </div>
-                </div>
-              </div>
-              <div class="modal-footer border-0 pt-0">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-get-quote" data-quote-btn data-pt-id="{{ pt.id }}" data-pt-name="{{ pt.prdt_desc|escapejs }}">Get Quote</button>
-              </div>
-            </div>
-          </div>
+          ... details modal removed as per request ...
         </div>
+      
         {% endif %}
       {% empty %}
       <div class="col-12">

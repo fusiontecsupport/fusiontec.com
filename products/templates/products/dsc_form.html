@@ -55,6 +55,43 @@
   .dsc-visual { border: 1px solid #e9ecef; background: #fff; border-radius: .5rem; padding: 1rem; }
   .dsc-visual img { width: 100%; height: 100%; object-fit: contain; }
   @media (max-width: 767.98px){ .dsc-visual { margin-top: .5rem; } }
+  /* Back button uses default Bootstrap outline style */
+
+  /* Professional action buttons */
+  .action-buttons .btn-pro { 
+    border-radius: 10px !important;
+    height: 46px !important;
+    font-weight: 600 !important;
+    letter-spacing: .2px !important;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.08) !important;
+    transition: transform .1s ease, box-shadow .2s ease, filter .2s ease !important;
+  }
+  .action-buttons .btn-pro:active { transform: translateY(1px); box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+  .action-buttons .btn.btn-success.btn-pro-success, 
+  .action-buttons .btn.btn-success.btn-pro-success:hover, 
+  .action-buttons .btn.btn-success.btn-pro-success:focus { 
+    background-image: linear-gradient(135deg, #15803d 0%, #16a34a 100%) !important;
+    background-color: #16a34a !important;
+    border-color: #15803d !important;
+    color: #ffffff !important;
+  }
+  .action-buttons .btn.btn-primary.btn-pro-primary, 
+  .action-buttons .btn.btn-primary.btn-pro-primary:hover, 
+  .action-buttons .btn.btn-primary.btn-pro-primary:focus { 
+    background-image: linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%) !important;
+    background-color: #3b82f6 !important;
+    border-color: #1d4ed8 !important;
+    color: #ffffff !important;
+  }
+
+  .action-buttons .btn-pro-back { 
+    background: #ffffff; 
+    border: 1px solid #e5e7eb; 
+    color: #374151; 
+    height: 38px;
+    box-shadow: none;
+  }
+  .action-buttons .btn-pro-back:hover { background:#f8fafc; color:#111827; border-color:#d1d5db; }
 </style>
 <section class="py-5" style="background:#fff7f1;">
   <div class="container">
@@ -194,13 +231,18 @@
                           <input type="text" id="enqAddress" class="form-control form-control-lg" placeholder="Address (optional)">
                         </div>
                         <div class="col-12">
-                          <div class="d-grid gap-2">
-                            <button id="enqSubmit" class="btn btn-success btn-lg">
+                          <div class="d-grid gap-2 action-buttons">
+                            <button id="enqSubmit" class="btn btn-success btn-lg btn-pro btn-pro-success">
                               <i class="fas fa-paper-plane me-2"></i>Send Enquiry
                             </button>
-                            <button id="proceedBtn" class="btn btn-primary btn-lg">
+                            <button id="proceedBtn" class="btn btn-primary btn-lg btn-pro btn-pro-primary">
                               <i class="fas fa-credit-card me-2"></i>Proceed to Buy
                             </button>
+                            <div class="d-flex justify-content-start">
+                              <button type="button" class="btn btn-outline-secondary btn-sm" onclick="(history.length>1)?history.back():window.location.assign('/#dsc')">
+                                <i class="fas fa-arrow-left me-1"></i>Back
+                              </button>
+                            </div>
                           </div>
                         </div>
                       </div>

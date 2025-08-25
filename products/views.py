@@ -8,6 +8,199 @@ import time
 from django.template.loader import render_to_string
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+from io import BytesIO
+from reportlab.lib.pagesizes import A4
+from reportlab.pdfgen import canvas
+from reportlab.lib.units import mm
+from reportlab.lib import colors
+from reportlab.platypus import Table, TableStyle
+from django.templatetags.static import static
+from datetime import datetime
+from django.conf import settings
+import os
+
+
+def _generate_proforma_pdf(
+    *,
+    customer_name: str,
+    company_name: str,
+    mobile: str,
+    email: str,
+    quantity: int,
+    unit_price: float,
+    gst_rate: float,
+    token_amount: float,
+    install_charges: float,
+    include_token: bool,
+    include_install: bool,
+    product_header: str,
+    full_product_name: str,
+    submission_id: int,
+):
+    """Create a simple Proforma Invoice PDF mirroring the modal's data.
+
+    Returns (buffer, filename)
+    """
+    buffer = BytesIO()
+    width, height = A4
+    margin = 18 * mm
+    content_w = width - 2 * margin
+
+    c = canvas.Canvas(buffer, pagesize=A4)
+
+    # Header band
+    c.setFillColorRGB(23/255, 63/255, 132/255)
+    header_h = 90
+    c.rect(0, height - header_h, width, header_h, fill=1, stroke=0)
+
+    # Try to place logo on left (use fusiontec.jpg to match popup)
+    logo_candidates = [
+        os.path.join(settings.BASE_DIR, 'staticfiles', 'products', 'img', 'fusiontec.jpg'),
+        os.path.join(settings.BASE_DIR, 'staticfiles', 'products', 'img', 'fusiontec.png'),
+        os.path.join(settings.BASE_DIR, 'staticfiles', 'products', 'img', 'logo.png'),
+    ]
+    logo_path = next((p for p in logo_candidates if os.path.exists(p)), None)
+    if logo_path and os.path.exists(logo_path):
+        try:
+            # Smaller logo, vertically centered in header
+            logo_w = 16 * mm
+            logo_h = 16 * mm
+            logo_y = height - header_h + (header_h - logo_h) / 2
+            c.drawImage(logo_path, margin, logo_y, width=logo_w, height=logo_h, mask='auto')
+        except Exception:
+            pass
+
+    # Left header text
+    c.setFillColorRGB(1, 1, 1)
+    # Place text to the right of the logo, vertically aligned with it
+    text_x = margin + (16 * mm) + (8 * mm)
+    c.setFont("Helvetica-Bold", 12)
+    small_y = logo_y + (16 * mm) - 4
+    c.drawString(text_x, small_y, str(product_header or "Tally Product"))
+    c.setFont("Helvetica-Bold", 20)
+    title_y = logo_y + (16 * mm) / 2 - 2
+    c.drawString(text_x, title_y, "PROFORMA INVOICE")
+
+    # Invoice meta on right
+    inv_no = f"PI-{int(datetime.now().timestamp())}"
+    inv_date = datetime.now().strftime("%d/%m/%Y")
+    c.setFont("Helvetica", 10)
+    c.drawRightString(width - margin, height - 48, f"Proforma Invoice No: {inv_no}")
+    c.drawRightString(width - margin, height - 30, f"Date: {inv_date}")
+
+    y = height - 100
+    c.setFont("Helvetica-Bold", 11)
+    c.setFillColorRGB(0.22, 0.25, 0.32)
+    c.drawString(margin, y, "Seller")
+    c.drawString(width/2, y, "Buyer")
+    y -= 16
+    c.setFont("Helvetica", 10)
+    c.setFillColorRGB(0, 0, 0)
+    # Seller
+    seller_lines = ["FusionTec Software", "www.fusiontec.com", "sales@fusiontec.com"]
+    for i, line in enumerate(seller_lines):
+        c.drawString(margin, y - i*14, line)
+    # Buyer
+    buyer_lines = [customer_name]
+    if company_name:
+        buyer_lines.append(company_name)
+    buyer_lines += [mobile, email]
+    for i, line in enumerate(buyer_lines):
+        c.drawString(width/2, y - i*14, str(line))
+
+    y = y - max(len(seller_lines), len(buyer_lines)) * 14 - 16
+
+    # Compute pricing
+    qty = int(quantity or 1)
+    unit = float(unit_price or 0)
+    token_val = float(token_amount or 0) if include_token else 0.0
+    install_val = float(install_charges or 0) if include_install else 0.0
+
+    line_basic = unit * qty
+    gst_pct_value = float(gst_rate or 0)
+    line_gst = (line_basic * gst_pct_value) / 100.0
+    line_total = line_basic + line_gst
+    sub_total = line_total
+    grand_total = sub_total + token_val + install_val
+
+    def fmt(n):
+        return f"{float(n):,.2f}"
+
+    # Items table
+    # Derive gst percentage string using computed values if needed
+    gst_pct_display = f"{round((line_gst/line_basic)*100, 2) if line_basic else 0}%"
+    data = [["Description", "Qty", "Unit Price", "GST %", "GST Amt", "Line Total"]]
+    data.append([full_product_name, str(qty), fmt(unit), gst_pct_display, fmt(line_gst), fmt(line_total)])
+    if include_token and token_val > 0:
+        data.append(["Token Charges", "1", fmt(token_val), "-", "-", fmt(token_val)])
+    if include_install and install_val > 0:
+        data.append(["Installation", "1", fmt(install_val), "-", "-", fmt(install_val)])
+
+    # Column widths sized to content width so nothing overflows
+    col_desc = content_w * 0.44
+    col_qty  = content_w * 0.08
+    col_unit = content_w * 0.16
+    col_pct  = content_w * 0.08
+    col_gst  = content_w * 0.12
+    col_line = content_w * 0.12
+    table = Table(data, colWidths=[col_desc, col_qty, col_unit, col_pct, col_gst, col_line])
+    table.setStyle(TableStyle([
+        ("BACKGROUND", (0,0), (-1,0), colors.Color(23/255, 63/255, 132/255)),
+        ("TEXTCOLOR", (0,0), (-1,0), colors.white),
+        ("FONTNAME", (0,0), (-1,0), "Helvetica-Bold"),
+        ("FONTSIZE", (0,0), (-1,0), 10),
+        ("ALIGN", (1,1), (-1,-1), "RIGHT"),
+        ("ALIGN", (0,0), (0,-1), "LEFT"),
+        ("GRID", (0,0), (-1,-1), 0.5, colors.grey),
+        ("FONTSIZE", (0,1), (-1,-1), 9),
+        ("LEFTPADDING", (0,0), (-1,-1), 6),
+        ("RIGHTPADDING", (0,0), (-1,-1), 6),
+        ("TOPPADDING", (0,0), (-1,-1), 6),
+        ("BOTTOMPADDING", (0,0), (-1,-1), 6),
+    ]))
+
+    # Draw table
+    w, h = table.wrapOn(c, content_w, height)
+    table.drawOn(c, margin, y - h)
+    y = y - h - 12
+
+    # Totals table (right aligned)
+    totals = [["Basic Total", fmt(line_basic)], [f"GST ({gst_pct_display})", fmt(line_gst)], ["Subtotal", fmt(sub_total)]]
+    if include_token and token_val > 0:
+        totals.append(["Token Amount", fmt(token_val)])
+    if include_install and install_val > 0:
+        totals.append(["Installation", fmt(install_val)])
+    totals.append(["Grand Total", f"INR {fmt(grand_total)}"])
+
+    t = Table(totals, colWidths=[80*mm, 40*mm])
+    t.setStyle(TableStyle([
+        ("ALIGN", (0,0), (-1,-1), "RIGHT"),
+        ("FONTNAME", (0,0), (-1,-1), "Helvetica"),
+        ("FONTSIZE", (0,0), (-1,-1), 10),
+        ("BOTTOMPADDING", (0,0), (-1,-1), 4),
+        ("TOPPADDING", (0,0), (-1,-1), 4),
+        ("LINEABOVE", (0,-1), (-1,-1), 0.7, colors.black),
+        ("FONTNAME", (0,-1), (-1,-1), "Helvetica-Bold"),
+    ]))
+
+    wt, ht = t.wrapOn(c, 120*mm, height)
+    t.drawOn(c, margin + (content_w - wt), y - ht)
+    y = y - ht - 18
+
+    # Footer note
+    c.setFont("Helvetica", 9)
+    c.setFillColorRGB(0.42, 0.45, 0.50)
+    c.drawString(margin, y, "Terms: Payment due within 7 days. This PI is valid for 15 days from issue date.")
+
+    c.showPage()
+    c.save()
+
+    filename_safe = str(product_header or "product").lower().replace(" ", "_")
+    try:
+        buffer.seek(0)
+    except Exception:
+        pass
+    return buffer, f"{filename_safe}_PI.pdf"
 from django.http import HttpResponseRedirect
 from functools import wraps
 from django.contrib.auth.decorators import login_required
@@ -918,6 +1111,53 @@ def save_product_submission(request):
                     to=[data.get('email')],
                 )
                 customer_email.content_subtype = "html"
+                # Generate and attach Proforma Invoice PDF
+                try:
+                    # Determine GST % to mirror popup exactly
+                    gst_pct_value = 0.0
+                    try:
+                        if sub_product_obj:
+                            rc = RateCardEntry.objects.filter(sub_product=sub_product_obj).order_by('-rate_date').first()
+                            if rc and rc.gst_percent is not None:
+                                gst_pct_value = float(rc.gst_percent)
+                    except Exception:
+                        gst_pct_value = 0.0
+                    if not gst_pct_value and basic_amount:
+                        try:
+                            total_with_gst_val = float(data.get('total_amount') or 0)
+                            if total_with_gst_val and float(basic_amount) > 0:
+                                gst_pct_value = ((total_with_gst_val - float(basic_amount)) / float(basic_amount)) * 100.0
+                        except Exception:
+                            pass
+
+                    pdf_buffer, pdf_filename = _generate_proforma_pdf(
+                        customer_name=data.get('customer_name'),
+                        company_name=data.get('company_name') or '',
+                        mobile=data.get('mobile'),
+                        email=data.get('email'),
+                        quantity=int(data.get('quantity') or 1),
+                        unit_price=float(basic_amount or 0),
+                        gst_rate=float(gst_pct_value or 0),
+                        token_amount=float(data.get('token_amount') or 0),
+                        install_charges=float(data.get('installing_charges') or 0),
+                        include_token=float(data.get('token_amount') or 0) > 0,
+                        include_install=float(data.get('installing_charges') or 0) > 0,
+                        product_header=product_item.prdt_desc,
+                        full_product_name=(f"{product_item.prdt_desc} — {sub_product_obj.subprdt_desc}" if sub_product_obj else product_item.prdt_desc),
+                        submission_id=form_submission.id,
+                    )
+                    try:
+                        pdf_bytes = pdf_buffer.getvalue()
+                        print(f"[EMAIL] Attaching PDF '{pdf_filename}' size={len(pdf_bytes)} bytes for submission {form_submission.id}")
+                        if pdf_bytes and len(pdf_bytes) > 500:
+                            customer_email.attach(pdf_filename, pdf_bytes, 'application/pdf')
+                        else:
+                            print("[EMAIL][WARN] Generated PDF is empty or too small; skipping attachment")
+                    except Exception as att_err:
+                        print(f"[EMAIL][ERROR] Failed to attach PDF: {att_err}")
+                except Exception as gen_err:
+                    # Do not fail email if PDF generation fails
+                    print(f"[EMAIL][ERROR] PDF generation failed: {gen_err}")
                 customer_email.send()
 
                 return JsonResponse({
