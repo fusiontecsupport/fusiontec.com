@@ -565,8 +565,6 @@ def dsc_enquiry_api(request):
             email=email,
             mobile=mobile,
             address=address,
-            company_name=company_name,
-            gst_number=gst_number,
             class_type=class_type or '',
             user_type=user_type or '',
             cert_type=cert_type or '',
@@ -635,24 +633,41 @@ def dsc_enquiry_api(request):
         })
 
         try:
+            # Use DSC mailbox credentials like quote flow
+            sender_email_cfg = 'dsc@fusiontec.com'
+            app_password_cfg = 'pcjn sxte zvci tljs'
+            sanitized_password = app_password_cfg.replace(' ', '')
+
+            email_backend = EmailBackend(
+                host='smtp.gmail.com',
+                port=587,
+                username=sender_email_cfg,
+                password=sanitized_password,
+                use_tls=True,
+                fail_silently=False
+            )
+
             # Send to admin
             admin_email = EmailMessage(
                 subject=f"[Fusiontec DSC Enquiry] - {class_type} {user_type} - {name}",
                 body=admin_email_content,
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                to=[settings.CONTACT_FORM_RECIPIENT],
+                from_email=sender_email_cfg,
+                to=['dsc@fusiontec.com'],
             )
             admin_email.content_subtype = "html"
+            admin_email.connection = email_backend
             admin_email.send()
 
             # Send thank you to customer
             customer_email = EmailMessage(
                 subject="DSC Enquiry Received - Fusiontec",
                 body=customer_thank_you_content,
-                from_email=settings.DEFAULT_FROM_EMAIL,
+                from_email=sender_email_cfg,
                 to=[email],
+                reply_to=['dsc@fusiontec.com']
             )
             customer_email.content_subtype = "html"
+            customer_email.connection = email_backend
             customer_email.send()
 
             print(f"DSC enquiry created successfully with ID: {enquiry.id} and emails sent")
@@ -779,24 +794,41 @@ def dsc_submission_api(request):
         })
 
         try:
+            # Use DSC mailbox credentials like quote flow
+            sender_email_cfg = 'dsc@fusiontec.com'
+            app_password_cfg = 'pcjn sxte zvci tljs'
+            sanitized_password = app_password_cfg.replace(' ', '')
+
+            email_backend = EmailBackend(
+                host='smtp.gmail.com',
+                port=587,
+                username=sender_email_cfg,
+                password=sanitized_password,
+                use_tls=True,
+                fail_silently=False
+            )
+
             # Send to admin
             admin_email = EmailMessage(
                 subject=f"[Fusiontec DSC Purchase] - {class_type} {user_type} - {name}",
                 body=admin_email_content,
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                to=[settings.CONTACT_FORM_RECIPIENT],
+                from_email=sender_email_cfg,
+                to=['dsc@fusiontec.com'],
             )
             admin_email.content_subtype = "html"
+            admin_email.connection = email_backend
             admin_email.send()
 
             # Send thank you to customer
             customer_email = EmailMessage(
                 subject="DSC Purchase Request Received - Fusiontec",
                 body=customer_thank_you_content,
-                from_email=settings.DEFAULT_FROM_EMAIL,
+                from_email=sender_email_cfg,
                 to=[email],
+                reply_to=['dsc@fusiontec.com']
             )
             customer_email.content_subtype = "html"
+            customer_email.connection = email_backend
             customer_email.send()
 
             print(f"DSC submission created successfully with ID: {submission.id} and emails sent")
