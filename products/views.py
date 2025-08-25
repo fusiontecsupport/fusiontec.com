@@ -352,6 +352,8 @@ def dsc_enquiry_api(request):
         email = (payload.get('email') or '').strip()
         mobile = (payload.get('mobile') or '').strip()
         address = (payload.get('address') or '').strip() or None
+        company_name = (payload.get('company_name') or '').strip() or None
+        gst_number = (payload.get('gst_number') or '').strip() or None
         class_type = payload.get('class_type')
         user_type = payload.get('user_type')
         cert_type = payload.get('cert_type')
@@ -370,6 +372,8 @@ def dsc_enquiry_api(request):
             email=email,
             mobile=mobile,
             address=address,
+            company_name=company_name,
+            gst_number=gst_number,
             class_type=class_type or '',
             user_type=user_type or '',
             cert_type=cert_type or '',
@@ -379,6 +383,90 @@ def dsc_enquiry_api(request):
             outside_india=outside_india,
             quoted_price=quoted_price,
         )
+
+        # Send admin notification email using common template
+        admin_email_content = render_to_string('products/generic_form_email.html', {
+            'form_title': 'DSC Enquiry Request',
+            'form_subtitle': 'A new Digital Signature Certificate enquiry has been submitted',
+            'customer_info': {
+                'name': name,
+                'email': email,
+                'mobile': mobile,
+                'company': company_name or 'Not provided',
+                'address': address or 'Not provided',
+                'gst_number': gst_number or 'Not provided'
+            },
+            'product_info': {
+                'product': 'Digital Signature Certificate',
+                'class_type': class_type,
+                'user_type': user_type,
+                'cert_type': cert_type,
+                'validity': validity,
+                'include_token': 'Yes' if include_token else 'No',
+                'include_installation': 'Yes' if include_installation else 'No',
+                'outside_india': 'Yes' if outside_india else 'No'
+            },
+            'pricing_info': {
+                'quoted_price': f'₹{quoted_price:,.2f}'
+            },
+            'form_name': 'DSC Enquiry Form',
+            'submission_id': enquiry.id,
+            'priority_high': True,
+            'customer_email': email
+        })
+
+        # Send customer thank you email using common template
+        customer_thank_you_content = render_to_string('products/generic_form_thanks.html', {
+            'thank_you_title': 'Thank You for Your DSC Enquiry!',
+            'thank_you_subtitle': 'We\'ve received your Digital Signature Certificate enquiry',
+            'customer_name': name,
+            'form_type': 'DSC enquiry',
+            'response_time': '24 hours',
+            'submission_details': {
+                'product': 'Digital Signature Certificate',
+                'class_type': class_type,
+                'user_type': user_type,
+                'cert_type': cert_type,
+                'validity': validity,
+                'quoted_price': f'₹{quoted_price:,.2f}'
+            },
+            'next_steps': [
+                'Our DSC experts will review your requirements',
+                'We\'ll verify eligibility for your selected class type',
+                'You\'ll receive a detailed quote with all charges',
+                'We\'ll guide you through documentation requirements',
+                'We\'ll discuss the application process and timeline'
+            ],
+            'important_info': 'DSC applications require proper documentation and verification. Our team will guide you through the entire process.',
+            'support_email': 'dsc@fusiontec.com'
+        })
+
+        try:
+            # Send to admin
+            admin_email = EmailMessage(
+                subject=f"[Fusiontec DSC Enquiry] - {class_type} {user_type} - {name}",
+                body=admin_email_content,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                to=[settings.CONTACT_FORM_RECIPIENT],
+            )
+            admin_email.content_subtype = "html"
+            admin_email.send()
+
+            # Send thank you to customer
+            customer_email = EmailMessage(
+                subject="DSC Enquiry Received - Fusiontec",
+                body=customer_thank_you_content,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                to=[email],
+            )
+            customer_email.content_subtype = "html"
+            customer_email.send()
+
+            print(f"DSC enquiry created successfully with ID: {enquiry.id} and emails sent")
+        except Exception as email_error:
+            print(f"Email sending failed: {email_error}")
+            # Continue with enquiry even if email fails
+
         return JsonResponse({'success': True, 'id': enquiry.id})
     except Exception as exc:
         return JsonResponse({'success': False, 'message': str(exc)}, status=500)
@@ -440,7 +528,89 @@ def dsc_submission_api(request):
             quoted_price=quoted_price,
         )
         
-        print(f"DSC submission created successfully with ID: {submission.id}")
+        # Send admin notification email using common template
+        admin_email_content = render_to_string('products/generic_form_email.html', {
+            'form_title': 'DSC Purchase Request',
+            'form_subtitle': 'A new Digital Signature Certificate purchase request has been submitted',
+            'customer_info': {
+                'name': name,
+                'email': email,
+                'mobile': mobile,
+                'company': company_name or 'Not provided',
+                'address': address or 'Not provided',
+                'gst_number': gst_number or 'Not provided'
+            },
+            'product_info': {
+                'product': 'Digital Signature Certificate',
+                'class_type': class_type,
+                'user_type': user_type,
+                'cert_type': cert_type,
+                'validity': validity,
+                'include_token': 'Yes' if include_token else 'No',
+                'include_installation': 'Yes' if include_installation else 'No',
+                'outside_india': 'Yes' if outside_india else 'No'
+            },
+            'pricing_info': {
+                'quoted_price': f'₹{quoted_price:,.2f}'
+            },
+            'form_name': 'DSC Purchase Form',
+            'submission_id': submission.id,
+            'priority_high': True,
+            'customer_email': email
+        })
+
+        # Send customer thank you email using common template
+        customer_thank_you_content = render_to_string('products/generic_form_thanks.html', {
+            'thank_you_title': 'Thank You for Your DSC Purchase Request!',
+            'thank_you_subtitle': 'We\'ve received your Digital Signature Certificate purchase request',
+            'customer_name': name,
+            'form_type': 'DSC purchase request',
+            'response_time': '24 hours',
+            'submission_details': {
+                'product': 'Digital Signature Certificate',
+                'class_type': class_type,
+                'user_type': user_type,
+                'cert_type': cert_type,
+                'validity': validity,
+                'quoted_price': f'₹{quoted_price:,.2f}'
+            },
+            'next_steps': [
+                'Our DSC experts will review your purchase request',
+                'We\'ll verify your eligibility for the selected class type',
+                'You\'ll receive payment instructions and documentation requirements',
+                'We\'ll guide you through the DSC issuance process',
+                'Your DSC will be issued and delivered as per the selected options'
+            ],
+            'important_info': 'DSC applications typically require 2-3 business days for processing and issuance.',
+            'support_email': 'dsc@fusiontec.com'
+        })
+
+        try:
+            # Send to admin
+            admin_email = EmailMessage(
+                subject=f"[Fusiontec DSC Purchase] - {class_type} {user_type} - {name}",
+                body=admin_email_content,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                to=[settings.CONTACT_FORM_RECIPIENT],
+            )
+            admin_email.content_subtype = "html"
+            admin_email.send()
+
+            # Send thank you to customer
+            customer_email = EmailMessage(
+                subject="DSC Purchase Request Received - Fusiontec",
+                body=customer_thank_you_content,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                to=[email],
+            )
+            customer_email.content_subtype = "html"
+            customer_email.send()
+
+            print(f"DSC submission created successfully with ID: {submission.id} and emails sent")
+        except Exception as email_error:
+            print(f"Email sending failed: {email_error}")
+            # Continue with submission even if email fails
+        
         return JsonResponse({'success': True, 'id': submission.id, 'submission_id': submission.id})
     except Exception as exc:
         print(f"Error in dsc_submission_api: {exc}")
@@ -960,30 +1130,54 @@ def quote_form(request, product_id):
             status='pending'
         )
         
-        # Send admin notification email
-        admin_email_content = render_to_string('products/quote_form_email.html', {
-            'customer_name': customer_name,
-            'company_name': company_name,
-            'email': email,
-            'mobile': mobile,
-            'product_name': product_item.item_name,
-            'quantity': quantity,
-            'basic_amount': basic_amount,
-            'cgst': cgst,
-            'sgst': sgst,
-            'total_amount': total_amount,
-            'token_amount': token_amount,
-            'installing_charges': installing_charges,
-            'grand_total': grand_total,
-            'quote_id': quote.id,
+        # Send admin notification email using common template
+        admin_email_content = render_to_string('products/generic_form_email.html', {
+            'form_title': 'Quote Request Submission',
+            'form_subtitle': 'A new quote request has been submitted from fusiontec.com',
+            'customer_info': {
+                'name': customer_name,
+                'email': email,
+                'mobile': mobile,
+                'company': company_name or 'Not provided'
+            },
+            'product_info': {
+                'product': product_item.item_name,
+                'quantity': quantity
+            },
+            'pricing_info': {
+                'basic_amount': f'₹{basic_amount:,.2f}',
+                'cgst': f'₹{cgst:,.2f}',
+                'sgst': f'₹{sgst:,.2f}',
+                'total_amount': f'₹{total_amount:,.2f}',
+                'token_amount': f'₹{token_amount:,.2f}',
+                'installing_charges': f'₹{installing_charges:,.2f}',
+                'grand_total': f'₹{grand_total:,.2f}'
+            },
+            'form_name': 'Quote Request Form',
+            'submission_id': quote.id,
+            'customer_email': email
         })
 
-        # Send customer thank you email
-        customer_thank_you_content = render_to_string('products/quote_form_thanks.html', {
+        # Send customer thank you email using common template
+        customer_thank_you_content = render_to_string('products/generic_form_thanks.html', {
+            'thank_you_title': 'Thank You for Your Quote Request!',
+            'thank_you_subtitle': 'We\'ve received your quote request and will prepare it shortly',
             'customer_name': customer_name,
-            'product_name': product_item.item_name,
-            'quantity': quantity,
-            'quote_id': quote.id,
+            'form_type': 'quote request',
+            'response_time': '24-48 hours',
+            'submission_details': {
+                'product': product_item.item_name,
+                'quantity': quantity,
+                'quote_id': quote.id
+            },
+            'next_steps': [
+                'Our team will analyze your requirements',
+                'We\'ll prepare a detailed quote with pricing',
+                'You\'ll receive a comprehensive proposal',
+                'We\'ll discuss implementation options and timeline'
+            ],
+            'important_info': 'Our team will review your requirements and get back to you with a detailed quote within 24-48 hours.',
+            'support_email': 'support@fusiontec.com'
         })
 
         try:

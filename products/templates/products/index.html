@@ -855,7 +855,7 @@
 {% include 'products/partials/our_products.html' %}
 
 <!-- Dedicated DSC Section -->
-<section class="py-5 bg-white" id="dsc">
+<section class="py-5 bg-white dsc-section" id="dsc">
     <div class="container px-5">
         <div class="text-center mb-4" data-aos="fade-up">
             <h2 class="fw-bolder mb-2">Digital Signature Certificate (DSC)</h2>
@@ -878,7 +878,7 @@
                                 <p class="card-text text-muted mb-4">Class 3 DSC for GST, MCA, Income Tax, Tender submissions, EPFO filings, and more.</p>
                                 <div class="d-flex flex-wrap gap-2">
                                     <a href="{% url 'dsc_form' %}" class="btn btn-primary">View</a>
-                                    <button type="button" class="btn btn-light" onclick="showDscQuoteForm()">Get Quote</button>
+                                    <button type="button" class="btn btn-get-quote" onclick="showDscQuoteForm()">Get Quote</button>
                                 </div>
                             </div>
                         </div>

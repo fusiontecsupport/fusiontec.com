@@ -100,7 +100,7 @@
               <div class="d-flex flex-wrap gap-2 justify-content-center">
                 <button type="button" class="btn btn-primary btn-sm btn-pill" data-bs-toggle="modal" data-bs-target="#typeModal{{ pt.id }}">Details</button>
                 <a href="{% url 'product_type_form' pt.id %}" class="btn btn-outline-primary btn-sm btn-pill">View</a>
-                <button type="button" class="btn btn-light btn-sm btn-pill" data-quote-btn data-pt-id="{{ pt.id }}" data-pt-name="{{ pt.prdt_desc|escapejs }}">Get Quote</button>
+                <button type="button" class="btn btn-get-quote btn-sm" data-quote-btn data-pt-id="{{ pt.id }}" data-pt-name="{{ pt.prdt_desc|escapejs }}">Get Quote</button>
               </div>
             </div>
           </div>
@@ -151,7 +151,7 @@
               </div>
               <div class="modal-footer border-0 pt-0">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" data-quote-btn data-pt-id="{{ pt.id }}" data-pt-name="{{ pt.prdt_desc|escapejs }}">Get Quote</button>
+                <button type="button" class="btn btn-get-quote" data-quote-btn data-pt-id="{{ pt.id }}" data-pt-name="{{ pt.prdt_desc|escapejs }}">Get Quote</button>
               </div>
             </div>
           </div>
@@ -279,7 +279,7 @@
                     </div>
                     <div class="modal-footer border-0 d-flex align-items-center gap-3">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" id="quoteSubmitBtn" class="btn btn-primary">
+                        <button type="submit" id="quoteSubmitBtn" class="btn btn-get-quote">
                             <i class="bi bi-send me-2"></i>
                             Submit Quote Request
                         </button>

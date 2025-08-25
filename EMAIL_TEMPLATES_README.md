@@ -43,17 +43,18 @@ This document describes the new professional email template system implemented f
 - Pricing breakdown with GST
 - Submission tracking
 
-#### Quote Form (`quote_form_email.html`)
-- Quote request details
-- Product and quantity information
-- Pricing calculations
-- Quote ID tracking
-
-#### DSC Form (`dsc_form_email.html`)
-- DSC configuration details
-- Class type and validity
-- Token and installation options
+#### Generic Form Email (`generic_form_email.html`) ⭐ **UNIFIED TEMPLATE**
+**Purpose**: Flexible template for ALL form types including:
+- Quote requests (all products)
+- DSC enquiries and purchases
+- Business intelligence forms
+- Any other form submissions
+**Features**:
+- Dynamic content based on context variables
+- Customizable sections
 - Priority indicators
+- Flexible data display
+- **Used by**: Quote forms, DSC forms, and all other form types
 
 ### 3. Customer Thank You Emails
 
@@ -69,70 +70,99 @@ This document describes the new professional email template system implemented f
 - Processing timeline
 - Support information
 
-#### Quote Form (`quote_form_thanks.html`)
-- Quote request confirmation
-- Product specifications
-- Response timeline
-- Contact options
-
-#### DSC Form (`dsc_form_thanks.html`)
-- Application confirmation
-- DSC configuration details
-- Required documents list
-- Processing timeline
-
-### 4. Generic Templates
-
-#### Generic Form Email (`generic_form_email.html`)
-**Purpose**: Flexible template for any form type
-**Features**:
-- Dynamic content based on context variables
-- Customizable sections
-- Priority indicators
-- Flexible data display
-
-#### Generic Thank You (`generic_form_thanks.html`)
-**Purpose**: Flexible thank you template
+#### Generic Thank You (`generic_form_thanks.html`) ⭐ **UNIFIED TEMPLATE**
+**Purpose**: Flexible thank you template for ALL form types
 **Features**:
 - Customizable content
 - Dynamic next steps
 - Document requirements
 - Contact information
+- **Used by**: Quote forms, DSC forms, and all other form types
+
+### 4. Legacy Templates (Deprecated)
+
+#### Quote Form (`quote_form_email.html`) - DEPRECATED
+- **Status**: No longer used
+- **Replaced by**: `generic_form_email.html`
+
+#### Quote Form Thank You (`quote_form_thanks.html`) - DEPRECATED
+- **Status**: No longer used
+- **Replaced by**: `generic_form_thanks.html`
+
+#### DSC Form (`dsc_form_email.html`) - DEPRECATED
+- **Status**: No longer used
+- **Replaced by**: `generic_form_email.html`
+
+#### DSC Form Thank You (`dsc_form_thanks.html`) - DEPRECATED
+- **Status**: No longer used
+- **Replaced by**: `generic_form_thanks.html`
 
 ## 🚀 Usage Examples
 
-### Using Specific Templates
+### Using Generic Templates for Quote Forms
 
 ```python
-# Contact form email
-email_html_content = render_to_string('products/contact_form_email.html', {
-    'name': name,
-    'email': email,
-    'phone': phone,
-    'subject': subject,
-    'message': message,
-})
-```
-
-### Using Generic Templates
-
-```python
-# Generic form email with custom context
-email_html_content = render_to_string('products/generic_form_email.html', {
-    'form_title': 'Business Intelligence Form',
-    'form_subtitle': 'New BI solution inquiry received',
+# Quote form email using generic template
+admin_email_content = render_to_string('products/generic_form_email.html', {
+    'form_title': 'Quote Request Submission',
+    'form_subtitle': 'A new quote request has been submitted from fusiontec.com',
     'customer_info': {
         'name': customer_name,
         'email': email,
         'mobile': mobile,
-        'company': company_name
+        'company': company_name or 'Not provided'
     },
     'product_info': {
-        'product': 'Business Intelligence Suite',
-        'requirements': requirements
+        'product': product_item.item_name,
+        'quantity': quantity
     },
-    'form_name': 'BI Form',
-    'priority_high': True
+    'pricing_info': {
+        'basic_amount': f'₹{basic_amount:,.2f}',
+        'cgst': f'₹{cgst:,.2f}',
+        'sgst': f'₹{sgst:,.2f}',
+        'total_amount': f'₹{total_amount:,.2f}',
+        'token_amount': f'₹{token_amount:,.2f}',
+        'installing_charges': f'₹{installing_charges:,.2f}',
+        'grand_total': f'₹{grand_total:,.2f}'
+    },
+    'form_name': 'Quote Request Form',
+    'submission_id': quote.id,
+    'customer_email': email
+})
+```
+
+### Using Generic Templates for DSC Forms
+
+```python
+# DSC form email using generic template
+admin_email_content = render_to_string('products/generic_form_email.html', {
+    'form_title': 'DSC Purchase Request',
+    'form_subtitle': 'A new Digital Signature Certificate purchase request has been submitted',
+    'customer_info': {
+        'name': name,
+        'email': email,
+        'mobile': mobile,
+        'company': company_name or 'Not provided',
+        'address': address or 'Not provided',
+        'gst_number': gst_number or 'Not provided'
+    },
+    'product_info': {
+        'product': 'Digital Signature Certificate',
+        'class_type': class_type,
+        'user_type': user_type,
+        'cert_type': cert_type,
+        'validity': validity,
+        'include_token': 'Yes' if include_token else 'No',
+        'include_installation': 'Yes' if include_installation else 'No',
+        'outside_india': 'Yes' if outside_india else 'No'
+    },
+    'pricing_info': {
+        'quoted_price': f'₹{quoted_price:,.2f}'
+    },
+    'form_name': 'DSC Purchase Form',
+    'submission_id': submission.id,
+    'priority_high': True,
+    'customer_email': email
 })
 ```
 
@@ -140,24 +170,25 @@ email_html_content = render_to_string('products/generic_form_email.html', {
 
 ```python
 # Generic thank you with custom context
-thank_you_content = render_to_string('products/generic_form_thanks.html', {
-    'thank_you_title': 'Thank You for Your BI Inquiry!',
-    'thank_you_subtitle': 'We\'ve received your business intelligence requirements',
+customer_thank_you_content = render_to_string('products/generic_form_thanks.html', {
+    'thank_you_title': 'Thank You for Your Quote Request!',
+    'thank_you_subtitle': 'We\'ve received your quote request and will prepare it shortly',
     'customer_name': customer_name,
-    'form_type': 'Business Intelligence inquiry',
-    'response_time': '24 hours',
+    'form_type': 'quote request',
+    'response_time': '24-48 hours',
     'submission_details': {
-        'product': 'BI Suite',
-        'requirements': requirements
+        'product': product_item.item_name,
+        'quantity': quantity,
+        'quote_id': quote.id
     },
     'next_steps': [
-        'Our BI experts will review your requirements',
-        'We\'ll prepare a customized solution proposal',
-        'You\'ll receive detailed pricing and timeline',
-        'We\'ll schedule a consultation call'
+        'Our team will analyze your requirements',
+        'We\'ll prepare a detailed quote with pricing',
+        'You\'ll receive a comprehensive proposal',
+        'We\'ll discuss implementation options and timeline'
     ],
-    'important_info': 'Business Intelligence solutions typically require 2-3 weeks for implementation planning.',
-    'support_email': 'bi@fusiontec.com'
+    'important_info': 'Our team will review your requirements and get back to you with a detailed quote within 24-48 hours.',
+    'support_email': 'support@fusiontec.com'
 })
 ```
 
@@ -240,27 +271,119 @@ thank_you_content = render_to_string('products/generic_form_thanks.html', {
 - [ ] Test in Gmail (web and mobile)
 - [ ] Test in Outlook (desktop and web)
 - [ ] Test in Apple Mail
-- [ ] Verify mobile responsiveness
-- [ ] Check all links work correctly
-- [ ] Verify images load properly
-- [ ] Test with different content lengths
+- [ ] Test in Thunderbird
+- [ ] Test on mobile devices
+- [ ] Verify all links work correctly
+- [ ] Check responsive design
+- [ ] Validate HTML structure
 
-### Content Testing
-- [ ] Verify all variables are populated
-- [ ] Check for missing or empty fields
-- [ ] Test with special characters
-- [ ] Verify formatting consistency
+## 📋 Migration Guide
 
-## 📞 Support
+### From Legacy Templates to Generic Templates
 
-For questions or issues with email templates:
-- **Technical Support**: development@fusiontec.com
-- **Design Questions**: design@fusiontec.com
-- **Content Updates**: marketing@fusiontec.com
+#### Quote Forms
+**Before:**
+```python
+admin_email_content = render_to_string('products/quote_form_email.html', {
+    'customer_name': customer_name,
+    'email': email,
+    # ... other specific variables
+})
+```
 
----
+**After:**
+```python
+admin_email_content = render_to_string('products/generic_form_email.html', {
+    'form_title': 'Quote Request Submission',
+    'customer_info': {
+        'name': customer_name,
+        'email': email,
+        # ... other customer info
+    },
+    'product_info': {
+        'product': product_name,
+        'quantity': quantity
+    },
+    'pricing_info': {
+        # ... pricing details
+    }
+})
+```
 
-**Last Updated**: {% now "F j, Y" %}
-**Version**: 2.0
-**Maintained By**: Fusiontec Development Team
+#### DSC Forms
+**Before:**
+```python
+admin_email_content = render_to_string('products/dsc_form_email.html', {
+    'name': name,
+    'email': email,
+    # ... other specific variables
+})
+```
+
+**After:**
+```python
+admin_email_content = render_to_string('products/generic_form_email.html', {
+    'form_title': 'DSC Purchase Request',
+    'customer_info': {
+        'name': name,
+        'email': email,
+        # ... other customer info
+    },
+    'product_info': {
+        'product': 'Digital Signature Certificate',
+        'class_type': class_type,
+        # ... other DSC info
+    }
+})
+```
+
+## 🎨 Button Design System
+
+### Common "Get Quote" Button
+All "Get Quote" buttons across the site now use a unified design:
+
+```css
+.btn-get-quote {
+  background: linear-gradient(135deg, #1f3c88 0%, #2563eb 100%);
+  border: none;
+  color: white;
+  font-weight: 600;
+  padding: 10px 24px;
+  border-radius: 25px;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(31, 60, 136, 0.2);
+}
+```
+
+### DSC Section Styling
+DSC section uses a green variant:
+```css
+.dsc-section .btn-get-quote {
+  background: linear-gradient(135deg, #198754 0%, #20c997 100%);
+}
+```
+
+### Implementation Locations
+- Product type cards
+- Product detail pages
+- Quote form modals
+- DSC section
+- Related products
+- All quote submission forms
+
+## 🔄 Recent Updates
+
+### Version 2.0 - Unified Email System
+- ✅ All quote forms now use `generic_form_email.html`
+- ✅ All DSC forms now use `generic_form_email.html`
+- ✅ Unified "Get Quote" button design across all sections
+- ✅ Consistent email templates for all form types
+- ✅ Improved maintainability and consistency
+
+### Version 1.0 - Initial Implementation
+- ✅ Base email template system
+- ✅ Individual templates for each form type
+- ✅ Professional styling and branding
+- ✅ Email client compatibility
 

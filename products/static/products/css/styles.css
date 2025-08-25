@@ -650,6 +650,68 @@ progress {
   }
 }
 
+/* Common Get Quote Button Styles */
+.btn-get-quote {
+  background: linear-gradient(135deg, #1f3c88 0%, #2563eb 100%);
+  border: none;
+  color: white;
+  font-weight: 600;
+  padding: 10px 24px;
+  border-radius: 25px;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  display: inline-block;
+  box-shadow: 0 2px 8px rgba(31, 60, 136, 0.2);
+}
+
+.btn-get-quote:hover {
+  background: linear-gradient(135deg, #1e40af 0%, #1d4ed8 100%);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(31, 60, 136, 0.3);
+  text-decoration: none;
+}
+
+.btn-get-quote:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(31, 60, 136, 0.2);
+}
+
+.btn-get-quote:focus {
+  box-shadow: 0 0 0 0.25rem rgba(31, 60, 136, 0.25);
+  outline: none;
+}
+
+/* Responsive adjustments for Get Quote buttons */
+@media (max-width: 768px) {
+  .btn-get-quote {
+    padding: 8px 20px;
+    font-size: 0.85rem;
+  }
+}
+
+/* Get Quote button in product cards */
+.product-card .btn-get-quote,
+.product-type-card .btn-get-quote {
+  margin: 0 4px;
+}
+
+/* Get Quote button in DSC section */
+.dsc-section .btn-get-quote {
+  background: linear-gradient(135deg, #198754 0%, #20c997 100%);
+  box-shadow: 0 2px 8px rgba(25, 135, 84, 0.2);
+}
+
+.dsc-section .btn-get-quote:hover {
+  background: linear-gradient(135deg, #157347 0%, #1ea085 100%);
+  box-shadow: 0 4px 16px rgba(25, 135, 84, 0.3);
+}
+
+.dsc-section .btn-get-quote:focus {
+  box-shadow: 0 0 0 0.25rem rgba(25, 135, 84, 0.25);
+}
+
 /* Product Type Master Cards Styling */
 .product-type-card {
   transition: all 0.3s ease;
@@ -9707,12 +9769,6 @@ textarea.form-control-lg {
   }
   .gap-md-0 {
     gap: 0 !important;
-  }
-  .gap-md-1 {
-    gap: 0.25rem !important;
-  }
-  .gap-md-2 {
-    gap: 0.5rem !important;
   }
   .gap-md-3 {
     gap: 1rem !important;

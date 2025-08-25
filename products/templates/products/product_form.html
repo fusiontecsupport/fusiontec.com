@@ -644,7 +644,7 @@ function generatePIContent() {
   console.log('Form data:', { customerName, companyName, mobile, email, quantity });
   
   // Get pricing data from selected product
-  let basicAmount, gstRate, tokenAmount, installCharges, productName;
+  let basicAmount, gstRate, tokenAmount, installCharges, productName, fullProductName;
   
   const subSelect2 = document.getElementById('subProductSelector');
   console.log('Sub product selector value:', subSelect2.value);
@@ -657,12 +657,16 @@ function generatePIContent() {
     gstRate = parseFloat(rateData.gst_percent || 0) || 0;
     tokenAmount = parseFloat(rateData.token_amount) || 0;
     installCharges = parseFloat(rateData.installation_charge) || 0;
-    productName = rateData.product_name;
-    console.log('PI - Parsed values:', { basicAmount, gstRate, tokenAmount, installCharges, productName });
+    // Use only the main product name for the header, not the full product name with sub-product
+    productName = '{{ product.prdt_desc }}';
+    // Use full product name with sub-product for the table description
+    fullProductName = rateData.product_name;
+    console.log('PI - Parsed values:', { basicAmount, gstRate, tokenAmount, installCharges, productName, fullProductName });
   } else {
     console.log('PI - No rate data found, using defaults');
     basicAmount = gstRate = tokenAmount = installCharges = 0;
     productName = '{{ product.prdt_desc }}';
+    fullProductName = '{{ product.prdt_desc }}';
   }
 
   const includeToken = tokenAmount > 0 && document.getElementById('add_token')?.checked;
@@ -699,7 +703,7 @@ function generatePIContent() {
       <div>
         <table class="pi-table">
           <tbody>
-                         <tr><th>Product</th><td>${productName}</td></tr>
+                         <tr><th>Product</th><td>${fullProductName}</td></tr>
             <tr><th>Quantity</th><td>${quantity}</td></tr>
             ${includeToken ? `<tr><th>Token Amount</th><td>₹${tokenAmount.toFixed(2)}</td></tr>` : ''}
             ${includeInstall ? `<tr><th>Installation</th><td>₹${installCharges.toFixed(2)}</td></tr>` : ''}
@@ -767,7 +771,7 @@ async function downloadPDF() {
 
   // Pricing source - Get data from selected sub product
   const subProductSelector = document.getElementById('subProductSelector');
-  let unitPrice, gstRate, tokenAmount, installCharges, productName;
+  let unitPrice, gstRate, tokenAmount, installCharges, productName, fullProductName;
   const quantity = parseInt(document.getElementById('quantity').value) || 1;
 
   if (subProductSelector.value && rateCardData[subProductSelector.value]) {
@@ -777,8 +781,11 @@ async function downloadPDF() {
     gstRate = parseFloat(rateData.gst_percent) || 0;
     tokenAmount = parseFloat(rateData.token_amount) || 0;
     installCharges = parseFloat(rateData.installation_charge) || 0;
-    productName = rateData.product_name;
-    console.log('PDF - Parsed values:', { unitPrice, gstRate, tokenAmount, installCharges, productName });
+    // Use only the main product name for the header, not the full product name with sub-product
+    productName = '{{ product.prdt_desc }}';
+    // Use full product name with sub-product for the table description
+    fullProductName = rateData.product_name;
+    console.log('PDF - Parsed values:', { unitPrice, gstRate, tokenAmount, installCharges, productName, fullProductName });
   } else {
     // Fallback to product selector if sub product not selected
     const productSelector = document.getElementById('productSelector');
@@ -788,10 +795,12 @@ async function downloadPDF() {
       gstRate = parseFloat(opt.dataset.gst || 0) || 0;
       tokenAmount = parseFloat(opt.dataset.tokenAmount) || 0;
       installCharges = parseFloat(opt.dataset.installationCharges) || 0;
-      productName = opt.text;
+      productName = '{{ product.prdt_desc }}';
+      fullProductName = opt.text;
     } else {
       unitPrice = gstRate = tokenAmount = installCharges = 0;
       productName = '{{ product.prdt_desc }}';
+      fullProductName = '{{ product.prdt_desc }}';
     }
   }
 
@@ -857,7 +866,7 @@ async function downloadPDF() {
   // Items table with better positioning
   const tableY = y + (buyerDetails.length * 16) + 20; // Better spacing based on actual content
   const body = [
-    [productName, String(quantity), fmt(unitPrice), `${gstRate}%`, fmt(lineGst), fmt(lineTotal)],
+    [fullProductName, String(quantity), fmt(unitPrice), `${gstRate}%`, fmt(lineGst), fmt(lineTotal)],
   ];
   if (includeToken) body.push(['Token Charges', '1', fmt(tokenAmount), '-', '-', fmt(tokenAmount)]);
   if (includeInstall) body.push(['Installation', '1', fmt(installCharges), '-', '-', fmt(installCharges)]);
@@ -900,7 +909,7 @@ async function downloadPDF() {
       doc.text('PROFORMA INVOICE', titleX, 46);
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(10);
-      doc.text(`Invoice No: ${invoiceNo}`, pageWidth - M, 26, { align: 'right' });
+      doc.text(`Proforma Invoice No: ${invoiceNo}`, pageWidth - M, 26, { align: 'right' });
       doc.text(`Date: ${invoiceDate}`, pageWidth - M, 42, { align: 'right' });
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(11);
