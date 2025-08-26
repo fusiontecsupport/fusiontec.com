@@ -59,14 +59,23 @@
 
   /* Professional action buttons */
   .action-buttons .btn-pro { 
-    border-radius: 10px !important;
-    height: 46px !important;
+    border-radius: 12px !important;
+    height: 50px !important;
     font-weight: 600 !important;
     letter-spacing: .2px !important;
-    box-shadow: 0 4px 14px rgba(0,0,0,0.08) !important;
-    transition: transform .1s ease, box-shadow .2s ease, filter .2s ease !important;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1) !important;
+    transition: all .2s ease !important;
+    font-size: 1rem !important;
   }
-  .action-buttons .btn-pro:active { transform: translateY(1px); box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+  .action-buttons .btn-pro:hover { 
+    transform: translateY(-2px) !important; 
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15) !important; 
+  }
+  .action-buttons .btn-pro:active { 
+    transform: translateY(0) !important; 
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important; 
+  }
+  
   .action-buttons .btn.btn-success.btn-pro-success, 
   .action-buttons .btn.btn-success.btn-pro-success:hover, 
   .action-buttons .btn.btn-success.btn-pro-success:focus { 
@@ -86,12 +95,37 @@
 
   .action-buttons .btn-pro-back { 
     background: #ffffff; 
-    border: 1px solid #e5e7eb; 
+    border: 1px solid #d1d5db; 
     color: #374151; 
-    height: 38px;
-    box-shadow: none;
+    height: 40px;
+    border-radius: 8px !important;
+    font-weight: 500 !important;
+    transition: all .2s ease !important;
+    box-shadow: none !important;
   }
-  .action-buttons .btn-pro-back:hover { background:#f8fafc; color:#111827; border-color:#d1d5db; }
+  .action-buttons .btn-pro-back:hover { 
+    background: #f8fafc !important; 
+    color: #111827 !important; 
+    border-color: #9ca3af !important;
+    transform: translateY(-1px) !important;
+  }
+  /* Mini price box (core price without add-ons) */
+  .mini-price-box{ background:#f8fafc; border:1px solid #e5e7eb; }
+  .mini-price-item{ line-height:1; }
+  .mini-price-label{ font-size:.75rem; color:#6b7280; margin-bottom:.15rem; }
+  .mini-price-value{ font-weight:700; }
+  .mini-price-sep{ color:#9ca3af; font-weight:700; }
+  
+  /* Mobile responsive adjustments */
+  @media (max-width: 767.98px) {
+    .action-buttons .btn-pro {
+      height: 48px !important;
+      font-size: 0.95rem !important;
+    }
+    .action-buttons .btn-pro-back {
+      height: 38px !important;
+    }
+  }
 </style>
 <section class="py-5" style="background:#fff7f1;">
   <div class="container">
@@ -132,7 +166,17 @@
                   <div class="btn-group toggle-group" id="validityGroup" role="group"></div>
                 </div>
 
-
+                <!-- Core price (base only, without add-ons or GST) -->
+                <div class="mb-2">
+                  <div class="small text-muted fw-semibold mb-1">Base Price</div>
+                  <div class="mini-price-box d-flex align-items-center justify-content-between p-2 rounded-3">
+                    <div class="mini-price-item">
+                      <div class="mini-price-label">Base</div>
+                      <div id="coreBaseAmount" class="mini-price-value">₹ 0</div>
+                    </div>
+                  </div>
+                </div>
+                
 
                 <div id="addOnsContainer" class="mb-3" style="display:none;">
                   <div class="fw-semibold mb-2">Optional add-ons</div>
@@ -231,17 +275,24 @@
                           <input type="text" id="enqAddress" class="form-control form-control-lg" placeholder="Address (optional)">
                         </div>
                         <div class="col-12">
-                          <div class="d-grid gap-2 action-buttons">
-                            <button id="enqSubmit" class="btn btn-success btn-lg btn-pro btn-pro-success">
-                              <i class="fas fa-paper-plane me-2"></i>Send Enquiry
-                            </button>
-                            <button id="proceedBtn" class="btn btn-primary btn-lg btn-pro btn-pro-primary">
-                              <i class="fas fa-credit-card me-2"></i>Proceed to Buy
-                            </button>
-                            <div class="d-flex justify-content-start">
-                              <button type="button" class="btn btn-outline-secondary btn-sm" onclick="(history.length>1)?history.back():window.location.assign('/#dsc')">
-                                <i class="fas fa-arrow-left me-1"></i>Back
-                              </button>
+                          <div class="action-buttons">
+                            <!-- Action buttons in a single row -->
+                            <div class="row g-3">
+                              <div class="col-md-4">
+                                <button id="enqSubmit" class="btn btn-success btn-lg btn-pro btn-pro-success w-100">
+                                  <i class="fas fa-paper-plane me-2"></i>Send Enquiry
+                                </button>
+                              </div>
+                              <div class="col-md-4">
+                                <button id="proceedBtn" class="btn btn-primary btn-lg btn-pro btn-pro-primary w-100">
+                                  <i class="fas fa-credit-card me-2"></i>Proceed to Buy
+                                </button>
+                              </div>
+                              <div class="col-md-4">
+                                <button type="button" class="btn btn-outline-secondary btn-lg btn-pro btn-pro-back w-100" onclick="(history.length>1)?history.back():window.location.assign('/#dsc')">
+                                  <i class="fas fa-arrow-left me-2"></i>Back
+                                </button>
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -525,6 +576,14 @@
     requestAnimationFrame(step);
   }
 
+  // Update compact core price box (base only)
+  function updateCorePriceDisplay(baseAmount){
+    try{
+      const coreBaseEl = document.getElementById('coreBaseAmount');
+      if(coreBaseEl){ coreBaseEl.textContent = `₹ ${roundTax(Number(baseAmount||0)).toLocaleString('en-IN')}`; }
+    }catch(e){}
+  }
+
   function renderComputedPrice(){
     if(!lastComponents){
       return;
@@ -561,6 +620,10 @@
         lastComponents = comps;
         lastGST = comps.gst_percent || 0;
         lastSurcharge = data.outside_surcharge || 0;
+
+        // Update core price (DSC only, excluding token/installation and GST)
+        const coreBase = parseFloat(comps.dsc_charge || 0);
+        updateCorePriceDisplay(coreBase);
 
         // Show/hide add-on toggles
         const tokenVal = parseFloat(comps.token_amount || 0);
@@ -621,6 +684,8 @@
           const gstAmount = roundTaxAmount(price - baseAmount);
           const roundedBase = roundTax(baseAmount);
           setPriceValue(price, roundedBase, gstAmount);
+          // Also reflect base in compact core price box
+          updateCorePriceDisplay(roundedBase);
         } else {
           priceEl.textContent = 'Price not configured for this combination';
           priceEl.classList.add('text-muted');
@@ -1090,601 +1155,4 @@
 
 <!-- Razorpay Script -->
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-
-<script>
-  let lastGST = 0;
-
-  let lastSurcharge = 0;
-
-  let currentDisplayedPrice = 0;
-
-
-
-  function setPriceValue(value){
-
-    const target = Number(value) || 0;
-
-    const start = Number(String(priceEl.textContent).replace(/[^0-9.]/g,'')) || currentDisplayedPrice || 0;
-
-    const duration = 450;
-
-    const startTime = performance.now();
-
-    priceEl.classList.add('price-pulse');
-
-    function step(now){
-
-      const t = Math.min(1, (now - startTime) / duration);
-
-      const eased = t * (2 - t);
-
-      const val = start + (target - start) * eased;
-
-      priceEl.textContent = `₹ ${Number(val).toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
-
-      if(t < 1){
-
-        requestAnimationFrame(step);
-
-      } else {
-
-        currentDisplayedPrice = target;
-
-        setTimeout(()=>priceEl.classList.remove('price-pulse'), 150);
-
-      }
-
-    }
-
-    requestAnimationFrame(step);
-
-  }
-
-
-
-  function renderComputedPrice(){
-
-    if(!lastComponents){
-
-      return;
-
-    }
-
-    const dsc = parseFloat(lastComponents.dsc_charge || 0);
-
-    const token = parseFloat(lastComponents.token_amount || 0);
-
-    const install = parseFloat(lastComponents.installation_charge || 0);
-
-    const gstPct = parseFloat(lastGST || 0);
-
-    const includeToken = token > 0 && (tokenCheckbox ? tokenCheckbox.checked : true);
-
-    const includeInstall = install > 0 && (installCheckbox ? installCheckbox.checked : true);
-
-    const base = dsc + (includeToken ? token : 0) + (includeInstall ? install : 0);
-
-    let total = base * (1 + (gstPct/100));
-
-    if(outsideIndia && outsideIndia.checked){
-
-      total += parseFloat(lastSurcharge || 0);
-
-    }
-
-    setPriceValue(total);
-
-  }
-
-
-
-  async function updatePrice(){
-
-    try{
-
-      const params = new URLSearchParams({
-
-        class_type: state.classType,
-
-        user_type: state.userType,
-
-        cert_type: state.certType,
-
-        validity: state.validity,
-
-        outside: outsideIndia && outsideIndia.checked ? '1' : '0'
-
-      });
-
-      const resp = await fetch(`/api/dsc-price/?${params.toString()}`);
-
-      const data = await resp.json();
-
-      if(data.success){
-
-        if(notCfg) notCfg.classList.add('d-none');
-
-        const comps = data.components || {};
-
-        lastComponents = comps;
-
-        lastGST = comps.gst_percent || 0;
-
-        lastSurcharge = data.outside_surcharge || 0;
-
-
-
-        // Show/hide add-on toggles
-
-        const tokenVal = parseFloat(comps.token_amount || 0);
-
-        const installVal = parseFloat(comps.installation_charge || 0);
-
-        if(tokenVal > 0 || installVal > 0){
-
-          addOnsContainer.style.display = '';
-
-        } else {
-
-          addOnsContainer.style.display = 'none';
-
-        }
-
-        if(tokenVal > 0){
-
-          tokenRow.style.display = '';
-
-          tokenAmtLabel.textContent = `₹${Number(tokenVal).toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
-
-          if(tokenCheckbox) tokenCheckbox.checked = true;
-
-        } else {
-
-          tokenRow.style.display = 'none';
-
-          if(tokenCheckbox) tokenCheckbox.checked = false;
-
-        }
-
-        if(installVal > 0){
-
-          installRow.style.display = '';
-
-          installAmtLabel.textContent = `₹${Number(installVal).toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
-
-          if(installCheckbox) installCheckbox.checked = true;
-
-        } else {
-
-          installRow.style.display = 'none';
-
-          if(installCheckbox) installCheckbox.checked = false;
-
-        }
-
-
-
-        renderComputedPrice();
-
-      } else {
-
-        throw new Error('Backend not configured');
-
-      }
-
-    } catch(e){
-
-      // Fallback: use local table
-
-      try {
-
-        if(notCfg) notCfg.classList.remove('d-none');
-
-        // Hide add-ons when DB/pricing not configured for this selection
-
-        lastComponents = null;
-
-        if(addOnsContainer) addOnsContainer.style.display = 'none';
-
-        if(tokenRow) tokenRow.style.display = 'none';
-
-        if(installRow) installRow.style.display = 'none';
-
-        if(tokenCheckbox) tokenCheckbox.checked = false;
-
-        if(installCheckbox) installCheckbox.checked = false;
-
-
-
-        const outside = outsideIndia && outsideIndia.checked;
-
-        let price = null;
-
-        if (outside && state.classType === 'class3' && state.validity === '2y') {
-
-          price = (localPrices.class3.foreign[state.certType]||{})['2y'] || null;
-
-        }
-
-        if (price == null) {
-
-          const table = (localPrices[state.classType]||{})[state.certType]||{};
-
-          price = table[state.validity] || null;
-
-        }
-
-        if(price != null){
-
-          setPriceValue(price);
-
-        } else {
-
-          priceEl.textContent = 'Price not configured';
-
-        }
-
-      } catch (err) {
-
-        priceEl.textContent = 'Price unavailable';
-
-      }
-
-    }
-
-  }
-
-
-
-  function wireGroup(groupId, key){
-
-    const group = document.getElementById(groupId);
-
-    if(!group) return;
-
-    group.addEventListener('click', function(e){
-
-      const btn = e.target.closest('button');
-
-      if(!btn) return;
-
-      [...group.querySelectorAll('button')].forEach(b=>{
-
-        b.classList.remove('btn-primary','active');
-
-        b.classList.add('btn-outline-primary');
-
-      });
-
-      btn.classList.remove('btn-outline-primary');
-
-      btn.classList.add('btn-primary','active');
-
-      const val = btn.getAttribute('data-value');
-
-      if(val) state[key] = val;
-
-      updatePrice();
-
-    });
-
-  }
-
-
-
-  wireGroup('classTypeGroup','classType');
-
-  wireGroup('userTypeGroup','userType');
-
-  wireGroup('certTypeGroup','certType');
-
-  wireGroup('validityGroup','validity');
-
-
-
-  if(outsideIndia){
-
-    outsideIndia.addEventListener('change', function(){
-
-      // Recompute locally using surcharge if we already have components
-
-      if(lastComponents){
-
-        renderComputedPrice();
-
-      } else {
-
-        updatePrice();
-
-      }
-
-    });
-
-  }
-
-
-
-  if(tokenCheckbox){
-
-    tokenCheckbox.addEventListener('change', renderComputedPrice);
-
-  }
-
-  if(installCheckbox){
-
-    installCheckbox.addEventListener('change', renderComputedPrice);
-
-  }
-
-
-
-  if(enqSubmit){
-
-    enqSubmit.addEventListener('click', async function(){
-
-      enqMsg.textContent = '';
-
-      const name = (enqName?.value || '').trim();
-
-      const email = (enqEmail?.value || '').trim();
-
-      const mobileNo = (enqMobile?.value || '').trim();
-
-      const address = (enqAddress?.value || '').trim();
-
-      if(!name || !email || !mobileNo){
-
-        enqMsg.textContent = 'Please fill Name, Email and Mobile.';
-
-        enqMsg.className = 'small mt-2 text-danger';
-
-        return;
-
-      }
-
-      // Compute current quoted price number from UI text (safe fallback)
-
-      const totalStr = priceEl.textContent.replace(/[^0-9.]/g,'');
-
-      const quoted = parseFloat(totalStr || '0') || 0;
-
-      const payload = {
-
-        name,
-
-        email,
-
-        mobile: mobileNo,
-
-        address,
-
-        class_type: state.classType,
-
-        user_type: state.userType,
-
-        cert_type: state.certType,
-
-        validity: state.validity,
-
-        include_token: !!(tokenCheckbox && tokenCheckbox.checked),
-
-        include_installation: !!(installCheckbox && installCheckbox.checked),
-
-        outside_india: false,
-
-        quoted_price: quoted
-
-      };
-
-      try{
-
-        const resp = await fetch('/api/dsc-enquiry/', {
-
-          method: 'POST',
-
-          headers: { 'Content-Type': 'application/json' },
-
-          body: JSON.stringify(payload)
-
-        });
-
-        const data = await resp.json();
-
-        if(data.success){
-
-          enqMsg.textContent = 'Enquiry submitted successfully. We will contact you soon.';
-
-          enqMsg.className = 'small mt-2 text-success';
-
-          enqName.value = '';
-
-          enqEmail.value = '';
-
-          enqMobile.value = '';
-
-          enqAddress.value = '';
-
-        } else {
-
-          throw new Error(data.message || 'Failed to submit');
-
-        }
-
-      } catch(err){
-
-        enqMsg.textContent = 'Failed to submit enquiry. Please try again.';
-
-        enqMsg.className = 'small mt-2 text-danger';
-
-      }
-
-    });
-
-  }
-
-  // Build buttons dynamically from backend options
-
-  async function buildOptions(){
-
-    try{
-
-      const resp = await fetch('/api/dsc-options/');
-
-      const data = await resp.json();
-
-      if(!data.success) return;
-
-      const classes = data.classes || [];
-
-      const map = data.map || {};
-
-      const defaults = data.defaults || {};
-
-      const classEl = document.getElementById('classTypeGroup');
-
-      const userEl = document.getElementById('userTypeGroup');
-
-      const certEl = document.getElementById('certTypeGroup');
-
-      const valEl = document.getElementById('validityGroup');
-
-
-
-      function renderButtons(el, values, activeVal, format){
-
-        el.innerHTML='';
-
-        (values||[]).forEach(v=>{
-
-          const btn = document.createElement('button');
-
-          btn.type='button';
-
-          btn.className = 'btn ' + (v===activeVal ? 'btn-primary active' : 'btn-outline-primary');
-
-          btn.setAttribute('data-value', v);
-
-          btn.textContent = format ? format(v) : v;
-
-          el.appendChild(btn);
-
-        });
-
-      }
-
-
-
-      // pick defaults
-
-      state.classType = defaults.class_type || classes[0] || 'class3';
-
-      const users = Object.keys(map[state.classType]||{individual:{}});
-
-      state.userType = defaults.user_type || users[0] || 'individual';
-
-      const certs = Object.keys((map[state.classType]||{})[state.userType]||{signature:[]});
-
-      state.certType = defaults.cert_type || certs[0] || 'signature';
-
-      const valids = ((map[state.classType]||{})[state.userType]||{})[state.certType] || [];
-
-      // If no validities available, keep state but render none; price will show 'not configured'
-
-      state.validity = defaults.validity || valids[0] || '1y';
-
-
-
-      renderButtons(classEl, classes, state.classType, v=>{
-
-        if(v==='class3') return 'Class 3';
-
-        if(v==='dgft') return 'DGFT';
-
-        return v.charAt(0).toUpperCase()+v.slice(1);
-
-      });
-
-      renderButtons(userEl, users, state.userType, v=> v==='individual'?'Individual':'Organization');
-
-      renderButtons(certEl, certs, state.certType, v=> v.charAt(0).toUpperCase()+v.slice(1));
-
-      renderButtons(valEl, valids, state.validity, v=> ({'1y':'1 Year','2y':'2 Years','3y':'3 Years'}[v]||v));
-
-      if(valids && valids.length){
-
-        valEl.classList.remove('opacity-50');
-
-        valEl.style.pointerEvents = '';
-
-      } else {
-
-        valEl.classList.add('opacity-50');
-
-        valEl.style.pointerEvents = 'none';
-
-      }
-
-
-
-      updatePrice();
-
-    } catch(e){
-
-      // If options API fails, keep existing UI but attempt price fetch
-
-      updatePrice();
-
-    }
-
-  }
-
-
-
-  buildOptions();
-
-
-
-  function scrollToEnquiry(){
-
-    if(!enquirySection) return;
-
-    enquirySection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-    enquirySection.classList.add('ring');
-
-    setTimeout(()=> enquirySection.classList.remove('ring'), 1500);
-
-  }
-
-  if(proceedBtn){ proceedBtn.addEventListener('click', scrollToEnquiry); }
-
-  if(talkBtn){ talkBtn.addEventListener('click', scrollToEnquiry); }
-
-
-
-  // Reveal on scroll
-
-  const revealEls = document.querySelectorAll('.reveal');
-
-  const io = new IntersectionObserver((entries)=>{
-
-    entries.forEach(e=>{
-
-      if(e.isIntersecting){
-
-        e.target.classList.add('is-visible');
-
-        io.unobserve(e.target);
-
-      }
-
-    });
-
-  }, { rootMargin: '0px 0px -10% 0px', threshold: 0.1 });
-
-  revealEls.forEach(el=> io.observe(el));
-
-})();
-
-</script>
 {% endblock %}
