@@ -680,6 +680,199 @@ def dsc_enquiry_api(request):
         return JsonResponse({'success': False, 'message': str(exc)}, status=500)
 
 @csrf_exempt
+def dsc_documents_upload_api(request):
+    """Accept and validate DSC document uploads with required rules per selection.
+
+    Expects multipart/form-data with fields:
+    - class_type: class3|dgft
+    - user_type: individual|organization (ignored for dgft)
+    - cert_type: signature|encryption|both (ignored for dgft)
+    - reference_name, reference_mobile
+    - Optional: name, email, mobile (to link/create customer)
+    - Files: pan, aadhar, gst, photo, auth, orgpan, ifc
+    """
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'message': 'Method not allowed'}, status=405)
+
+    try:
+        class_type = (request.POST.get('class_type') or '').strip()
+        user_type = (request.POST.get('user_type') or '').strip()
+        cert_type = (request.POST.get('cert_type') or '').strip()
+        reference_name = (request.POST.get('reference_name') or '').strip()
+        reference_mobile = (request.POST.get('reference_mobile') or '').strip()
+
+        name = (request.POST.get('name') or '').strip()
+        email = (request.POST.get('email') or '').strip()
+        mobile = (request.POST.get('mobile') or '').strip()
+
+        if not reference_name or not reference_mobile:
+            return JsonResponse({'success': False, 'message': 'Reference Name and Reference Mobile Number are required.'}, status=400)
+
+        # Normalize inputs to handle variants
+        def norm(s):
+            return (s or '').strip().lower().replace('organisation', 'organization').replace(' ', '')
+        ct = norm(class_type)
+        ut = norm(user_type)
+        cert = norm(cert_type)
+        # Map common variants
+        if ct in ('class3', 'classiii', 'class_3', 'class-3'):
+            ct = 'class3'
+        if ct in ('dgft', 'd.g.f.t'):
+            ct = 'dgft'
+        if ut in ('ind', 'indi', 'individual'):
+            ut = 'individual'
+        if ut in ('org', 'orga', 'organization'):
+            ut = 'organization'
+        if cert in ('sig', 'sign', 'signature'):
+            cert = 'signature'
+        if cert in ('enc', 'encrypt', 'encryption'):
+            cert = 'encryption'
+        if cert in ('both', 'combo', 'combined'):
+            cert = 'both'
+
+        # Determine required docs
+        def required_docs(ct_key, ut_key, cert_key):
+            if ct_key == 'dgft':
+                return ['pan','aadhar','gst','photo','auth','orgpan','ifc']
+            if ct_key == 'class3':
+                if ut_key == 'individual' and cert_key in ('signature','encryption'):
+                    return ['pan','aadhar']
+                if ut_key == 'individual' and cert_key == 'both':
+                    return ['pan','aadhar','gst','photo','auth','orgpan']
+                if ut_key == 'organization':
+                    return ['pan','aadhar','gst','photo','auth','orgpan']
+            return []
+
+        needed = required_docs(ct, ut, cert)
+        if not needed:
+            return JsonResponse({
+                'success': False,
+                'message': 'Invalid selection for documents.',
+                'debug': {
+                    'class_type': class_type,
+                    'user_type': user_type,
+                    'cert_type': cert_type,
+                    'normalized': {'class_type': ct, 'user_type': ut, 'cert_type': cert}
+                }
+            }, status=400)
+
+        # Collect files
+        files = {
+            'pan': request.FILES.get('pan'),
+            'aadhar': request.FILES.get('aadhar'),
+            'gst': request.FILES.get('gst'),
+            'photo': request.FILES.get('photo'),
+            'auth': request.FILES.get('auth'),
+            'orgpan': request.FILES.get('orgpan'),
+            'ifc': request.FILES.get('ifc'),
+        }
+
+        # Validate presence
+        missing = [k for k in needed if not files.get(k)]
+        if missing:
+            return JsonResponse({'success': False, 'message': f"Missing required files: {', '.join(missing)}"}, status=400)
+
+        # Validate extensions
+        def has_allowed(name, allowed_exts):
+            n = (name or '').lower()
+            return any(n.endswith(ext) for ext in allowed_exts)
+
+        doc_exts = ['.pdf', '.doc', '.docx']
+        photo_exts = ['.jpg', '.jpeg', '.pdf']
+        labels = {'pan':'PAN Card','aadhar':'Aadhar Card','gst':'GST Certificate','photo':'Photo','auth':'Authorisation Letter','orgpan':'Organisation PAN','ifc':'IFC Certificate'}
+
+        for key, f in files.items():
+            if not f:
+                continue
+            allowed = photo_exts if key == 'photo' else doc_exts
+            if not has_allowed(getattr(f, 'name', ''), allowed):
+                return JsonResponse({'success': False, 'message': f"{labels.get(key, key)} has invalid type."}, status=400)
+
+        # Find or create a customer if we have minimal identity
+        customer = None
+        try:
+            if mobile:
+                customer = Customer.objects.filter(mobile=mobile).order_by('-id').first()
+            if not customer and (name and (email or mobile)):
+                customer = Customer.objects.create(name=name, email=email or None, mobile=mobile or None)
+        except Exception:
+            customer = None
+
+        # Store Applicant with files
+        app_kwargs = {
+            'reference': reference_name,
+            'reference_contact': reference_mobile,
+        }
+        if customer:
+            app_kwargs['customer'] = customer
+        else:
+            # Create a placeholder customer if none
+            customer = Customer.objects.create(name=name or reference_name, email=email or None, mobile=mobile or reference_mobile)
+            app_kwargs['customer'] = customer
+
+        applicant = Applicant.objects.create(**app_kwargs)
+
+        # Assign files to model fields and save
+        updated = False
+        if files['pan']:
+            applicant.pan_copy = files['pan']; updated = True
+        if files['aadhar']:
+            applicant.aadhar_copy = files['aadhar']; updated = True
+        if files['photo']:
+            applicant.photo = files['photo']; updated = True
+        if files['gst']:
+            applicant.gst_certificate = files['gst']; updated = True
+        if files['auth']:
+            applicant.authorization_letter = files['auth']; updated = True
+        if files['orgpan']:
+            applicant.company_pan = files['orgpan']; updated = True
+        if updated:
+            applicant.save()
+
+        # Email admin with summary
+        try:
+            admin_email_content = render_to_string('products/generic_form_email.html', {
+                'form_title': 'DSC Documents Uploaded',
+                'form_subtitle': 'A customer uploaded DSC documents',
+                'customer_info': {
+                    'name': customer.name,
+                    'email': customer.email or 'Not provided',
+                    'mobile': customer.mobile or 'Not provided',
+                },
+                'product_info': {
+                    'product': 'Digital Signature Certificate',
+                    'class_type': class_type,
+                    'user_type': user_type or '-',
+                    'cert_type': cert_type or '-',
+                },
+                'extra_info': {
+                    'reference_name': reference_name,
+                    'reference_mobile': reference_mobile,
+                    'required_docs': ', '.join(needed)
+                },
+                'form_name': 'DSC Documents Upload',
+                'submission_id': applicant.id,
+                'priority_high': True,
+                'customer_email': customer.email or ''
+            })
+
+            admin_email = EmailMessage(
+                subject=f"[Fusiontec DSC Docs] - {class_type} {user_type} - {customer.name}",
+                body=admin_email_content,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                to=['dsc@fusiontec.com']
+            )
+            admin_email.content_subtype = 'html'
+            admin_email.send(fail_silently=True)
+        except Exception:
+            pass
+
+        return JsonResponse({'success': True, 'applicant_id': applicant.id})
+
+    except Exception as exc:
+        return JsonResponse({'success': False, 'message': str(exc)}, status=500)
+
+@csrf_exempt
 def dsc_submission_api(request):
     """Create a DSC submission for actual purchase with payment."""
     if request.method != 'POST':

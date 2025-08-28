@@ -25,6 +25,7 @@ urlpatterns = [
     path('api/dsc-submission/', views.dsc_submission_api, name='dsc_submission_api'),
     path('api/dsc-payment/create-order/', views.create_dsc_payment_order, name='create_dsc_payment_order'),
     path('api/dsc-payment/verify/', views.verify_dsc_payment, name='verify_dsc_payment'),
+    path('api/dsc-documents/', views.dsc_documents_upload_api, name='dsc_documents_upload_api'),
     
     # ============================================================================
     # QUOTE & CONTACT FORMS
