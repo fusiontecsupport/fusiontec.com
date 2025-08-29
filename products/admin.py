@@ -603,9 +603,9 @@ class DscEnquiryAdmin(admin.ModelAdmin):
 class DscSubmissionAdmin(admin.ModelAdmin):
     list_display = [
         'id', 'name', 'email', 'mobile', 'class_type', 'user_type', 
-        'cert_type', 'validity', 'quoted_price', 'payment_status', 'status', 'created_at'
+        'cert_type', 'validity', 'submission_type', 'quoted_price', 'payment_status', 'status', 'created_at'
     ]
-    list_filter = ['class_type', 'user_type', 'cert_type', 'validity', 'payment_status', 'status', 'created_at']
+    list_filter = ['class_type', 'user_type', 'cert_type', 'validity', 'submission_type', 'payment_status', 'status', 'created_at']
     search_fields = ['name', 'email', 'mobile', 'razorpay_payment_id', 'razorpay_order_id']
     ordering = ['-created_at']
     readonly_fields = ['created_at', 'updated_at']
@@ -613,6 +613,9 @@ class DscSubmissionAdmin(admin.ModelAdmin):
     fieldsets = (
         ('Customer Information', {
             'fields': ('name', 'email', 'mobile', 'address', 'company_name', 'gst_number')
+        }),
+        ('Reference Information', {
+            'fields': ('reference_name', 'reference_contact')
         }),
         ('DSC Configuration', {
             'fields': ('class_type', 'user_type', 'cert_type', 'validity')
@@ -622,6 +625,13 @@ class DscSubmissionAdmin(admin.ModelAdmin):
         }),
         ('Pricing', {
             'fields': ('quoted_price',)
+        }),
+        ('Submission Type', {
+            'fields': ('submission_type',)
+        }),
+        ('Document Uploads', {
+            'fields': ('pan_copy', 'aadhar_copy', 'photo', 'gst_certificate', 'authorization_letter', 'company_pan', 'ifc_certificate'),
+            'classes': ('collapse',)
         }),
         ('Payment Details', {
             'fields': ('razorpay_payment_id', 'razorpay_order_id', 'payment_status')

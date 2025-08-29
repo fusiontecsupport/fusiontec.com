@@ -19,6 +19,8 @@ urlpatterns = [
     # DSC form (e-Mudhra-like)
     path('dsc/', views.dsc_form, name='dsc_form'),
     path('dsc/price-list/', views.dsc_price_list_page, name='dsc_price_list_page'),
+    path('dsc/submit/', views.dsc_integrated_submission, name='dsc_integrated_submission'),
+
     path('api/dsc-price/', views.dsc_price_api, name='dsc_price_api'),
     path('api/dsc-options/', views.dsc_options_api, name='dsc_options_api'),
     path('api/dsc-enquiry/', views.dsc_enquiry_api, name='dsc_enquiry_api'),

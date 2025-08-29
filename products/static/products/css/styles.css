@@ -654,7 +654,7 @@ progress {
 .btn-get-quote {
   background: linear-gradient(135deg, #1f3c88 0%, #2563eb 100%);
   border: none;
-  color: white;
+  color: #ffffff;
   font-weight: 600;
   padding: 10px 24px;
   border-radius: 25px;
@@ -663,6 +663,20 @@ progress {
   text-decoration: none;
   display: inline-block;
   box-shadow: 0 2px 8px rgba(31, 60, 136, 0.2);
+}
+
+/* Force white text/icon color in all states */
+.btn-get-quote,
+.btn-get-quote:link,
+.btn-get-quote:visited,
+.btn-get-quote:hover,
+.btn-get-quote:active,
+.btn-get-quote:focus {
+  color: #ffffff !important;
+}
+.btn-get-quote i,
+.btn-get-quote span {
+  color: #ffffff !important;
 }
 
 .btn-get-quote:hover {

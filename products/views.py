@@ -13,7 +13,8 @@ from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 from reportlab.lib.units import mm
 from reportlab.lib import colors
-from reportlab.platypus import Table, TableStyle
+from reportlab.platypus import Table, TableStyle, Paragraph
+from reportlab.lib.styles import ParagraphStyle
 from django.templatetags.static import static
 from datetime import datetime
 from django.conf import settings
@@ -73,12 +74,13 @@ def _generate_proforma_pdf(
     # Left header text
     c.setFillColorRGB(1, 1, 1)
     # Place text to the right of the logo, vertically aligned with it
-    text_x = margin + (16 * mm) + (8 * mm)
+    text_x = margin + (16 * mm) + (4 * mm)
     c.setFont("Helvetica-Bold", 12)
-    small_y = logo_y + (16 * mm) - 4
+    # Nudge header text a bit lower to align with the logo visually
+    small_y = logo_y + (16 * mm) - 7
     c.drawString(text_x, small_y, str(product_header or "Tally Product"))
     c.setFont("Helvetica-Bold", 20)
-    title_y = logo_y + (16 * mm) / 2 - 2
+    title_y = logo_y + (16 * mm) / 2 - 6
     c.drawString(text_x, title_y, "PROFORMA INVOICE")
 
     # Invoice meta on right
@@ -88,7 +90,8 @@ def _generate_proforma_pdf(
     c.drawRightString(width - margin, height - 48, f"Proforma Invoice No: {inv_no}")
     c.drawRightString(width - margin, height - 30, f"Date: {inv_date}")
 
-    y = height - 100
+    # Add a bit more breathing room below the header before seller/buyer blocks
+    y = height - 120
     c.setFont("Helvetica-Bold", 11)
     c.setFillColorRGB(0.22, 0.25, 0.32)
     c.drawString(margin, y, "Seller")
@@ -130,31 +133,36 @@ def _generate_proforma_pdf(
     # Derive gst percentage string using computed values if needed
     gst_pct_display = f"{round((line_gst/line_basic)*100, 2) if line_basic else 0}%"
     data = [["Description", "Qty", "Unit Price", "GST %", "GST Amt", "Line Total"]]
-    data.append([full_product_name, str(qty), fmt(unit), gst_pct_display, fmt(line_gst), fmt(line_total)])
+    # Wrap long description to avoid overlapping into numeric columns
+    desc_style = ParagraphStyle(name="Desc", fontName="Helvetica", fontSize=9, leading=11)
+    desc_para = Paragraph(str(full_product_name), desc_style)
+    data.append([desc_para, str(qty), fmt(unit), gst_pct_display, fmt(line_gst), fmt(line_total)])
     if include_token and token_val > 0:
         data.append(["Token Charges", "1", fmt(token_val), "-", "-", fmt(token_val)])
     if include_install and install_val > 0:
         data.append(["Installation", "1", fmt(install_val), "-", "-", fmt(install_val)])
 
     # Column widths sized to content width so nothing overflows
-    col_desc = content_w * 0.44
-    col_qty  = content_w * 0.08
-    col_unit = content_w * 0.16
+    # Balanced widths with ~2% slack; prioritize Unit Price and Line Total
+    col_desc = content_w * 0.45
+    col_qty  = content_w * 0.06
+    col_unit = content_w * 0.15
     col_pct  = content_w * 0.08
-    col_gst  = content_w * 0.12
-    col_line = content_w * 0.12
+    col_gst  = content_w * 0.11
+    col_line = content_w * 0.13
     table = Table(data, colWidths=[col_desc, col_qty, col_unit, col_pct, col_gst, col_line])
     table.setStyle(TableStyle([
         ("BACKGROUND", (0,0), (-1,0), colors.Color(23/255, 63/255, 132/255)),
         ("TEXTCOLOR", (0,0), (-1,0), colors.white),
         ("FONTNAME", (0,0), (-1,0), "Helvetica-Bold"),
         ("FONTSIZE", (0,0), (-1,0), 10),
+        ("VALIGN", (0,1), (-1,-1), "TOP"),
         ("ALIGN", (1,1), (-1,-1), "RIGHT"),
         ("ALIGN", (0,0), (0,-1), "LEFT"),
         ("GRID", (0,0), (-1,-1), 0.5, colors.grey),
         ("FONTSIZE", (0,1), (-1,-1), 9),
         ("LEFTPADDING", (0,0), (-1,-1), 6),
-        ("RIGHTPADDING", (0,0), (-1,-1), 6),
+        ("RIGHTPADDING", (0,0), (-1,-1), 4),
         ("TOPPADDING", (0,0), (-1,-1), 6),
         ("BOTTOMPADDING", (0,0), (-1,-1), 6),
     ]))
@@ -268,12 +276,12 @@ def index(request):
             'phone': phone,
             'subject': subject,
             'message': message,
-        })
+        }, request=request)
 
         # User thank-you email
         user_thank_you_content = render_to_string('products/contact_form_thanks.html', {
             'name': name,
-        })
+        }, request=request)
 
         try:
             # Send to admin
@@ -425,46 +433,256 @@ def dsc_form(request):
     """DSC form page with pricing and purchase options."""
     return render(request, 'products/dsc_form.html')
 
+def dsc_integrated_submission(request):
+    """Handle integrated DSC form submission for both enquiry and purchase."""
+    print(f"Request method: {request.method}")
+    print(f"Request POST data: {request.POST}")
+    print(f"Request FILES: {request.FILES}")
+    
+    if request.method == 'POST':
+        try:
+            # Get form data
+            submission_type = request.POST.get('submission_type', 'enquiry')
+            name = request.POST.get('name', '').strip()
+            email = request.POST.get('email', '').strip()
+            mobile = request.POST.get('mobile', '').strip()
+            company_name = request.POST.get('company_name', '').strip()
+            gst_number = request.POST.get('gst_number', '').strip()
+            address = request.POST.get('address', '').strip()
+            reference_name = request.POST.get('reference_name', '').strip()
+            reference_contact = request.POST.get('reference_contact', '').strip()
+            
+            # DSC options
+            class_type = request.POST.get('class_type', '')
+            user_type = request.POST.get('user_type', '')
+            cert_type = request.POST.get('cert_type', '')
+            validity = request.POST.get('validity', '')
+            include_token = request.POST.get('include_token') == 'on'
+            include_installation = request.POST.get('include_installation') == 'on'
+            outside_india = request.POST.get('outside_india') == 'on'
+            quoted_price = request.POST.get('quoted_price', '0')
+            
+            # Validate required fields
+            if not all([name, email, mobile, class_type, user_type, cert_type, validity]):
+                messages.error(request, 'Please fill out all required fields.')
+                return JsonResponse({'success': False, 'message': 'Required fields missing'})
+            
+            # Create or get customer
+            customer, created = Customer.objects.get_or_create(
+                email=email,
+                defaults={
+                    'name': name,
+                    'company_name': company_name,
+                    'mobile': mobile,
+                }
+            )
+            
+            # Update customer if exists
+            if not created:
+                customer.name = name
+                customer.company_name = company_name
+                customer.mobile = mobile
+                customer.save()
+            
+            # Create DSC submission
+            dsc_submission = DscSubmission.objects.create(
+                name=name,
+                email=email,
+                mobile=mobile,
+                address=address,
+                company_name=company_name,
+                gst_number=gst_number,
+                reference_name=reference_name,
+                reference_contact=reference_contact,
+                class_type=class_type,
+                user_type=user_type,
+                cert_type=cert_type,
+                validity=validity,
+                include_token=include_token,
+                include_installation=include_installation,
+                outside_india=outside_india,
+                quoted_price=quoted_price,
+                submission_type=submission_type,
+                status='submitted'
+            )
+            
+            # Handle file uploads if present
+            if request.FILES:
+                if 'pan_copy' in request.FILES:
+                    dsc_submission.pan_copy = request.FILES['pan_copy']
+                if 'aadhar_copy' in request.FILES:
+                    dsc_submission.aadhar_copy = request.FILES['aadhar_copy']
+                if 'photo' in request.FILES:
+                    dsc_submission.photo = request.FILES['photo']
+                if 'gst_certificate' in request.FILES:
+                    dsc_submission.gst_certificate = request.FILES['gst_certificate']
+                if 'authorization_letter' in request.FILES:
+                    dsc_submission.authorization_letter = request.FILES['authorization_letter']
+                if 'company_pan' in request.FILES:
+                    dsc_submission.company_pan = request.FILES['company_pan']
+                if 'ifc_certificate' in request.FILES:
+                    dsc_submission.ifc_certificate = request.FILES['ifc_certificate']
+                dsc_submission.save()
+            
+                        # Send admin notification email
+            admin_email_content = render_to_string('products/dsc_form_email.html', {
+                'submission': dsc_submission,
+                'submission_type': submission_type.title(),
+                'admin_email': 'dsc@fusiontec.com',
+                'logo_cid': 'fusiontec_logo'
+            }, request=request)
+
+            # Send customer confirmation email
+            customer_email_content = render_to_string('products/dsc_form_thanks.html', {
+                'submission': dsc_submission,
+                'submission_type': submission_type.title(),
+                'customer_name': name,
+                'logo_cid': 'fusiontec_logo'
+            }, request=request)
+
+            try:
+                # Send emails synchronously (more reliable on shared hosting)
+                # Use DSC mailbox credentials (same as quote flow)
+                sender_email_cfg = 'dsc@fusiontec.com'
+                app_password_cfg = 'pcjn sxte zvci tljs'
+                sanitized_password = app_password_cfg.replace(' ', '')
+
+                email_backend = EmailBackend(
+                    host='smtp.gmail.com',
+                    port=587,
+                    username=sender_email_cfg,
+                    password=sanitized_password,
+                    use_tls=True,
+                    fail_silently=False
+                )
+
+                # Admin email
+                admin_email = EmailMessage(
+                    subject=f"[Fusiontec DSC {submission_type.title()}] - {class_type.upper()} - {user_type} - {cert_type} - {validity} - {name}",
+                    body=admin_email_content,
+                    from_email=sender_email_cfg,
+                    to=['dsc@fusiontec.com'],
+                )
+                admin_email.content_subtype = "html"
+                admin_email.connection = email_backend
+                try:
+                    # Embed logo inline using CID
+                    from django.contrib.staticfiles import finders
+                    logo_path = finders.find('products/img/fusiontec.png')
+                    if logo_path:
+                        with open(logo_path, 'rb') as f:
+                            admin_email.attach_inline('fusiontec_logo', f.read(), 'image/png')
+                except Exception as _e:
+                    print(f"Inline logo attach failed (admin): {_e}")
+                try:
+                    # Attach uploaded files if available
+                    attachments = [
+                        ('pan_copy', 'PAN Card'),
+                        ('aadhar_copy', 'Aadhar Card'),
+                        ('photo', 'Photo'),
+                        ('gst_certificate', 'GST Certificate'),
+                        ('authorization_letter', 'Authorization Letter'),
+                        ('company_pan', 'Company PAN'),
+                        ('ifc_certificate', 'IFC Certificate'),
+                    ]
+                    for field, label in attachments:
+                        file_field = getattr(dsc_submission, field, None)
+                        if file_field and getattr(file_field, 'name', None):
+                            try:
+                                file_field.open('rb')
+                                content = file_field.read()
+                                admin_email.attach(file_field.name, content)
+                            finally:
+                                try:
+                                    file_field.close()
+                                except Exception:
+                                    pass
+                except Exception as attach_err:
+                    print(f"Attachment processing failed: {attach_err}")
+                admin_email.send()
+
+                # Customer email
+                customer_email = EmailMessage(
+                    subject=f"DSC {submission_type.title()} Received - Fusiontec",
+                    body=customer_email_content,
+                    from_email=sender_email_cfg,
+                    to=[email],
+                    reply_to=['dsc@fusiontec.com']
+                )
+                customer_email.content_subtype = "html"
+                customer_email.connection = email_backend
+                try:
+                    # Embed logo inline using CID
+                    from django.contrib.staticfiles import finders
+                    logo_path = finders.find('products/img/fusiontec.png')
+                    if logo_path:
+                        with open(logo_path, 'rb') as f:
+                            customer_email.attach_inline('fusiontec_logo', f.read(), 'image/png')
+                except Exception as _e:
+                    print(f"Inline logo attach failed (customer): {_e}")
+                customer_email.send()
+
+                # Immediate success response after emails sent
+                if submission_type == 'enquiry':
+                    messages.success(request, 'Enquiry submitted successfully! We will contact you soon.')
+                else:
+                    messages.success(request, 'Purchase request submitted successfully! Please complete the payment to proceed.')
+
+                return JsonResponse({
+                    'success': True,
+                    'message': f'{submission_type.title()} submitted successfully!',
+                    'submission_id': dsc_submission.id,
+                    'submission_type': submission_type
+                })
+
+            except Exception as e:
+                # Even if async scheduling fails, do not block user
+                messages.warning(request, f'{submission_type.title()} saved but there was an error scheduling confirmation emails: {str(e)}')
+                return JsonResponse({
+                    'success': True,
+                    'message': f'{submission_type.title()} submitted successfully!',
+                    'submission_id': dsc_submission.id,
+                    'submission_type': submission_type
+                })
+                
+        except Exception as e:
+            messages.error(request, f'Error submitting {submission_type}: {str(e)}')
+            return JsonResponse({'success': False, 'message': f'Error: {str(e)}'})
+    
+    return JsonResponse({'success': False, 'message': 'Invalid request method'})
+
+
+
+
+
 def dsc_price_list_page(request):
     """DSC price list page with detailed pricing information."""
     return render(request, 'products/type_of_dsc.html')
 
 def dsc_price_api(request):
     """Return price for a DSC combination.
+    Strict match on all four fields; no fallbacks to partial matches.
     Params: class_type, user_type, cert_type, validity, outside (0/1)
     """
-    class_type = request.GET.get('class_type', 'class3')
-    user_type = (request.GET.get('user_type', 'individual') or '').lower()
-    cert_type = (request.GET.get('cert_type', 'signature') or '').lower()
-    validity = (request.GET.get('validity', '2y') or '').lower()
+    class_type = (request.GET.get('class_type', '') or '').strip()
+    user_type = (request.GET.get('user_type', '') or '').strip().lower()
+    cert_type = (request.GET.get('cert_type', '') or '').strip().lower()
+    validity = (request.GET.get('validity', '') or '').strip().lower()
     outside = request.GET.get('outside', '0') == '1'
 
     try:
-        def canonical(val: str) -> str:
-            val = (val or '').lower()
-            return ''.join(ch for ch in val if ch.isalnum())
-
-        requested = canonical(class_type)
-
-        qs = DscPrice.objects.filter(
-            user_type__iexact=user_type,
-            cert_type__iexact=cert_type,
-            validity__iexact=validity,
-            is_active=True,
+        price_row = (
+            DscPrice.objects
+            .filter(
+                class_type__iexact=class_type,
+                user_type__iexact=user_type,
+                cert_type__iexact=cert_type,
+                validity__iexact=validity,
+                is_active=True,
+            )
+            .first()
         )
 
-        price_row = None
-        for row in qs:
-            if canonical(row.class_type) == requested:
-                price_row = row
-                break
-        if price_row is None and requested in {'class3','classiii','class3dsc'}:
-            for row in qs:
-                if canonical(row.class_type) in {'class3','classiii','class3dsc'}:
-                    price_row = row
-                    break
-        if price_row is None and qs.count() == 1:
-            price_row = qs.first()
         if price_row is None:
             return JsonResponse({'success': False, 'message': 'Price not configured for this selection'}, status=404)
 
@@ -483,8 +701,6 @@ def dsc_price_api(request):
             },
             'outside_surcharge': float(price_row.outside_india_surcharge or 0)
         })
-    except DscPrice.DoesNotExist:
-        return JsonResponse({'success': False, 'message': 'Price not configured'}, status=404)
     except Exception as e:
         # Handle cases like missing table before migrations
         return JsonResponse({'success': False, 'message': f'Pricing backend not ready: {str(e)}'}, status=404)
@@ -604,7 +820,7 @@ def dsc_enquiry_api(request):
             'submission_id': enquiry.id,
             'priority_high': True,
             'customer_email': email
-        })
+        }, request=request)
 
         # Send customer thank you email using common template
         customer_thank_you_content = render_to_string('products/generic_form_thanks.html', {
@@ -630,7 +846,7 @@ def dsc_enquiry_api(request):
             ],
             'important_info': 'DSC applications require proper documentation and verification. Our team will guide you through the entire process.',
             'support_email': 'dsc@fusiontec.com'
-        })
+        }, request=request)
 
         try:
             # Use DSC mailbox credentials like quote flow
@@ -958,7 +1174,7 @@ def dsc_submission_api(request):
             'submission_id': submission.id,
             'priority_high': True,
             'customer_email': email
-        })
+        }, request=request)
 
         # Send customer thank you email using common template
         customer_thank_you_content = render_to_string('products/generic_form_thanks.html', {
@@ -984,7 +1200,7 @@ def dsc_submission_api(request):
             ],
             'important_info': 'DSC applications typically require 2-3 business days for processing and issuance.',
             'support_email': 'dsc@fusiontec.com'
-        })
+        }, request=request)
 
         try:
             # Use DSC mailbox credentials like quote flow
@@ -1170,6 +1386,8 @@ def verify_dsc_payment(request):
         submission.status = 'payment_received'
         submission.save()
 
+
+
         return JsonResponse({'status': 'success'})
         
     except DscSubmission.DoesNotExist:
@@ -1318,7 +1536,7 @@ def save_product_submission(request):
             })
 
             try:
-                # Send to admin
+                # Prepare emails (admin and customer)
                 admin_email = EmailMessage(
                     subject=f"[Fusiontec Product Form] - {product_item.prdt_desc}{(' — ' + sub_product_obj.subprdt_desc) if sub_product_obj else ''} - {data.get('customer_name')}",
                     body=admin_email_content,
@@ -1326,9 +1544,7 @@ def save_product_submission(request):
                     to=[settings.CONTACT_FORM_RECIPIENT],
                 )
                 admin_email.content_subtype = "html"
-                admin_email.send()
 
-                # Send thank you to customer
                 customer_email = EmailMessage(
                     subject="Product Form Submission Received - Fusiontec",
                     body=customer_thank_you_content,
@@ -1336,7 +1552,8 @@ def save_product_submission(request):
                     to=[data.get('email')],
                 )
                 customer_email.content_subtype = "html"
-                # Generate and attach Proforma Invoice PDF
+
+                # Generate single Proforma Invoice PDF and attach to both emails so they match the popup/download
                 try:
                     # Determine GST % to mirror popup exactly
                     gst_pct_value = 0.0
@@ -1361,7 +1578,7 @@ def save_product_submission(request):
                         mobile=data.get('mobile'),
                         email=data.get('email'),
                         quantity=int(data.get('quantity') or 1),
-                        unit_price=float(basic_amount or 0),
+                        unit_price=(float(basic_amount or 0) / max(int(data.get('quantity') or 1), 1)),
                         gst_rate=float(gst_pct_value or 0),
                         token_amount=float(data.get('token_amount') or 0),
                         install_charges=float(data.get('installing_charges') or 0),
@@ -1371,10 +1588,12 @@ def save_product_submission(request):
                         full_product_name=(f"{product_item.prdt_desc} — {sub_product_obj.subprdt_desc}" if sub_product_obj else product_item.prdt_desc),
                         submission_id=form_submission.id,
                     )
+
                     try:
                         pdf_bytes = pdf_buffer.getvalue()
                         print(f"[EMAIL] Attaching PDF '{pdf_filename}' size={len(pdf_bytes)} bytes for submission {form_submission.id}")
                         if pdf_bytes and len(pdf_bytes) > 500:
+                            # Attach only to customer email as before
                             customer_email.attach(pdf_filename, pdf_bytes, 'application/pdf')
                         else:
                             print("[EMAIL][WARN] Generated PDF is empty or too small; skipping attachment")
@@ -1383,6 +1602,9 @@ def save_product_submission(request):
                 except Exception as gen_err:
                     # Do not fail email if PDF generation fails
                     print(f"[EMAIL][ERROR] PDF generation failed: {gen_err}")
+
+                # Send both emails
+                admin_email.send()
                 customer_email.send()
 
                 return JsonResponse({

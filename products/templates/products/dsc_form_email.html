@@ -1,74 +1,196 @@
 {% extends 'products/email_base.html' %}
-{% block title %}DSC Form Submission - Fusiontec{% endblock %}
 
 {% block content %}
-<h1 class="content-title">New DSC Form Submission</h1>
-<p class="content-subtitle">A new Digital Signature Certificate form has been submitted from fusiontec.com</p>
+<div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+    <!-- Header -->
+    <div style="background: linear-gradient(135deg, #1f3c88 0%, #2563eb 100%); color: white; padding: 30px; text-align: center;">
+        <h1 style="margin: 0; font-size: 24px; font-weight: 600;">DSC {{ submission_type }} Submission</h1>
+        <p style="margin: 10px 0 0 0; opacity: 0.9; font-size: 16px;">New Digital Signature Certificate {{ submission_type|lower }} received</p>
+    </div>
 
-<div class="info-card">
-    <h3>👤 Customer Information</h3>
-    <p><strong>Name:</strong> {{ name }}</p>
-    <p><strong>Company:</strong> {{ company_name|default:"Not provided" }}</p>
-    <p><strong>Email:</strong> <a href="mailto:{{ email }}">{{ email }}</a></p>
-    <p><strong>Mobile:</strong> <a href="tel:{{ mobile }}">{{ mobile }}</a></p>
-    {% if gst_number %}
-    <p><strong>GST Number:</strong> {{ gst_number }}</p>
-    {% endif %}
-    <p><strong>Address:</strong> {{ address|default:"Not provided" }}</p>
-</div>
+    <!-- Content -->
+    <div style="padding: 30px;">
+        <div style="background-color: #f8f9fa; border-radius: 6px; padding: 20px; margin-bottom: 25px;">
+            <h3 style="margin: 0 0 15px 0; color: #1f3c88; font-size: 18px;">📋 Submission Details</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 14px;">
+                <div>
+                    <strong>Submission ID:</strong><br>
+                    <span style="color: #6c757d;">#{{ submission.id }}</span>
+                </div>
+                <div>
+                    <strong>Submission Type:</strong><br>
+                    <span style="color: #6c757d;">{{ submission_type }}</span>
+                </div>
+                <div>
+                    <strong>Date:</strong><br>
+                    <span style="color: #6c757d;">{{ submission.created_at|date:"d M Y, h:i A" }}</span>
+                </div>
+                <div>
+                    <strong>Status:</strong><br>
+                    <span style="color: #6c757d;">{{ submission.status|title }}</span>
+                </div>
+            </div>
+        </div>
 
-<div class="info-card">
-    <h3>🔐 DSC Configuration</h3>
-    <p><strong>Class Type:</strong> {{ class_type }}</p>
-    <p><strong>User Type:</strong> {{ user_type }}</p>
-    <p><strong>Certificate Type:</strong> {{ cert_type }}</p>
-    <p><strong>Validity:</strong> {{ validity }}</p>
-    <p><strong>Include Token:</strong> 
-        <span class="status-badge {% if include_token %}status-success{% else %}status-info{% endif %}">
-            {{ include_token|yesno:"Yes,No" }}
-        </span>
-    </p>
-    <p><strong>Include Installation:</strong> 
-        <span class="status-badge {% if include_installation %}status-success{% else %}status-info{% endif %}">
-            {{ include_installation|yesno:"Yes,No" }}
-        </span>
-    </p>
-    {% if outside_india %}
-    <p><strong>Outside India:</strong> 
-        <span class="status-badge status-info">Yes</span>
-    </p>
-    {% endif %}
-</div>
+        <!-- Customer Information -->
+        <div style="background-color: #f8f9fa; border-radius: 6px; padding: 20px; margin-bottom: 25px;">
+            <h3 style="margin: 0 0 15px 0; color: #1f3c88; font-size: 18px;">👤 Customer Information</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 14px;">
+                <div>
+                    <strong>Name:</strong><br>
+                    <span style="color: #6c757d;">{{ submission.name }}</span>
+                </div>
+                <div>
+                    <strong>Email:</strong><br>
+                    <span style="color: #6c757d;">{{ submission.email }}</span>
+                </div>
+                <div>
+                    <strong>Mobile:</strong><br>
+                    <span style="color: #6c757d;">{{ submission.mobile }}</span>
+                </div>
+                <div>
+                    <strong>Company:</strong><br>
+                    <span style="color: #6c757d;">{{ submission.company_name|default:"Not provided" }}</span>
+                </div>
+                {% if submission.gst_number %}
+                <div>
+                    <strong>GST Number:</strong><br>
+                    <span style="color: #6c757d;">{{ submission.gst_number }}</span>
+                </div>
+                {% endif %}
+                {% if submission.address %}
+                <div>
+                    <strong>Address:</strong><br>
+                    <span style="color: #6c757d;">{{ submission.address }}</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
 
-<div class="info-card">
-    <h3>💰 Pricing Information</h3>
-    <p><strong>Quoted Price:</strong> <span class="total-amount">₹{{ quoted_price }}</span></p>
-</div>
+        <!-- Reference Information -->
+        {% if submission.reference_name or submission.reference_contact %}
+        <div style="background-color: #f8f9fa; border-radius: 6px; padding: 20px; margin-bottom: 25px;">
+            <h3 style="margin: 0 0 15px 0; color: #1f3c88; font-size: 18px;">📞 Reference Information</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 14px;">
+                {% if submission.reference_name %}
+                <div>
+                    <strong>Reference Name:</strong><br>
+                    <span style="color: #6c757d;">{{ submission.reference_name }}</span>
+                </div>
+                {% endif %}
+                {% if submission.reference_contact %}
+                <div>
+                    <strong>Reference Contact:</strong><br>
+                    <span style="color: #6c757d;">{{ submission.reference_contact }}</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
 
-<div style="text-align: center; margin-top: 30px;">
-    <a href="mailto:{{ email }}" class="btn">Reply to Customer</a>
-    <a href="https://fusiontec.com/admin" class="btn btn-secondary">View in Admin</a>
-</div>
+        <!-- DSC Configuration -->
+        <div style="background-color: #f8f9fa; border-radius: 6px; padding: 20px; margin-bottom: 25px;">
+            <h3 style="margin: 0 0 15px 0; color: #1f3c88; font-size: 18px;">🔐 DSC Configuration</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 14px;">
+                <div>
+                    <strong>Class Type:</strong><br>
+                    <span style="color: #6c757d;">{{ submission.class_type|upper }}</span>
+                </div>
+                <div>
+                    <strong>User Type:</strong><br>
+                    <span style="color: #6c757d;">{{ submission.user_type|title }}</span>
+                </div>
+                <div>
+                    <strong>Certificate Type:</strong><br>
+                    <span style="color: #6c757d;">{{ submission.cert_type|title }}</span>
+                </div>
+                <div>
+                    <strong>Validity:</strong><br>
+                    <span style="color: #6c757d;">{{ submission.validity }}</span>
+                </div>
+                <div>
+                    <strong>Include Token:</strong><br>
+                    <span style="color: #6c757d;">{{ submission.include_token|yesno:"Yes,No" }}</span>
+                </div>
+                <div>
+                    <strong>Include Installation:</strong><br>
+                    <span style="color: #6c757d;">{{ submission.include_installation|yesno:"Yes,No" }}</span>
+                </div>
+                <div>
+                    <strong>Outside India:</strong><br>
+                    <span style="color: #6c757d;">{{ submission.outside_india|yesno:"Yes,No" }}</span>
+                </div>
+                <div>
+                    <strong>Quoted Price:</strong><br>
+                    <span style="color: #6c757d;">₹{{ submission.quoted_price|floatformat:2 }}</span>
+                </div>
+            </div>
+        </div>
 
-<div style="margin-top: 30px; padding: 20px; background-color: #e3f2fd; border-radius: 8px; border-left: 4px solid #2196f3;">
-    <h4 style="margin: 0 0 10px 0; color: #1976d2;">📋 Submission Summary</h4>
-    <p style="margin: 0; color: #1565c0; font-size: 14px;">
-        <strong>Form:</strong> Digital Signature Certificate (DSC) Form<br>
-        <strong>Date:</strong> {% now "F j, Y, g:i a" %}<br>
-        <strong>Source:</strong> fusiontec.com<br>
-        <strong>Priority:</strong> High (DSC applications require quick processing)
-    </p>
-</div>
+        <!-- Document Uploads -->
+        {% if submission.pan_copy or submission.aadhar_copy or submission.photo or submission.gst_certificate or submission.authorization_letter or submission.company_pan or submission.ifc_certificate %}
+        <div style="background-color: #f8f9fa; border-radius: 6px; padding: 20px; margin-bottom: 25px;">
+            <h3 style="margin: 0 0 15px 0; color: #1f3c88; font-size: 18px;">📎 Uploaded Documents</h3>
+            <div style="font-size: 14px;">
+                {% if submission.pan_copy %}
+                <div style="margin-bottom: 8px;">
+                    <strong>PAN Card:</strong> ✅ Uploaded
+                </div>
+                {% endif %}
+                {% if submission.aadhar_copy %}
+                <div style="margin-bottom: 8px;">
+                    <strong>Aadhar Card:</strong> ✅ Uploaded
+                </div>
+                {% endif %}
+                {% if submission.photo %}
+                <div style="margin-bottom: 8px;">
+                    <strong>Photo:</strong> ✅ Uploaded
+                </div>
+                {% endif %}
+                {% if submission.gst_certificate %}
+                <div style="margin-bottom: 8px;">
+                    <strong>GST Certificate:</strong> ✅ Uploaded
+                </div>
+                {% endif %}
+                {% if submission.authorization_letter %}
+                <div style="margin-bottom: 8px;">
+                    <strong>Authorization Letter:</strong> ✅ Uploaded
+                </div>
+                {% endif %}
+                {% if submission.company_pan %}
+                <div style="margin-bottom: 8px;">
+                    <strong>Company PAN:</strong> ✅ Uploaded
+                </div>
+                {% endif %}
+                {% if submission.ifc_certificate %}
+                <div style="margin-bottom: 8px;">
+                    <strong>IFC Certificate:</strong> ✅ Uploaded
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
 
-<div style="margin-top: 20px; padding: 20px; background-color: #fff3cd; border-radius: 8px; border-left: 4px solid #ffc107;">
-    <h4 style="margin: 0 0 10px 0; color: #856404;">⚡ Action Required</h4>
-    <p style="margin: 0; color: #856404; font-size: 14px;">
-        <strong>Next Steps:</strong><br>
-        • Review DSC requirements and documentation<br>
-        • Verify customer eligibility for selected class type<br>
-        • Prepare detailed quote with all applicable charges<br>
-        • Contact customer within 24 hours for next steps
-    </p>
+        <!-- Action Required -->
+        <div style="background-color: #fff3cd; border: 1px solid #ffeaa7; border-radius: 6px; padding: 20px; margin-bottom: 25px;">
+            <h3 style="margin: 0 0 15px 0; color: #856404; font-size: 18px;">⚠️ Action Required</h3>
+            <p style="margin: 0; color: #856404; font-size: 14px;">
+                {% if submission_type == 'Enquiry' %}
+                This is an enquiry submission. Please contact the customer to discuss requirements and provide a detailed quote.
+                {% else %}
+                This is a purchase submission. Please process the order and coordinate with the customer for payment completion.
+                {% endif %}
+            </p>
+        </div>
+
+        <!-- Footer -->
+        <div style="text-align: center; padding-top: 20px; border-top: 1px solid #e9ecef;">
+            <p style="margin: 0; color: #6c757d; font-size: 14px;">
+                This email was sent from the FusionTec DSC form system.<br>
+                Submission ID: #{{ submission.id }} | Date: {{ submission.created_at|date:"d M Y, h:i A" }}
+            </p>
+        </div>
+    </div>
 </div>
 {% endblock %}
 

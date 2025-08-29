@@ -103,6 +103,53 @@
     transition: all .2s ease !important;
     box-shadow: none !important;
   }
+  
+  /* File input validation styling */
+  .form-control.is-invalid {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+  }
+  
+  .form-control.is-invalid:focus {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+  }
+  
+  /* File validation messages */
+  .alert.alert-danger.small {
+    font-size: 0.875rem;
+    padding: 0.5rem 0.75rem;
+    margin-top: 0.5rem;
+    border-radius: 0.375rem;
+    border: 1px solid #dc3545;
+    background-color: #f8d7da;
+    color: #721c24;
+    font-weight: 500;
+    box-shadow: 0 2px 4px rgba(220, 53, 69, 0.1);
+  }
+  
+  .alert.alert-success.small {
+    font-size: 0.875rem;
+    padding: 0.5rem 0.75rem;
+    margin-top: 0.5rem;
+    border-radius: 0.375rem;
+    border: 1px solid #198754;
+    background-color: #d1e7dd;
+    color: #0f5132;
+    font-weight: 500;
+    box-shadow: 0 2px 4px rgba(25, 135, 84, 0.1);
+  }
+  
+  /* Make error messages more prominent */
+  .alert.alert-danger.small i {
+    color: #dc3545;
+    margin-right: 0.5rem;
+  }
+  
+  .alert.alert-success.small i {
+    color: #198754;
+    margin-right: 0.5rem;
+  }
   .action-buttons .btn-pro-back:hover { 
     background: #f8fafc !important; 
     color: #111827 !important; 
@@ -176,7 +223,6 @@
                     </div>
                   </div>
                 </div>
-                
 
                 <div id="addOnsContainer" class="mb-3" style="display:none;">
                   <div class="fw-semibold mb-2">Optional add-ons</div>
@@ -249,42 +295,112 @@
                       <h6 class="fw-semibold mb-0"><i class="fas fa-envelope me-2"></i>Quick Enquiry & Purchase</h6>
                     </div>
                     <div class="card-body p-4">
-                      <div class="row g-3">
-                        <div class="col-12 col-md-6">
-                          <label class="form-label fw-semibold">Full Name *</label>
-                          <input type="text" id="enqName" class="form-control form-control-lg" placeholder="Enter your full name">
+                      <form id="dscForm" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        <div class="row g-3">
+                          <div class="col-12 col-md-6">
+                            <label class="form-label fw-semibold">Full Name *</label>
+                            <input type="text" id="enqName" name="name" class="form-control form-control-lg" placeholder="Enter your full name" required>
+                          </div>
+                          <div class="col-12 col-md-6">
+                            <label class="form-label fw-semibold">Email Address *</label>
+                            <input type="email" id="enqEmail" name="email" class="form-control form-control-lg" placeholder="Enter your email" required>
+                          </div>
+                          <div class="col-12 col-md-6">
+                            <label class="form-label fw-semibold">Mobile Number *</label>
+                            <input type="tel" id="enqMobile" name="mobile" class="form-control form-control-lg" placeholder="Enter mobile number" required>
+                          </div>
+                          <div class="col-12 col-md-6">
+                            <label class="form-label fw-semibold">Company Name</label>
+                            <input type="text" id="enqCompany" name="company_name" class="form-control form-control-lg" placeholder="Company name (optional)">
+                          </div>
+                          <div class="col-12 col-md-6">
+                            <label class="form-label fw-semibold">GST Number</label>
+                            <input type="text" id="enqGst" name="gst_number" class="form-control form-control-lg" placeholder="GST number (optional)">
+                          </div>
+                          <div class="col-12 col-md-6">
+                            <label class="form-label fw-semibold">Address</label>
+                            <input type="text" id="enqAddress" name="address" class="form-control form-control-lg" placeholder="Address (optional)">
+                          </div>
+                          <div class="col-12 col-md-6">
+                            <label class="form-label fw-semibold">Reference Name *</label>
+                            <input type="text" id="refName" name="reference_name" class="form-control form-control-lg" placeholder="Enter reference name" required>
+                          </div>
+                          <div class="col-12 col-md-6">
+                            <label class="form-label fw-semibold">Reference Mobile *</label>
+                            <input type="tel" id="refMobile" name="reference_contact" class="form-control form-control-lg" placeholder="Enter reference mobile" required>
+                          </div>
+                          
+                          <!-- Hidden fields for DSC options -->
+                          <input type="hidden" id="classTypeField" name="class_type" value="">
+                          <input type="hidden" id="userTypeField" name="user_type" value="">
+                          <input type="hidden" id="certTypeField" name="cert_type" value="">
+                          <input type="hidden" id="validityField" name="validity" value="">
+                          <input type="hidden" id="includeTokenField" name="include_token" value="">
+                          <input type="hidden" id="includeInstallField" name="include_installation" value="">
+                          <input type="hidden" id="outsideIndiaField" name="outside_india" value="">
+                          <input type="hidden" id="quotedPriceField" name="quoted_price" value="">
+                          
+                          
                         </div>
-                        <div class="col-12 col-md-6">
-                          <label class="form-label fw-semibold">Email Address *</label>
-                          <input type="email" id="enqEmail" class="form-control form-control-lg" placeholder="Enter your email">
-                        </div>
-                        <div class="col-12 col-md-6">
-                          <label class="form-label fw-semibold">Mobile Number *</label>
-                          <input type="tel" id="enqMobile" class="form-control form-control-lg" placeholder="Enter mobile number">
-                        </div>
-                        <div class="col-12 col-md-6">
-                          <label class="form-label fw-semibold">Company Name</label>
-                          <input type="text" id="enqCompany" class="form-control form-control-lg" placeholder="Company name (optional)">
-                        </div>
-                        <div class="col-12 col-md-6">
-                          <label class="form-label fw-semibold">GST Number</label>
-                          <input type="text" id="enqGst" class="form-control form-control-lg" placeholder="GST number (optional)">
-                        </div>
-                        <div class="col-12 col-md-6">
-                          <label class="form-label fw-semibold">Address</label>
-                          <input type="text" id="enqAddress" class="form-control form-control-lg" placeholder="Address (optional)">
-                        </div>
+                        
                         <div class="col-12">
+                          <div class="alert alert-info py-2 small mt-3" id="docHint">
+                            Select Class/User/Certificate above to see required documents.
+                          </div>
+                        </div>
+
+                        <!-- Document inputs -->
+                        <div class="row g-3">
+                        <div class="col-12 col-md-6 doc-field" id="field_pan" style="display:none;">
+                          <label class="form-label fw-semibold">PAN Card</label>
+                          <input type="file" id="doc_pan" name="pan_copy" class="form-control" accept=".pdf,.doc,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/msword">
+                          <div class="form-text">Allowed: PDF, DOC, DOCX</div>
+                        </div>
+                        <div class="col-12 col-md-6 doc-field" id="field_aadhar" style="display:none;">
+                          <label class="form-label fw-semibold">Aadhar Card</label>
+                          <input type="file" id="doc_aadhar" name="aadhar_copy" class="form-control" accept=".pdf,.doc,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/msword">
+                          <div class="form-text">Allowed: PDF, DOC, DOCX</div>
+                        </div>
+                        <div class="col-12 col-md-6 doc-field" id="field_gst" style="display:none;">
+                          <label class="form-label fw-semibold">GST Certificate</label>
+                          <input type="file" id="doc_gst" name="gst_certificate" class="form-control" accept=".pdf,.doc,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/msword">
+                          <div class="form-text">Allowed: PDF, DOC, DOCX</div>
+                        </div>
+                        <div class="col-12 col-md-6 doc-field" id="field_photo" style="display:none;">
+                          <label class="form-label fw-semibold">Photo</label>
+                          <input type="file" id="doc_photo" name="photo" class="form-control" accept=".jpg,.jpeg,.pdf,image/jpeg,application/pdf">
+                          <div class="form-text">Allowed: JPG, JPEG, PDF</div>
+                        </div>
+                        <div class="col-12 col-md-6 doc-field" id="field_auth" style="display:none;">
+                          <label class="form-label fw-semibold">Authorisation Letter</label>
+                          <input type="file" id="doc_auth" name="authorization_letter" class="form-control" accept=".pdf,.doc,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/msword">
+                          <div class="form-text">Allowed: PDF, DOC, DOCX</div>
+                        </div>
+                        <div class="col-12 col-md-6 doc-field" id="field_orgpan" style="display:none;">
+                          <label class="form-label fw-semibold">Organisation PAN</label>
+                          <input type="file" id="doc_orgpan" name="company_pan" class="form-control" accept=".pdf,.doc,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/msword">
+                          <div class="form-text">Allowed: PDF, DOC, DOCX</div>
+                        </div>
+                        <div class="col-12 col-md-6 doc-field" id="field_ifc" style="display:none;">
+                          <label class="form-label fw-semibold">IFC Certificate</label>
+                          <input type="file" id="doc_ifc" name="ifc_certificate" class="form-control" accept=".pdf,.doc,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/msword">
+                          <div class="form-text">Allowed: PDF, DOC, DOCX</div>
+                        </div>
+                        </div>
+
+                        <!-- Action buttons moved to bottom -->
+                        <div class="col-12 mt-2">
                           <div class="action-buttons">
-                            <!-- Action buttons in a single row -->
                             <div class="row g-3">
                               <div class="col-md-4">
-                                <button id="enqSubmit" class="btn btn-success btn-lg btn-pro btn-pro-success w-100">
+                                <button type="submit" id="enqSubmit" class="btn btn-success btn-lg btn-pro btn-pro-success w-100" data-submission-type="enquiry">
                                   <i class="fas fa-paper-plane me-2"></i>Send Enquiry
                                 </button>
                               </div>
                               <div class="col-md-4">
-                                <button id="proceedBtn" class="btn btn-primary btn-lg btn-pro btn-pro-primary w-100">
+                                <button type="submit" id="proceedBtn" class="btn btn-primary btn-lg btn-pro btn-pro-primary w-100" data-submission-type="purchase">
                                   <i class="fas fa-credit-card me-2"></i>Proceed to Buy
                                 </button>
                               </div>
@@ -296,81 +412,8 @@
                             </div>
                           </div>
                         </div>
-                      </div>
+                      </form>
                       <div id="enqMsg" class="alert mt-3" style="display: none;"></div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Documents & Reference Section -->
-                <div class="mt-4" id="documentsSection">
-                  <div class="card border-0 shadow-sm">
-                    <div class="card-header bg-dark text-white d-flex align-items-center justify-content-between">
-                      <h6 class="fw-semibold mb-0"><i class="fas fa-file-upload me-2"></i>Documents & Reference</h6>
-                      <span class="small opacity-75">All documents are required as per selection</span>
-                    </div>
-                    <div class="card-body p-4">
-                      <div class="row g-3">
-                        <!-- Reference fields -->
-                        <div class="col-12 col-md-6">
-                          <label class="form-label fw-semibold">Reference Name *</label>
-                          <input type="text" id="refName" class="form-control form-control-lg" placeholder="Enter reference name">
-                        </div>
-                        <div class="col-12 col-md-6">
-                          <label class="form-label fw-semibold">Reference Mobile Number *</label>
-                          <input type="tel" id="refMobile" class="form-control form-control-lg" placeholder="Enter reference mobile number">
-                        </div>
-
-                        <div class="col-12">
-                          <div class="alert alert-info py-2 small" id="docHint">
-                            Select Class/User/Certificate above to see required documents.
-                          </div>
-                        </div>
-
-                        <!-- Document inputs -->
-                        <div class="col-12 col-md-6 doc-field" id="field_pan" style="display:none;">
-                          <label class="form-label fw-semibold">PAN Card *</label>
-                          <input type="file" id="doc_pan" class="form-control" accept=".pdf,.doc,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/msword">
-                          <div class="form-text">Allowed: PDF, DOC, DOCX</div>
-                        </div>
-                        <div class="col-12 col-md-6 doc-field" id="field_aadhar" style="display:none;">
-                          <label class="form-label fw-semibold">Aadhar Card *</label>
-                          <input type="file" id="doc_aadhar" class="form-control" accept=".pdf,.doc,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/msword">
-                          <div class="form-text">Allowed: PDF, DOC, DOCX</div>
-                        </div>
-                        <div class="col-12 col-md-6 doc-field" id="field_gst" style="display:none;">
-                          <label class="form-label fw-semibold">GST Certificate *</label>
-                          <input type="file" id="doc_gst" class="form-control" accept=".pdf,.doc,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/msword">
-                          <div class="form-text">Allowed: PDF, DOC, DOCX</div>
-                        </div>
-                        <div class="col-12 col-md-6 doc-field" id="field_photo" style="display:none;">
-                          <label class="form-label fw-semibold">Photo *</label>
-                          <input type="file" id="doc_photo" class="form-control" accept=".jpg,.jpeg,.pdf,image/jpeg,application/pdf">
-                          <div class="form-text">Allowed: JPG, JPEG, PDF</div>
-                        </div>
-                        <div class="col-12 col-md-6 doc-field" id="field_auth" style="display:none;">
-                          <label class="form-label fw-semibold">Authorisation Letter *</label>
-                          <input type="file" id="doc_auth" class="form-control" accept=".pdf,.doc,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/msword">
-                          <div class="form-text">Allowed: PDF, DOC, DOCX</div>
-                        </div>
-                        <div class="col-12 col-md-6 doc-field" id="field_orgpan" style="display:none;">
-                          <label class="form-label fw-semibold">Organisation PAN *</label>
-                          <input type="file" id="doc_orgpan" class="form-control" accept=".pdf,.doc,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/msword">
-                          <div class="form-text">Allowed: PDF, DOC, DOCX</div>
-                        </div>
-                        <div class="col-12 col-md-6 doc-field" id="field_ifc" style="display:none;">
-                          <label class="form-label fw-semibold">IFC Certificate *</label>
-                          <input type="file" id="doc_ifc" class="form-control" accept=".pdf,.doc,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/msword">
-                          <div class="form-text">Allowed: PDF, DOC, DOCX</div>
-                        </div>
-
-                        <div class="col-12">
-                          <button id="uploadDocsBtn" class="btn btn-dark btn-lg w-100">
-                            <i class="fas fa-cloud-upload-alt me-2"></i>Upload Documents
-                          </button>
-                          <div id="docMsg" class="alert mt-3" style="display:none;"></div>
-                        </div>
-                      </div>
                     </div>
                   </div>
                 </div>
@@ -501,6 +544,7 @@
 
 <script>
 (function(){
+  
   const proceedBtn = document.getElementById('proceedBtn');
   const enquirySection = document.getElementById('enquirySection');
   const priceEl = document.getElementById('priceValue');
@@ -516,14 +560,33 @@
   const enqMsg = document.getElementById('enqMsg');
   const enqName = document.getElementById('enqName');
   const enqEmail = document.getElementById('enqEmail');
+  // Auto-hide alerts in 5 seconds whenever content/class changes
+  (function(){
+    if(!enqMsg) return;
+    let timerId = null;
+    function schedule(){
+      if(timerId) clearTimeout(timerId);
+      if((enqMsg.textContent||'').trim()){
+        enqMsg.style.display = 'block';
+        timerId = setTimeout(()=>{
+          enqMsg.style.display = 'none';
+          enqMsg.textContent = '';
+          enqMsg.className = 'alert mt-3';
+        }, 5000);
+      }
+    }
+    const mo = new MutationObserver(schedule);
+    mo.observe(enqMsg, { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] });
+  })();
+
   const enqMobile = document.getElementById('enqMobile');
   const enqCompany = document.getElementById('enqCompany');
   const enqGst = document.getElementById('enqGst');
   const enqAddress = document.getElementById('enqAddress');
   const refName = document.getElementById('refName');
   const refMobile = document.getElementById('refMobile');
-  const uploadDocsBtn = document.getElementById('uploadDocsBtn');
-  const docMsg = document.getElementById('docMsg');
+
+
 
   const state = {
     classType: 'class3',
@@ -612,6 +675,16 @@
   let lastSurcharge = 0;
   let currentDisplayedPrice = 0;
 
+  // Helpers: consistent integer rounding for display/tax
+  function roundTax(value){
+    const n = Number(value || 0);
+    return Math.round(n);
+  }
+  function roundTaxAmount(value){
+    const n = Number(value || 0);
+    return Math.round(n);
+  }
+
   function setPriceValue(value, baseAmount = null, gstAmount = null){
     // Round the final value to nearest integer for display
     const target = roundTax(Number(value) || 0);
@@ -657,7 +730,12 @@
   function updateCorePriceDisplay(baseAmount){
     try{
       const coreBaseEl = document.getElementById('coreBaseAmount');
-      if(coreBaseEl){ coreBaseEl.textContent = `₹ ${roundTax(Number(baseAmount||0)).toLocaleString('en-IN')}`; }
+      if(coreBaseEl){
+        const rounded = roundTax(Number(baseAmount||0));
+        try{ console.log('[DSC] updateCorePriceDisplay', { baseAmount, rounded, elTextBefore: coreBaseEl.textContent }); }catch(e){}
+        coreBaseEl.textContent = `₹ ${rounded.toLocaleString('en-IN')}`;
+        try{ console.log('[DSC] updateCorePriceDisplay:after', { elTextAfter: coreBaseEl.textContent }); }catch(e){}
+      }
     }catch(e){}
   }
 
@@ -676,8 +754,10 @@
     // Calculate GST with proper rounding (456.49 → 456, 456.50 → 457)
     const gstAmount = roundTaxAmount((base * gstPct) / 100);
     const total = base + gstAmount;
+    try{ console.log('[DSC] renderComputedPrice', { state, lastComponents, includeToken, includeInstall, base, gstAmount, total }); }catch(e){}
     
     setPriceValue(total, base, gstAmount);
+    updateCTAEnabled();
   }
 
   async function updatePrice(){
@@ -692,14 +772,21 @@
       const resp = await fetch(`/api/dsc-price/?${params.toString()}`);
       const data = await resp.json();
       if(data.success){
+        // Front-end guard: require exact 4-field match present in options map
+        const exactExists = hasPriceForCombination(state.classType, state.userType, state.certType, state.validity);
+        if(!exactExists){
+          throw new Error('Exact combination not configured');
+        }
         if(notCfg) notCfg.classList.add('d-none');
         const comps = data.components || {};
         lastComponents = comps;
         lastGST = comps.gst_percent || 0;
         lastSurcharge = data.outside_surcharge || 0;
+        try{ console.log('[DSC] updatePrice success', { query: Object.fromEntries(params), data }); }catch(e){}
 
         // Update core price (DSC only, excluding token/installation and GST)
         const coreBase = parseFloat(comps.dsc_charge || 0);
+        try{ console.log('[DSC] coreBase from API', coreBase); }catch(e){}
         updateCorePriceDisplay(coreBase);
 
         // Show/hide add-on toggles
@@ -730,47 +817,25 @@
         }
 
         renderComputedPrice();
+        updateCTAEnabled();
       } else {
         throw new Error('Price not configured for this combination');
       }
     } catch(e){
-      // Fallback: use local table or show price not configured
-      try {
-        if(notCfg) notCfg.classList.remove('d-none');
-        // Hide add-ons when DB/pricing not configured for this selection
-        lastComponents = null;
-        if(addOnsContainer) addOnsContainer.style.display = 'none';
-        if(tokenRow) tokenRow.style.display = 'none';
-        if(installRow) installRow.style.display = 'none';
-        if(tokenCheckbox) tokenCheckbox.checked = false;
-        if(installCheckbox) installCheckbox.checked = false;
+      // Strict behavior: if API has no exact price, reset everything to zero
+      if(notCfg) notCfg.classList.remove('d-none');
+      lastComponents = null;
+      if(addOnsContainer) addOnsContainer.style.display = 'none';
+      if(tokenRow) tokenRow.style.display = 'none';
+      if(installRow) installRow.style.display = 'none';
+      if(tokenCheckbox) tokenCheckbox.checked = false;
+      if(installCheckbox) installCheckbox.checked = false;
 
-        const outside = outsideIndia && outsideIndia.checked;
-        let price = null;
-        if (outside && state.classType === 'class3' && state.validity === '2y') {
-          price = (localPrices.class3.foreign[state.certType]||{})['2y'] || null;
-        }
-        if (price == null) {
-          const table = (localPrices[state.classType]||{})[state.certType]||{};
-          price = table[state.validity] || null;
-        }
-        if(price != null){
-          priceEl.classList.remove('text-muted');
-          // Calculate breakdown for fallback prices (assuming 18% GST) with proper rounding
-          const baseAmount = price / 1.18; // Remove GST to get base amount
-          const gstAmount = roundTaxAmount(price - baseAmount);
-          const roundedBase = roundTax(baseAmount);
-          setPriceValue(price, roundedBase, gstAmount);
-          // Also reflect base in compact core price box
-          updateCorePriceDisplay(roundedBase);
-        } else {
-          priceEl.textContent = 'Price not configured for this combination';
-          priceEl.classList.add('text-muted');
-        }
-      } catch (err) {
-        priceEl.textContent = 'Price not configured for this combination';
-        priceEl.classList.add('text-muted');
-      }
+      setPriceValue(0, 0, 0);
+      updateCorePriceDisplay(0);
+      priceEl.textContent = 'Price not configured for this combination';
+      priceEl.classList.add('text-muted');
+      updateCTAEnabled();
     }
   }
 
@@ -826,71 +891,482 @@
     installCheckbox.addEventListener('change', renderComputedPrice);
   }
 
-  if(enqSubmit){
-    enqSubmit.addEventListener('click', async function(){
+  // Disable/enable CTAs until form is valid
+  function isFormValid(){
+    const name = (enqName?.value || '').trim();
+    const email = (enqEmail?.value || '').trim();
+    const mobile = (enqMobile?.value || '').trim();
+    const refn = (refName?.value || '').trim();
+    const refm = (refMobile?.value || '').trim();
+    const priced = hasPriceForCombination(state.classType, state.userType, state.certType, state.validity);
+    const totalStr = priceEl.textContent.replace(/[^0-9.]/g,'');
+    const quoted = parseFloat(totalStr || '0') || 0;
+    
+    // Ensure visible required file inputs have files selected AND are valid
+    const docIds = ['doc_pan','doc_aadhar','doc_gst','doc_photo','doc_auth','doc_orgpan','doc_ifc'];
+    let filesOk = true;
+    for(const id of docIds){
+      const wrap = document.getElementById(id.replace('doc_','field_'));
+      const input = document.getElementById(id);
+      if(!input || !wrap) continue;
+      const isVisible = wrap.style.display !== 'none';
+      const isRequired = input.hasAttribute('required');
+      if(isVisible && isRequired){
+        const hasFile = input.files && input.files.length > 0;
+        if(!hasFile){ 
+          filesOk = false; 
+          break; 
+        }
+        
+        // Also check if the file is valid (no error messages)
+        const hasError = input.parentNode.querySelector('#' + input.id + '_error');
+        if(hasError){
+          filesOk = false;
+          break;
+        }
+      }
+    }
+    return !!(name && email && mobile && refn && refm && priced && quoted > 0 && filesOk);
+  }
+  function updateCTAEnabled(){
+    const ok = isFormValid();
+    if(enqSubmit){ enqSubmit.disabled = !ok; }
+    if(proceedBtn){ proceedBtn.disabled = !ok; }
+  }
+  // Wire input listeners
+  [enqName,enqEmail,enqMobile,refName,refMobile,enqCompany,enqGst,enqAddress].forEach(el=>{
+    if(!el) return;
+    el.addEventListener('input', updateCTAEnabled);
+    el.addEventListener('change', updateCTAEnabled);
+  });
+  // Initialize CTAs state on load
+  updateCTAEnabled();
+  
+  // Validate any pre-selected files on page load
+  validateAllFilesOnLoad();
+
+  // File validation function - SIMPLIFIED AND RELIABLE
+  function validateFileType(event) {
+    const fileInput = event.target;
+    const file = fileInput.files[0];
+    const fieldId = fileInput.id;
+    
+    console.log('=== VALIDATION START ===', { fieldId, fileName: file?.name });
+    
+    // Remove any existing error messages
+    removeFileError(fileInput);
+    
+    if (!file) {
+      console.log('No file selected');
+      return; // No file selected
+    }
+    
+    // Simple validation based on file extension only
+    const fileName = file.name.toLowerCase();
+    const fileExtension = fileName.substring(fileName.lastIndexOf('.'));
+    
+    // Define what each field accepts
+    let isAllowed = false;
+    let allowedFormats = '';
+    
+    if (fieldId === 'doc_photo') {
+      // Photo field accepts JPG, JPEG, PDF
+      isAllowed = ['.jpg', '.jpeg', '.pdf'].includes(fileExtension);
+      allowedFormats = 'JPG, JPEG, PDF';
+    } else {
+      // All other fields accept only PDF, DOC, DOCX
+      isAllowed = ['.pdf', '.doc', '.docx'].includes(fileExtension);
+      allowedFormats = 'PDF, DOC, DOCX';
+    }
+    
+    console.log('Validation result:', {
+      fieldId,
+      fileName: file.name,
+      fileExtension,
+      isAllowed,
+      allowedFormats
+    });
+    
+    if (!isAllowed) {
+      const fieldName = getFieldDisplayName(fieldId);
+      const errorMessage = `${fieldName} only accepts ${allowedFormats} files. Selected file type (${fileExtension}) is not allowed.`;
+      
+      console.log('SHOWING ERROR:', errorMessage);
+      
+      // Show error message
+      showFileError(fileInput, errorMessage);
+      
+      // Clear the invalid file
+      fileInput.value = '';
+      
+      // Update form state
+      updateCTAEnabled();
+      
+      console.log('=== VALIDATION END - INVALID ===');
+      return false;
+    }
+    
+    // Check file size (max 10MB)
+    const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+    if (file.size > maxSize) {
+      const fieldName = getFieldDisplayName(fieldId);
+      const fileSizeMB = (file.size / (1024 * 1024)).toFixed(1);
+      const errorMessage = `${fieldName} file size (${fileSizeMB}MB) exceeds the maximum allowed size of 10MB.`;
+      
+      console.log('SHOWING SIZE ERROR:', errorMessage);
+      showFileError(fileInput, errorMessage);
+      fileInput.value = '';
+      updateCTAEnabled();
+      return false;
+    }
+    
+    // File is valid - show success message
+    console.log('File is valid, showing success message');
+    showFileSuccess(fileInput, 'File uploaded successfully!');
+    
+    console.log('=== VALIDATION END - VALID ===');
+    return true;
+  }
+  
+  // Function to show file error - SIMPLIFIED AND RELIABLE
+  function showFileError(fileInput, message) {
+    console.log('=== SHOW ERROR START ===', { fieldId: fileInput.id, message });
+    
+    // Remove any existing messages first
+    removeFileError(fileInput);
+    removeFileSuccess(fileInput);
+    
+    // Create error message div
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'alert alert-danger mt-2 small';
+    errorDiv.innerHTML = `<i class="fas fa-exclamation-triangle me-2"></i>${message}`;
+    errorDiv.id = fileInput.id + '_error';
+    errorDiv.style.display = 'block';
+    errorDiv.style.visibility = 'visible';
+    
+    console.log('Created error div:', errorDiv.outerHTML);
+    
+    // Find the parent container and add error message
+    const parentContainer = fileInput.parentNode;
+    console.log('Parent container:', parentContainer);
+    
+    // Add error message to parent
+    parentContainer.appendChild(errorDiv);
+    
+    // Add error styling to file input
+    fileInput.classList.add('is-invalid');
+    
+    // Force a reflow to ensure the error is visible
+    errorDiv.offsetHeight;
+    
+    console.log('Error div added. Parent now has children:', parentContainer.children.length);
+    console.log('Error div in DOM:', document.getElementById(fileInput.id + '_error'));
+    
+    // Scroll to error if needed
+    errorDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    
+    console.log('=== SHOW ERROR END ===');
+  }
+  
+  // Function to show file success
+  function showFileSuccess(fileInput, message) {
+    removeFileError(fileInput);
+    removeFileSuccess(fileInput);
+    
+    const successDiv = document.createElement('div');
+    successDiv.className = 'alert alert-success mt-2 small';
+    successDiv.innerHTML = `<i class="fas fa-check-circle me-2"></i>${message}`;
+    successDiv.id = fileInput.id + '_success';
+    
+    fileInput.parentNode.appendChild(successDiv);
+    
+    // Remove error styling from the file input
+    fileInput.classList.remove('is-invalid');
+    
+    // Auto-hide success message after 3 seconds
+    setTimeout(() => {
+      removeFileSuccess(fileInput);
+    }, 3000);
+  }
+  
+  // Function to remove file error
+  function removeFileError(fileInput) {
+    const errorDiv = fileInput.parentNode.querySelector('#' + fileInput.id + '_error');
+    if (errorDiv) {
+      console.log('Removing error for:', fileInput.id);
+      errorDiv.remove();
+    }
+    fileInput.classList.remove('is-invalid');
+  }
+  
+  // Function to remove file error only when explicitly requested
+  function removeFileErrorExplicit(fileInput) {
+    const errorDiv = fileInput.parentNode.querySelector('#' + fileInput.id + '_error');
+    if (errorDiv) {
+      console.log('Explicitly removing error for:', fileInput.id);
+      errorDiv.remove();
+    }
+    fileInput.classList.remove('is-invalid');
+  }
+  
+  // Function to remove file success
+  function removeFileSuccess(fileInput) {
+    const successDiv = fileInput.parentNode.querySelector('#' + fileInput.id + '_success');
+    if (successDiv) {
+      successDiv.remove();
+    }
+  }
+  
+  // Function to clear all file validation messages
+  function clearAllFileMessages() {
+    const fileInputs = document.querySelectorAll('input[type="file"]');
+    fileInputs.forEach(input => {
+      removeFileError(input);
+      removeFileSuccess(input);
+    });
+  }
+  
+  // Helper function to get field display names
+  function getFieldDisplayName(fieldId) {
+    const fieldNames = {
+      'doc_pan': 'PAN Card',
+      'doc_aadhar': 'Aadhar Card',
+      'doc_gst': 'GST Certificate',
+      'doc_photo': 'Photo',
+      'doc_auth': 'Authorisation Letter',
+      'doc_orgpan': 'Organisation PAN',
+      'doc_ifc': 'IFC Certificate'
+    };
+    return fieldNames[fieldId] || 'Document';
+  }
+  
+  // Function to validate all files on page load
+  function validateAllFilesOnLoad() {
+    const fileInputs = document.querySelectorAll('input[type="file"]');
+    fileInputs.forEach(input => {
+      if (input.files && input.files.length > 0) {
+        const event = { target: input };
+        validateFileType(event);
+      }
+    });
+    
+    // Also validate after a short delay to ensure DOM is fully ready
+    setTimeout(() => {
+      const fileInputsDelayed = document.querySelectorAll('input[type="file"]');
+      fileInputsDelayed.forEach(input => {
+        if (input.files && input.files.length > 0) {
+          const event = { target: input };
+          validateFileType(event);
+        }
+      });
+    }, 100);
+  }
+  
+  // Function to manually trigger validation for a specific field
+  function triggerValidation(fieldId) {
+    const input = document.getElementById(fieldId);
+    if (input && input.files && input.files.length > 0) {
+      const event = { target: input };
+      console.log('Manually triggering validation for:', fieldId);
+      validateFileType(event);
+    }
+  }
+  
+  // Function to test validation - can be called from console
+  window.testFileValidation = function() {
+    console.log('Testing file validation...');
+    const fileInputs = document.querySelectorAll('input[type="file"]');
+    fileInputs.forEach(input => {
+      if (input.files && input.files.length > 0) {
+        console.log('Found file in:', input.id, input.files[0].name);
+        const event = { target: input };
+        validateFileType(event);
+      }
+    });
+  };
+  
+  // Function to manually test error display
+  window.testErrorDisplay = function(fieldId) {
+    console.log('Testing error display for:', fieldId);
+    const input = document.getElementById(fieldId);
+    if (input) {
+      showFileError(input, 'TEST ERROR MESSAGE - This is a test error to verify display is working.');
+    } else {
+      console.error('Field not found:', fieldId);
+    }
+  };
+  
+  // Function to manually test success display
+  window.testSuccessDisplay = function(fieldId) {
+    console.log('Testing success display for:', fieldId);
+    const input = document.getElementById(fieldId);
+    if (input) {
+      showFileSuccess(input, 'TEST SUCCESS MESSAGE - This is a test success to verify display is working.');
+    } else {
+      console.error('Field not found:', fieldId);
+    }
+  };
+
+  // Listen to file input changes to re-validate CTA enablement
+  ;['doc_pan','doc_aadhar','doc_gst','doc_photo','doc_auth','doc_orgpan','doc_ifc'].forEach(id=>{
+    const inp = document.getElementById(id);
+    if(inp){ 
+      inp.addEventListener('change', updateCTAEnabled); 
+      
+      // Simple file validation on change
+      inp.addEventListener('change', function(e) {
+        console.log('File input changed:', id, e.target.files[0]?.name);
+        if (e.target.files && e.target.files.length > 0) {
+          validateFileType(e);
+        }
+      });
+    }
+  });
+
+  // Handle form submission for both enquiry and purchase
+  const dscForm = document.getElementById('dscForm');
+  if(dscForm){
+    dscForm.addEventListener('submit', async function(e){
+      e.preventDefault();
+      
+      const submitButton = e.submitter;
+      const submissionType = submitButton.getAttribute('data-submission-type');
+      const originalHTML = submitButton.innerHTML;
+      submitButton.disabled = true;
+      submitButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Submitting...';
+      if(submitButton.id === 'proceedBtn'){ enqSubmit.disabled = true; } else { proceedBtn.disabled = true; }
+      
       enqMsg.style.display = 'block';
       enqMsg.textContent = '';
       enqMsg.className = 'alert mt-3';
       
-      const name = (enqName?.value || '').trim();
-      const email = (enqEmail?.value || '').trim();
-      const mobileNo = (enqMobile?.value || '').trim();
-      const company = (enqCompany?.value || '').trim();
-      const gst = (enqGst?.value || '').trim();
-      const address = (enqAddress?.value || '').trim();
+      // Validate required fields
+      const name = document.getElementById('enqName').value.trim();
+      const email = document.getElementById('enqEmail').value.trim();
+      const mobile = document.getElementById('enqMobile').value.trim();
+      const refNameVal = document.getElementById('refName').value.trim();
+      const refMobileVal = document.getElementById('refMobile').value.trim();
       
-      if(!name || !email || !mobileNo){
-        enqMsg.textContent = 'Please fill Name, Email and Mobile.';
+      // Validate all visible file inputs
+      const fileInputs = dscForm.querySelectorAll('input[type="file"]');
+      let filesValid = true;
+      
+      for (const input of fileInputs) {
+        const wrap = input.parentNode.parentNode; // Get the field wrapper
+        if (wrap.style.display !== 'none' && input.hasAttribute('required')) {
+          if (!input.files || input.files.length === 0) {
+            showFileError(input, 'This document is required.');
+            filesValid = false;
+          } else {
+            // Re-validate file type
+            const event = { target: input };
+            if (!validateFileType(event)) {
+              filesValid = false;
+            }
+          }
+        }
+      }
+      
+      if (!filesValid) {
+        enqMsg.textContent = 'Please fix file upload errors before submitting.';
         enqMsg.className = 'alert alert-danger mt-3';
         return;
       }
       
+      // Toggle required on visible document fields
+      const docFields = ['doc_pan','doc_aadhar','doc_gst','doc_photo','doc_auth','doc_orgpan','doc_ifc'];
+      docFields.forEach(id=>{
+        const fieldWrap = document.getElementById(id.replace('doc_','field_'));
+        const input = document.getElementById(id);
+        if(fieldWrap && input){
+          const isVisible = fieldWrap.style.display !== 'none';
+          if(isVisible){ input.setAttribute('required','required'); } else { input.removeAttribute('required'); }
+        }
+      });
+
+      // Basic check for required text fields
+      if(!name || !email || !mobile || !refNameVal || !refMobileVal){
+        enqMsg.textContent = 'Please fill out all required fields (Name, Email, Mobile, Reference Name, Reference Mobile).';
+        enqMsg.className = 'alert alert-danger mt-3';
+        return;
+      }
+      
+      // Update hidden fields with current state
+      document.getElementById('classTypeField').value = state.classType;
+      document.getElementById('userTypeField').value = state.userType;
+      document.getElementById('certTypeField').value = state.certType;
+      document.getElementById('validityField').value = state.validity;
+      document.getElementById('includeTokenField').value = !!(tokenCheckbox && tokenCheckbox.checked);
+      document.getElementById('includeInstallField').value = !!(installCheckbox && installCheckbox.checked);
+      document.getElementById('outsideIndiaField').value = false;
+      
       // Compute current quoted price number from UI text (safe fallback)
       const totalStr = priceEl.textContent.replace(/[^0-9.]/g,'');
       const quoted = parseFloat(totalStr || '0') || 0;
+      document.getElementById('quotedPriceField').value = quoted;
       
-      const payload = {
-        name,
-        email,
-        mobile: mobileNo,
-        company_name: company,
-        gst_number: gst,
-        address,
-        class_type: state.classType,
-        user_type: state.userType,
-        cert_type: state.certType,
-        validity: state.validity,
-        include_token: !!(tokenCheckbox && tokenCheckbox.checked),
-        include_installation: !!(installCheckbox && installCheckbox.checked),
-        outside_india: false,
-        quoted_price: quoted
-      };
+      // Add submission type to form data
+      const formData = new FormData(dscForm);
+      formData.append('submission_type', submissionType);
+      try{
+        console.log('[DSC] form submit', {
+          submissionType,
+          state: { classType: state.classType, userType: state.userType, certType: state.certType, validity: state.validity },
+          quoted,
+          include_token: !!(tokenCheckbox && tokenCheckbox.checked),
+          include_installation: !!(installCheckbox && installCheckbox.checked)
+        });
+      }catch(_e){}
       
       try{
-        const resp = await fetch('/api/dsc-enquiry/', {
+        const resp = await fetch('/dsc/submit/', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
+          headers: { 'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || '' },
+          body: formData
         });
+        
+        if (!resp.ok) {
+          throw new Error(`HTTP error! status: ${resp.status}`);
+        }
+        
         const data = await resp.json();
         if(data.success){
-          enqMsg.textContent = 'Enquiry submitted successfully. We will contact you soon.';
-          enqMsg.className = 'alert alert-success mt-3';
-          enqName.value = '';
-          enqEmail.value = '';
-          enqMobile.value = '';
-          enqCompany.value = '';
-          enqGst.value = '';
-          enqAddress.value = '';
+          if(submissionType === 'enquiry'){
+            enqMsg.textContent = 'Enquiry submitted successfully! We will contact you soon.';
+            enqMsg.className = 'alert alert-success mt-3';
+          } else {
+            enqMsg.textContent = 'Purchase request submitted successfully! Please complete the payment to proceed.';
+            enqMsg.className = 'alert alert-success mt-3';
+          }
+          
+          
+          // Clear form
+          dscForm.reset();
+          
+          // Clear file inputs
+          const fileInputs = dscForm.querySelectorAll('input[type="file"]');
+          fileInputs.forEach(input => input.value = '');
+          
+          // Clear all file validation messages
+          clearAllFileMessages();
+          
         } else {
           throw new Error(data.message || 'Failed to submit');
         }
       } catch(err){
-        enqMsg.textContent = 'Failed to submit enquiry. Please try again.';
+        console.error('Submission error:', err);
+        enqMsg.textContent = `Failed to submit ${submissionType}. Please try again. Error: ${err.message}`;
         enqMsg.className = 'alert alert-danger mt-3';
+      }
+      finally {
+        // restore button state
+        submitButton.innerHTML = originalHTML;
+        updateCTAEnabled();
       }
     });
   }
+
+
 
   // ===== Document requirements =====
   const REQUIRED_MAP = {
@@ -922,9 +1398,10 @@
   };
 
   function updateDocumentFields(){
-    const needed = (state.classType === 'dgft')
+    const classKey = (state.classType || '').toString().trim().toLowerCase();
+    const needed = (classKey === 'dgft')
       ? REQUIRED_MAP.dgft()
-      : REQUIRED_MAP.class3(state.userType, state.certType);
+      : REQUIRED_MAP.class3((state.userType || '').toString().trim().toLowerCase(), (state.certType || '').toString().trim().toLowerCase());
     // Hide all
     Object.values(FIELD_IDS).forEach(id => { const el = document.getElementById(id); if(el){ el.style.display = 'none'; } });
     // Show needed
@@ -935,6 +1412,41 @@
         ? `Required documents: <strong>${needed.map(k=>({pan:'PAN Card',aadhar:'Aadhar Card',gst:'GST Certificate',photo:'Photo',auth:'Authorisation Letter',orgpan:'Organisation PAN',ifc:'IFC Certificate'}[k])).join(', ')}</strong>`
         : 'Select Class/User/Certificate above to see required documents.';
     }
+
+    // Apply required attribute to visible upload inputs
+    const mapToInput = {
+      pan: 'doc_pan', aadhar: 'doc_aadhar', gst: 'doc_gst', photo: 'doc_photo', auth: 'doc_auth', orgpan: 'doc_orgpan', ifc: 'doc_ifc'
+    };
+    Object.keys(mapToInput).forEach(key=>{
+      const wrapId = FIELD_IDS[key];
+      const inputId = mapToInput[key];
+      const wrap = document.getElementById(wrapId);
+      const input = document.getElementById(inputId);
+      if(!input) return;
+      const requiredNow = needed.includes(key);
+      if(wrap && wrap.style.display === 'none'){
+        input.removeAttribute('required');
+      } else if(requiredNow){
+        input.setAttribute('required','required');
+      } else {
+        input.removeAttribute('required');
+      }
+    });
+    // Update CTA enabled state whenever document requirements change
+    updateCTAEnabled();
+    
+    // Only clear file validation messages if the field is being hidden
+    // Don't clear messages for fields that remain visible
+    const fileInputs = document.querySelectorAll('input[type="file"]');
+    fileInputs.forEach(input => {
+      const fieldId = input.id.replace('doc_', 'field_');
+      const fieldWrap = document.getElementById(fieldId);
+      if (fieldWrap && fieldWrap.style.display === 'none') {
+        // Field is being hidden, clear its messages
+        removeFileError(input);
+        removeFileSuccess(input);
+      }
+    });
   }
 
   // Recompute document fields when any of these change
@@ -949,90 +1461,11 @@
   // Initial doc fields
   updateDocumentFields();
 
-  // ===== File validation helpers =====
-  function hasAllowedExtension(file, allowed){
-    if(!file) return false;
-    const name = (file.name||'').toLowerCase();
-    return allowed.some(ext => name.endsWith(ext));
-  }
 
-  function validateDocsRequired(needed){
-    const errors = [];
-    if(!(refName?.value||'').trim()) errors.push('Reference Name is required.');
-    if(!(refMobile?.value||'').trim()) errors.push('Reference Mobile Number is required.');
 
-    const fileMap = {
-      pan: document.getElementById('doc_pan')?.files?.[0],
-      aadhar: document.getElementById('doc_aadhar')?.files?.[0],
-      gst: document.getElementById('doc_gst')?.files?.[0],
-      photo: document.getElementById('doc_photo')?.files?.[0],
-      auth: document.getElementById('doc_auth')?.files?.[0],
-      orgpan: document.getElementById('doc_orgpan')?.files?.[0],
-      ifc: document.getElementById('doc_ifc')?.files?.[0]
-    };
 
-    const docxAllowed = ['.pdf','.doc','.docx'];
-    const photoAllowed = ['.jpg','.jpeg','.pdf'];
-    const labels = {pan:'PAN Card', aadhar:'Aadhar Card', gst:'GST Certificate', photo:'Photo', auth:'Authorisation Letter', orgpan:'Organisation PAN', ifc:'IFC Certificate'};
 
-    needed.forEach(key => {
-      const f = fileMap[key];
-      if(!f){ errors.push(`${labels[key]} is required.`); return; }
-      const allowed = (key==='photo') ? photoAllowed : docxAllowed;
-      if(!hasAllowedExtension(f, allowed)){
-        errors.push(`${labels[key]} has invalid type. Allowed: ${allowed.join(', ')}`);
-      }
-    });
-    return errors;
-  }
 
-  if(uploadDocsBtn){
-    uploadDocsBtn.addEventListener('click', async function(){
-      docMsg.style.display = 'block';
-      docMsg.textContent = '';
-      docMsg.className = 'alert mt-3';
-
-      const needed = (state.classType === 'dgft') ? REQUIRED_MAP.dgft() : REQUIRED_MAP.class3(state.userType, state.certType);
-      const errors = validateDocsRequired(needed);
-      if(errors.length){
-        docMsg.innerHTML = errors.map(e=>`<div>${e}</div>`).join('');
-        docMsg.className = 'alert alert-danger mt-3';
-        return;
-      }
-
-      try{
-        const fd = new FormData();
-        fd.append('class_type', state.classType);
-        fd.append('user_type', state.userType);
-        fd.append('cert_type', state.certType);
-        fd.append('reference_name', (refName?.value||'').trim());
-        fd.append('reference_mobile', (refMobile?.value||'').trim());
-        fd.append('name', (enqName?.value||'').trim());
-        fd.append('email', (enqEmail?.value||'').trim());
-        fd.append('mobile', (enqMobile?.value||'').trim());
-        // Files (append if present)
-        const ids = {pan:'doc_pan', aadhar:'doc_aadhar', gst:'doc_gst', photo:'doc_photo', auth:'doc_auth', orgpan:'doc_orgpan', ifc:'doc_ifc'};
-        Object.keys(ids).forEach(k=>{
-          const inp = document.getElementById(ids[k]);
-          if(inp && inp.files && inp.files[0]){
-            fd.append(k, inp.files[0]);
-          }
-        });
-
-        const resp = await fetch('/api/dsc-documents/', { method: 'POST', body: fd });
-        const data = await resp.json();
-        if(data.success){
-          docMsg.textContent = 'Documents uploaded successfully.';
-          docMsg.className = 'alert alert-success mt-3';
-        } else {
-          throw new Error(data.message || 'Upload failed');
-        }
-      } catch(err){
-        docMsg.textContent = `Upload failed: ${err.message}`;
-        docMsg.className = 'alert alert-danger mt-3';
-      }
-    });
-  }
   // Initialize price breakdown display
   function initializePriceDisplay() {
     // Set initial values
@@ -1230,6 +1663,32 @@
       
       if(!name || !email || !mobileNo){
         enqMsg.textContent = 'Please fill Name, Email and Mobile to proceed with payment.';
+        enqMsg.className = 'alert alert-danger mt-3';
+        return;
+      }
+      
+      // Validate all visible file inputs before payment
+      const fileInputs = dscForm.querySelectorAll('input[type="file"]');
+      let filesValid = true;
+      
+      for (const input of fileInputs) {
+        const wrap = input.parentNode.parentNode; // Get the field wrapper
+        if (wrap.style.display !== 'none' && input.hasAttribute('required')) {
+          if (!input.files || input.files.length === 0) {
+            showFileError(input, 'This document is required for payment.');
+            filesValid = false;
+          } else {
+            // Re-validate file type
+            const event = { target: input };
+            if (!validateFileType(event)) {
+              filesValid = false;
+            }
+          }
+        }
+      }
+      
+      if (!filesValid) {
+        enqMsg.textContent = 'Please fix file upload errors before proceeding to payment.';
         enqMsg.className = 'alert alert-danger mt-3';
         return;
       }

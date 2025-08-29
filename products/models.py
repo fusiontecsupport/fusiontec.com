@@ -653,6 +653,10 @@ class DscSubmission(BaseTimestampModel):
     company_name = models.CharField(max_length=255, blank=True, null=True)
     gst_number = models.CharField(max_length=20, blank=True, null=True)
 
+    # Reference details
+    reference_name = models.CharField(max_length=255, blank=True, null=True)
+    reference_contact = models.CharField(max_length=15, blank=True, null=True)
+
     # Selected options
     class_type = models.CharField(max_length=20)
     user_type = models.CharField(max_length=20)
@@ -664,6 +668,25 @@ class DscSubmission(BaseTimestampModel):
 
     # Pricing snapshot
     quoted_price = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    
+    # Document uploads
+    pan_copy = models.FileField(upload_to='uploads/pan/', blank=True, null=True)
+    aadhar_copy = models.FileField(upload_to='uploads/aadhar/', blank=True, null=True)
+    photo = models.ImageField(upload_to='uploads/photo/', blank=True, null=True)
+    gst_certificate = models.FileField(upload_to='uploads/gst/', blank=True, null=True)
+    authorization_letter = models.FileField(upload_to='uploads/authorization/', blank=True, null=True)
+    company_pan = models.FileField(upload_to='uploads/company_pan/', blank=True, null=True)
+    ifc_certificate = models.FileField(upload_to='uploads/ifc/', blank=True, null=True)
+    
+    # Submission type
+    submission_type = models.CharField(
+        max_length=20,
+        choices=[
+            ('enquiry', 'Enquiry Only'),
+            ('purchase', 'Purchase with Payment')
+        ],
+        default='enquiry'
+    )
     
     # Payment details
     razorpay_payment_id = models.CharField(max_length=100, blank=True, null=True)
@@ -700,7 +723,7 @@ class DscSubmission(BaseTimestampModel):
         verbose_name_plural = 'DSC Submissions'
 
     def __str__(self):
-        return f"{self.name} - {self.class_type}/{self.user_type}/{self.cert_type}/{self.validity} - {self.payment_status}"
+        return f"{self.name} - {self.class_type}/{self.user_type}/{self.cert_type}/{self.validity} - {self.submission_type} - {self.payment_status}"
 
 # ============================================================================
 # APPLICANT DOCUMENTS

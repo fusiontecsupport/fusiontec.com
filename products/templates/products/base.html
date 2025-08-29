@@ -243,10 +243,16 @@
         {% endfor %}
       </div>
       <script>
-        setTimeout(() => {
-          const msg = document.getElementById('message-container');
-          if (msg) msg.style.display = 'none';
-        }, 5000);
+        (function(){
+          const container = document.getElementById('message-container');
+          if(!container) return;
+          setTimeout(() => {
+            // Close any Bootstrap alerts for proper fade animation
+            container.querySelectorAll('.alert').forEach(el => {
+              try { new bootstrap.Alert(el).close(); } catch(e){ el.style.display='none'; }
+            });
+          }, 5000);
+        })();
       </script>
       {% endif %}
 
@@ -762,6 +768,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
   <!-- Your custom JS -->
   <script src="{% static 'products/js/scripts.js' %}"></script>
+
+  
 
 </body>
 </html>

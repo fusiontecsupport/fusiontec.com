@@ -56,12 +56,33 @@
         </div>
       </div>
     </nav>
+    
   </main>
 
 
     <main>
     {% block content %}
-    
+    {% if messages %}
+    <div id="message-container" class="container mt-3">
+      {% for message in messages %}
+      <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+      {% endfor %}
+    </div>
+    <script>
+      (function(){
+        const container = document.getElementById('message-container');
+        if(!container) return;
+        setTimeout(() => {
+          container.querySelectorAll('.alert').forEach(el => {
+            try { new bootstrap.Alert(el).close(); } catch(e){ el.style.display='none'; }
+          });
+        }, 5000);
+      })();
+    </script>
+    {% endif %}
     {% endblock %}
   </main>
 
@@ -121,6 +142,8 @@
 
   <!-- Your custom JS -->
   <script src="{% static 'products/js/scripts.js' %}"></script>
+
+  
 
 </body>
 </html>
