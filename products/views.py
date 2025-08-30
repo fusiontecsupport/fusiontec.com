@@ -92,6 +92,10 @@ def _generate_proforma_pdf(
 
     # Add a bit more breathing room below the header before seller/buyer blocks
     y = height - 120
+    
+    # Remove logo - no longer needed
+    # y position remains at height - 120 for seller text
+    
     c.setFont("Helvetica-Bold", 11)
     c.setFillColorRGB(0.22, 0.25, 0.32)
     c.drawString(margin, y, "Seller")
@@ -100,18 +104,38 @@ def _generate_proforma_pdf(
     c.setFont("Helvetica", 10)
     c.setFillColorRGB(0, 0, 0)
     # Seller
-    seller_lines = ["FusionTec Software", "www.fusiontec.com", "sales@fusiontec.com"]
+    seller_lines = [
+        "FUSIONTEC SOFTWARE",
+        "Suite No 17A, 2nd Floor, Crescent Court",
+        "Door No 963 EVR Periyar Salai, Flowers Road Post",
+        "Chennai -600 084",
+        "GSTIN/UIN: 33AABFF1764F1ZU",
+        "State Name : Tamil Nadu, Code : 33",
+        "Contact : 04446072076 / 98416 99963 / 91766 99599",
+        "E-Mail : tally@fusiontec.com"
+    ]
     for i, line in enumerate(seller_lines):
-        c.drawString(margin, y - i*14, line)
+        if i == 0:  # First line - FUSIONTEC SOFTWARE
+            c.setFont("Helvetica-Bold", 10)
+        else:  # Other lines
+            c.setFont("Helvetica", 10)
+        c.drawString(margin, y - i*12, line)  # Reduced line spacing from 14 to 12
+    
     # Buyer
     buyer_lines = [customer_name]
     if company_name:
         buyer_lines.append(company_name)
     buyer_lines += [mobile, email]
     for i, line in enumerate(buyer_lines):
-        c.drawString(width/2, y - i*14, str(line))
+        c.drawString(width/2, y - i*12, str(line))  # Reduced line spacing from 14 to 12
 
-    y = y - max(len(seller_lines), len(buyer_lines)) * 14 - 16
+    # Add more spacing between seller/buyer section and table
+    y = y - max(len(seller_lines), len(buyer_lines)) * 12 - 30
+
+    # Check if we need a page break due to long seller details
+    if y < 150:  # If too close to bottom, add new page
+        c.showPage()
+        y = height - 120  # Reset y position for new page
 
     # Compute pricing
     qty = int(quantity or 1)
@@ -195,10 +219,42 @@ def _generate_proforma_pdf(
     t.drawOn(c, margin + (content_w - wt), y - ht)
     y = y - ht - 18
 
+    # Contact clarification note
+    c.setFont("Helvetica", 9)
+    c.setFillColorRGB(0.42, 0.45, 0.50)
+    c.drawString(margin, y, "Please Contact us for any clarification at 98416 99963")
+    y -= 14
+    
     # Footer note
     c.setFont("Helvetica", 9)
     c.setFillColorRGB(0.42, 0.45, 0.50)
     c.drawString(margin, y, "Terms: Payment due within 7 days. This PI is valid for 15 days from issue date.")
+    
+    # Add blue footer with signature text at bottom of page
+    footer_height = 30
+    footer_y = footer_height  # Position at bottom of page
+    c.setFillColorRGB(23/255, 63/255, 132/255)  # Same blue as header
+    c.rect(0, 0, width, footer_height, fill=1)
+    
+    # Footer text in white - centered
+    c.setFont("Helvetica", 9)
+    c.setFillColorRGB(1, 1, 1)  # White text
+    
+    # Center the text horizontally with fine-tuning
+    footer_text = "This is computer generated proforma invoice signature not required"
+    text_width = c.stringWidth(footer_text, "Helvetica", 9)
+    center_x = (width - text_width) / 2
+    
+    # Fine-tune centering if needed
+    if text_width > 0:
+        center_x = (width - text_width) / 2
+    else:
+        # Fallback to manual calculation if stringWidth fails
+        estimated_char_width = 5.5
+        estimated_text_width = len(footer_text) * estimated_char_width
+        center_x = (width - estimated_text_width) / 2
+    
+    c.drawString(center_x, footer_y - 15, footer_text)
 
     c.showPage()
     c.save()
@@ -1985,23 +2041,17 @@ def submit_quote(request):
         try:
             # Get form data
             customer_name = request.POST.get('customer_name', '').strip()
-            company_name = request.POST.get('company_name', '').strip()
             mobile = request.POST.get('mobile', '').strip()
             email = request.POST.get('email', '').strip()
             gst_number = request.POST.get('gst_number', '').strip()
-            address = request.POST.get('address', '').strip()
-            state = request.POST.get('state', '').strip()
-            district = request.POST.get('district', '').strip()
-            pincode = request.POST.get('pincode', '').strip()
+            message = request.POST.get('message', '').strip()
             product_type_id = request.POST.get('product_type_id')
-            quantity = int(request.POST.get('quantity', 1))
-            additional_requirements = request.POST.get('additional_requirements', '').strip()
             
             # Debug logging
             print(f"Quote submission - product_type_id: {product_type_id}, customer: {customer_name}, email: {email}")
             
             # Validate required fields
-            if not all([customer_name, mobile, email]):
+            if not all([customer_name, mobile, email, gst_number, message]):
                 if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                     return JsonResponse({'status': 'error', 'message': 'Please fill all required fields.'})
                 messages.error(request, 'Please fill all required fields.')
@@ -2097,17 +2147,17 @@ def submit_quote(request):
             from .models import QuoteRequest
             quote_request = QuoteRequest.objects.create(
                 customer_name=customer_name,
-                company_name=company_name,
+                company_name='',  # Not collected in new form
                 mobile=mobile,
                 email=email,
                 product_type=product_type,
-                quantity=quantity,
-                address=address,
-                state=state,
-                district=district,
-                pincode=pincode,
-                gst_number=gst_number if gst_number else None,
-                additional_requirements=additional_requirements,
+                quantity=1,  # Default to 1
+                address='',  # Not collected in new form
+                state='',  # Not collected in new form
+                district='',  # Not collected in new form
+                pincode='',  # Not collected in new form
+                gst_number=gst_number,
+                additional_requirements=message,
                 status='new'
             )
             
@@ -2142,32 +2192,23 @@ def submit_quote(request):
                     )
 
                     # Prepare email content
-                    subject = f"Quote Request - {product_type.prdt_desc}"
+                    subject = f"Enquiry Confirmation - {product_type.prdt_desc}"
 
-                    # Create email body
-                    email_body = f"""
-Dear {customer_name},
-
-Thank you for your quote request for {product_type.prdt_desc}.
-
-Your request details:
-- Product Type: {product_type.prdt_desc}
-- Quantity: {quantity}
-- Company: {company_name or 'Not specified'}
-- Contact: {mobile}
-- Email: {email}
-- Address: {address}
-- State: {state}
-- District: {district}
-- Pincode: {pincode}
-- GST Number: {gst_number or 'Not provided'}
-- Additional Requirements: {additional_requirements or 'None'}
-
-Our team will review your requirements and get back to you with a detailed quote within 24-48 hours.
-
-Best regards,
-FusionTec Team
-                    """
+                    # Render HTML email template
+                    from django.template.loader import render_to_string
+                    from django.utils import timezone
+                    
+                    email_context = {
+                        'customer_name': customer_name,
+                        'product_type': product_type.prdt_desc,
+                        'mobile': mobile,
+                        'email': email,
+                        'gst_number': gst_number,
+                        'message': message,
+                        'enquiry_id': quote_request.id,
+                    }
+                    
+                    email_body = render_to_string('products/email_templates/enquiry_confirmation.html', email_context)
 
                     # Send email to customer using custom backend
                     email_message = EmailMessage(
@@ -2177,25 +2218,28 @@ FusionTec Team
                         to=[email],
                         reply_to=[sender_email_cfg]
                     )
+                    email_message.content_subtype = "html"  # Set content type to HTML
                     email_message.connection = email_backend
                     email_message.send()
 
                     # Send notification to admin
-                    admin_subject = f"New Quote Request - {product_type.prdt_desc}"
-                    admin_body = f"""
-New quote request received:
-
-Customer: {customer_name}
-Product Type: {product_type.prdt_desc}
-Quantity: {quantity}
-Contact: {mobile} | {email}
-Company: {company_name or 'Not specified'}
-
-Additional Requirements:
-{additional_requirements or 'None'}
-
-Quote Request ID: {quote_request.id}
-                    """
+                    admin_subject = f"New Enquiry - {product_type.prdt_desc}"
+                    
+                    # Render admin HTML email template
+                    admin_context = {
+                        'customer_name': customer_name,
+                        'product_type': product_type.prdt_desc,
+                        'mobile': mobile,
+                        'email': email,
+                        'gst_number': gst_number,
+                        'message': message,
+                        'enquiry_id': quote_request.id,
+                        'submission_time': timezone.now().strftime('%B %d, %Y at %I:%M %p'),
+                        'admin_dashboard_url': f"{request.build_absolute_uri('/')}admin-dashboard/",
+                        'settings_url': f"{request.build_absolute_uri('/')}admin-dashboard/",
+                    }
+                    
+                    admin_body = render_to_string('products/email_templates/admin_notification.html', admin_context)
 
                     admin_email = EmailMessage(
                         subject=admin_subject,
@@ -2203,6 +2247,7 @@ Quote Request ID: {quote_request.id}
                         from_email=sender_email_cfg,
                         to=['dsc@fusiontec.com'] if is_dsc else [settings.CONTACT_FORM_RECIPIENT]
                     )
+                    admin_email.content_subtype = "html"  # Set content type to HTML
                     admin_email.connection = email_backend
                     admin_email.send()
 
@@ -2212,17 +2257,17 @@ Quote Request ID: {quote_request.id}
                     quote_request.save()
 
                     print("Email sent successfully")
-                    messages.success(request, 'Quote request submitted successfully! We will contact you soon.')
+                    messages.success(request, 'Enquiry submitted successfully! We will contact you soon.')
 
                 except Exception as email_error:
                     # Log the email error but don't fail the submission
                     print(f"Email sending failed: {email_error}")
                     print(f"Email credentials: {sender_email_cfg}")
-                    messages.success(request, 'Quote request submitted successfully! We will contact you soon.')
+                    messages.success(request, 'Enquiry submitted successfully! We will contact you soon.')
             else:
                 # No email credentials configured, just show success message
                 print(f"No email credentials configured for product type: {product_type.prdt_desc}")
-                messages.success(request, 'Quote request submitted successfully! We will contact you soon.')
+                messages.success(request, 'Enquiry submitted successfully! We will contact you soon.')
 
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 return JsonResponse({'status': 'success'})

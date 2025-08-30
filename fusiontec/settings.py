@@ -22,6 +22,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-oqne*0qq0xl#0$+6+imq6vd#%61de^s835w)e%7(iw9samc-dg'
 
 # SECURITY WARNING: don't run with debug turned on in production!
+# Make DEBUG and ALLOWED_HOSTS configurable via environment for cPanel/production
+# DEBUG = (os.environ.get('DJANGO_DEBUG', 'False').lower() == 'true')
+
+# ALLOWED_HOSTS = [h.strip() for h in os.environ.get('DJANGO_ALLOWED_HOSTS', '*').split(',') if h.strip()]
+
 DEBUG = True
 
 ALLOWED_HOSTS = []
@@ -124,8 +129,13 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+# Let Django collect app/static and project-level static (if present)
+# STATICFILES_DIRS can remain empty; app static dirs are included automatically
 # STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+# WhiteNoise storage to serve versioned compressed assets in production (cPanel)
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'

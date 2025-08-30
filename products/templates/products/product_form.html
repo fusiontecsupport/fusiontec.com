@@ -717,6 +717,7 @@ function generatePIContent() {
 
 async function downloadPDF() {
   console.log('Download PDF button clicked');
+  try {
   
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ unit: 'pt', format: 'a4' });
@@ -847,11 +848,33 @@ async function downloadPDF() {
   doc.text('Seller', M, y);
   doc.text('Buyer', pageWidth / 2, y);
   doc.setFont('helvetica', 'normal');
-  y += 20; // Increased spacing for better readability
+  y += 10; // Reduced spacing to remove gap between buyer label and details
+  
+  // Logo removed - no longer needed
+  let logoW2 = 0; // No logo width
+  let logoH2 = 0; // No logo height
   
   // Seller details
-  const seller = ['FusionTec Software', 'www.fusiontec.com', 'sales@fusiontec.com'];
-  seller.forEach((s, i) => doc.text(s, M, y + i * 16)); // Increased line spacing
+  console.log('Adding seller details');
+  const seller = [
+    'FUSIONTEC SOFTWARE',
+    'Suite No 17A, 2nd Floor, Crescent Court',
+    'Door No 963 EVR Periyar Salai, Flowers Road Post',
+    'Chennai -600 084',
+    'GSTIN/UIN: 33AABFF1764F1ZU',
+    'State Name : Tamil Nadu, Code : 33',
+    'Contact : 04446072076 / 98416 99963 / 91766 99599',
+    'E-Mail : tally@fusiontec.com'
+  ];
+  seller.forEach((s, i) => {
+    if (i === 0) { // First line - FUSIONTEC SOFTWARE
+      doc.setFont('helvetica', 'bold');
+    } else { // Other lines
+      doc.setFont('helvetica', 'normal');
+    }
+    doc.text(s, M, y + 15 + i * 14); // Position seller text without logo spacing
+  });
+  console.log('Seller details added');
   
   // Buyer details with conditional company name and better spacing
   const buyerDetails = [customer.name];
@@ -861,10 +884,20 @@ async function downloadPDF() {
   buyerDetails.push(customer.mobile);
   buyerDetails.push(customer.email);
   
-  buyerDetails.forEach((b, i) => doc.text(b, pageWidth / 2, y + i * 16)); // Increased line spacing
+  buyerDetails.forEach((b, i) => doc.text(b, pageWidth / 2, y + 15 + i * 14)); // Position buyer text without logo spacing
 
-  // Items table with better positioning
-  const tableY = y + (buyerDetails.length * 16) + 20; // Better spacing based on actual content
+  // Items table with better positioning - calculate based on the longer of seller or buyer details
+  const sellerHeight = seller.length * 14;
+  const buyerHeight = buyerDetails.length * 14;
+  const maxHeight = Math.max(sellerHeight, buyerHeight);
+  let tableY = y + 15 + maxHeight + 30; // Position table without logo spacing
+  
+  // Check if we need a page break due to long seller details
+  if (tableY > pageHeight - 200) {
+    doc.addPage();
+    y = 90;
+    tableY = y + maxHeight + 50;
+  }
   const body = [
     [fullProductName, String(quantity), fmt(unitPrice), `${gstRate}%`, fmt(lineGst), fmt(lineTotal)],
   ];
@@ -946,15 +979,47 @@ async function downloadPDF() {
     tableWidth: 300,
   });
 
-  // Footer/notes
+  // Contact clarification note
   const fY = doc.lastAutoTable.finalY + 24;
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(9);
   doc.setTextColor('#6b7280');
-  doc.text('Terms: Payment due within 7 days. This PI is valid for 15 days from the issue date.', M, fY);
+  doc.text('Please Contact us for any clarification at 98416 99963', M, fY);
+  
+  // Footer/notes
+  const fY2 = fY + 16;
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.setTextColor('#6b7280');
+  doc.text('Terms: Payment due within 7 days. This PI is valid for 15 days from the issue date.', M, fY2);
+
+  // Add blue footer with signature text at bottom of page
+  const footerHeight = 30;
+  const footerY = pageHeight - footerHeight; // Position at bottom of page
+  
+  // Blue footer background (same color as header)
+  doc.setFillColor(23, 63, 132);
+  doc.rect(0, footerY, pageWidth, footerHeight, 'F');
+  
+  // Footer text in white - centered
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.setTextColor(255, 255, 255);
+  
+  // Center the text horizontally using improved character width estimation
+  const footerText = 'This is computer generated proforma invoice signature not required';
+  const estimatedCharWidth = 5.5; // Adjusted width per character for better centering
+  const estimatedTextWidth = footerText.length * estimatedCharWidth;
+  const centerX = (pageWidth - estimatedTextWidth) / 2;
+  
+  doc.text(footerText, centerX, footerY + 15);
 
   const safe = (productName || 'product').toLowerCase().replace(/\s+/g, '_');
   doc.save(safe + '_PI.pdf');
+  } catch (error) {
+    console.error('Error in downloadPDF:', error);
+    alert('Error generating PDF: ' + error.message);
+  }
 }
 
 async function saveToDatabase() {
@@ -1069,7 +1134,7 @@ async function initiatePayment() {
       key: data.key,
       amount: data.amount,
       currency: data.currency || 'INR',
-      name: 'FusionTec Software',
+      name: 'FUSIONTEC SOFTWARE',
       description: productName,
       order_id: data.order_id,
       prefill: { name: customerName, email, contact: mobile },
@@ -1134,3 +1199,4 @@ document.addEventListener("DOMContentLoaded", () => {
 </script>
 
 {% endblock %}
+

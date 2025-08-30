@@ -1,3 +1,4 @@
+
 {% load static %}
 <!-- Products Section -->
 <section class="py-5" id="products">
@@ -55,6 +56,275 @@
       #products .product-title { font-weight: 600; }
       #products .btn-pill { border-radius: 999px; }
 
+      /* Enhanced Button Styling - More Attractive Colors */
+      #products .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        color: white;
+        font-weight: 600;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        transition: all 0.3s ease;
+      }
+
+      /* Horizontal Product Card Layout Styling */
+      #products .product-card,
+      #products .product-type-card {
+        border-radius: 16px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        background: #fff;
+        border: 1px solid #e9ecef;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      }
+
+      #products .product-card:hover,
+      #products .product-type-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 20px 40px rgba(16, 24, 40, 0.15);
+        border-color: #d0d7e2;
+      }
+
+      /* Product Content Styling */
+      #products .product-heading {
+        color: #343a40;
+        font-weight: 600;
+        font-size: 1.5rem;
+        font-family: 'Arial', sans-serif;
+        margin-bottom: 1rem;
+      }
+
+      /* Button container styling */
+      #products .product-card .d-flex.gap-3,
+      #products .product-type-card .d-flex.gap-3 {
+        gap: 1rem !important;
+      }
+
+      #products .product-card .btn,
+      #products .product-type-card .btn {
+        flex: 1;
+        max-width: 140px;
+      }
+
+      /* Responsive adjustments for horizontal layout */
+      @media (max-width: 767.98px) {
+        #products .product-card .row,
+        #products .product-type-card .row {
+          flex-direction: column;
+        }
+        
+        #products .product-card .col-md-4,
+        #products .product-card .col-md-8,
+        #products .product-type-card .col-md-4,
+        #products .product-type-card .col-md-8 {
+          width: 100%;
+        }
+      }
+
+      /* DSC Card Styling */
+      #products .dsc-card {
+        border-radius: 16px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        background: #fff;
+        border: 1px solid #e9ecef;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      }
+
+      #products .dsc-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 20px 40px rgba(16, 24, 40, 0.15);
+        border-color: #d0d7e2;
+      }
+
+      /* eMudhra Logo Styling */
+      #products .emudhra-logo {
+        font-family: 'Arial', sans-serif;
+        font-weight: bold;
+        font-size: 2.5rem;
+        line-height: 1;
+      }
+
+      #products .logo-e {
+        color: #28a745;
+        background: #6f42c1;
+        border-radius: 50%;
+        padding: 8px 12px;
+        margin-right: 4px;
+        display: inline-block;
+        width: 60px;
+        height: 60px;
+        line-height: 44px;
+        text-align: center;
+        vertical-align: middle;
+      }
+
+      #products .logo-mudhra {
+        color: #fd7e14;
+        font-size: 2.2rem;
+        vertical-align: middle;
+      }
+
+      /* Tagline Styling */
+      #products .tagline {
+        margin-top: 1rem;
+      }
+
+      #products .tagline-text {
+        color: #6f42c1;
+        font-size: 1rem;
+        font-weight: 500;
+        font-family: 'Arial', sans-serif;
+      }
+
+      #products .tagline-underline {
+        height: 2px;
+        background: linear-gradient(90deg, #28a745, #20c997);
+        margin-top: 4px;
+        border-radius: 1px;
+      }
+
+      /* Product Description Styling */
+      #products .product-description {
+        color: #6c757d;
+        font-size: 1rem;
+        line-height: 1.6;
+        margin-bottom: 1.5rem;
+      }
+
+      /* Button Styling for DSC Card */
+      #products .btn-buy-online {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        color: white;
+        font-weight: 600;
+        padding: 12px 24px;
+        border-radius: 25px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        min-width: 120px;
+        text-align: center;
+      }
+
+      #products .btn-buy-online:hover {
+        background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+        color: white;
+      }
+
+      #products .btn-enquiry {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        border: none;
+        color: white;
+        font-weight: 600;
+        padding: 12px 24px;
+        border-radius: 25px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(240, 147, 251, 0.3);
+        min-width: 120px;
+        text-align: center;
+      }
+
+      #products .btn-enquiry:hover {
+        background: linear-gradient(135deg, #e085e8 0%, #e04a5f 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(240, 147, 251, 0.5);
+        color: white;
+      }
+
+      /* Responsive adjustments for DSC card */
+      @media (max-width: 767.98px) {
+        #products .dsc-card .row {
+          flex-direction: column;
+        }
+        
+        #products .dsc-card .col-md-4,
+        #products .dsc-card .col-md-8 {
+          width: 100%;
+        }
+        
+        #products .emudhra-logo {
+          font-size: 2rem;
+        }
+        
+        #products .logo-e {
+          width: 50px;
+          height: 50px;
+          line-height: 34px;
+          font-size: 1.8rem;
+        }
+        
+        #products .logo-mudhra {
+          font-size: 1.8rem;
+        }
+      }
+      #products .btn-primary:hover {
+        background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+      }
+
+      #products .btn-outline-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        color: white;
+        font-weight: 600;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        transition: all 0.3s ease;
+      }
+      #products .btn-outline-primary:hover {
+        background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+      }
+
+      #products .btn-light {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        border: none;
+        color: white;
+        font-weight: 600;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        box-shadow: 0 4px 15px rgba(240, 147, 251, 0.4);
+        transition: all 0.3s ease;
+      }
+      #products .btn-light:hover {
+        background: linear-gradient(135deg, #e085e8 0%, #e04a5f 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(240, 147, 251, 0.6);
+      }
+
+      #products .btn-get-quote {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        border: none;
+        color: white;
+        font-weight: 600;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        box-shadow: 0 4px 15px rgba(79, 172, 254, 0.4);
+        transition: all 0.3s ease;
+      }
+      #products .btn-get-quote:hover {
+        background: linear-gradient(135deg, #3e9be8 0%, #00d8e0 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(79, 172, 254, 0.6);
+      }
+
+      #products .btn-secondary {
+        background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+        border: none;
+        color: #333;
+        font-weight: 600;
+        box-shadow: 0 4px 15px rgba(168, 237, 234, 0.4);
+        transition: all 0.3s ease;
+      }
+      #products .btn-secondary:hover {
+        background: linear-gradient(135deg, #97dcd9 0%, #edc5d0 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(168, 237, 234, 0.6);
+      }
+
       /* Button/layout overrides – scoped to #products */
       #products .card-body > .d-flex {
         min-height: auto !important;
@@ -71,46 +341,48 @@
         justify-content: center;
         height: auto !important;
         white-space: nowrap;
+        border-radius: 8px;
+        padding: 8px 20px;
+        font-size: 14px;
+        letter-spacing: 0.5px;
       }
     </style>
 
-    <!-- Product Types (from ProductTypeMaster) -->
+    <!-- Product Types (from ProductTypeMaster) - Horizontal Cards -->
     <div class="row g-4 justify-content-center" data-aos="fade-up" data-aos-delay="150">
       {% for pt in product_type_masters %}
-        {% comment %} Skip DSC/Digital Signature Certificate as it has its own dedicated section {% endcomment %}
+        {% comment %} Skip DSC/Digital Signature Certificate as it has its own separate section {% endcomment %}
         {% if "dsc" not in pt.prdt_desc|lower and "digital signature" not in pt.prdt_desc|lower and "mudhra" not in pt.prdt_desc|lower %}
-        <div class="col-12 col-sm-6 col-lg-4 col-xl-3">
+        <div class="col-12 col-lg-10 col-xl-8">
           <div class="card product-type-card h-100 shadow-sm border-0">
-            <div class="p-3">
-              {% if pt.image %}
-                <div class="image-wrap">
-                  <img src="{{ pt.image.url }}" alt="{{ pt.prdt_desc }}" />
-                </div>
-              {% else %}
-                <div class="image-wrap d-flex align-items-center justify-content-center" style="background:#f3f6f9;">
-                  <div class="placeholder d-flex align-items-center justify-content-center">
-                    <i class="bi bi-image text-muted" style="font-size:2rem;"></i>
+            <div class="row g-0 h-100">
+              <!-- Left Section - Image/Logo -->
+              <div class="col-md-4 d-flex align-items-center justify-content-center p-4" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);">
+                {% if pt.image %}
+                  <div class="image-wrap">
+                    <img src="{{ pt.image.url }}" alt="{{ pt.prdt_desc }}" />
                   </div>
+                {% else %}
+                  <div class="image-wrap d-flex align-items-center justify-content-center" style="background:#f3f6f9;">
+                    <div class="placeholder d-flex align-items-center justify-content-center">
+                      <i class="bi bi-image text-muted" style="font-size:2rem;"></i>
+                    </div>
+                  </div>
+                {% endif %}
+              </div>
+              
+              <!-- Right Section - Product Info & CTA -->
+              <div class="col-md-8 p-4 d-flex flex-column justify-content-center">
+                <h3 class="product-heading mb-3">{{ pt.prdt_desc }}</h3>
+                <p class="product-description mb-4">Explore solutions under {{ pt.prdt_desc }}.</p>
+                <div class="d-flex gap-3 flex-wrap">
+                  <a href="{% url 'product_type_form' pt.id %}" class="btn btn-buy-online">Buy Online</a>
+                  <button type="button" class="btn btn-enquiry" data-quote-btn data-pt-id="{{ pt.id }}" data-pt-name="{{ pt.prdt_desc|escapejs }}">Enquiry</button>
                 </div>
-              {% endif %}
-            </div>
-            <div class="card-body text-center pt-0">
-              <h5 class="product-title mb-2">{{ pt.prdt_desc }}</h5>
-              <p class="card-text small text-muted mb-3">Explore solutions under {{ pt.prdt_desc }}.</p>
-              <div class="d-flex flex-wrap gap-2 justify-content-center">
-                {# Details button disabled as requested #}
-                {# <button type="button" class="btn btn-primary btn-sm btn-pill" data-bs-toggle="modal" data-bs-target="#typeModal{{ pt.id }}">Details</button> #}
-                <a href="{% url 'product_type_form' pt.id %}" class="btn btn-outline-primary btn-sm btn-pill">Buy Online</a>
-                <button type="button" class="btn btn-get-quote btn-sm" data-quote-btn data-pt-id="{{ pt.id }}" data-pt-name="{{ pt.prdt_desc|escapejs }}">Get Quote</button>
               </div>
             </div>
           </div>
         </div>
-        
-        <div class="modal fade product-modal" id="typeModal{{ pt.id }}" tabindex="-1" aria-labelledby="typeModalLabel{{ pt.id }}" aria-hidden="true" data-bs-backdrop="false" data-bs-keyboard="true">
-          ... details modal removed as per request ...
-        </div>
-      
         {% endif %}
       {% empty %}
       <div class="col-12">
@@ -120,7 +392,7 @@
     </div>
     <!-- End Product Types -->
 
-    
+
 
     <!-- Quote Form Modal -->
     <div class="modal fade" id="quoteFormModal" tabindex="-1" aria-labelledby="quoteFormModalLabel" aria-hidden="true">
@@ -128,8 +400,8 @@
             <div class="modal-content rounded-4 shadow-lg">
                 <div class="modal-header border-0 bg-gradient-primary text-white">
                     <h5 class="modal-title" id="quoteFormModalLabel">
-                        <i class="bi bi-file-earmark-text me-2"></i>
-                        Get Quote
+                        <i class="bi bi-chat-dots me-2"></i>
+                        Product Enquiry
                     </h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
@@ -163,80 +435,38 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label class="form-label fw-semibold">Company Name</label>
-                                    <input type="text" name="company_name" class="form-control" placeholder="Enter company name">
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
                                     <label class="form-label fw-semibold">Email Address *</label>
                                     <input type="email" name="email" class="form-control" placeholder="Enter your email" required>
                                 </div>
                             </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label class="form-label fw-semibold">Phone Number *</label>
-                                    <input type="tel" name="mobile" class="form-control" placeholder="Enter phone number" required>
-                                </div>
-                            </div>
                         </div>
                         
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label class="form-label fw-semibold">GST Number</label>
-                                    <input type="text" name="gst_number" class="form-control" placeholder="Enter GST number (optional)">
+                                    <label class="form-label fw-semibold">Mobile Number *</label>
+                                    <input type="tel" name="mobile" class="form-control" placeholder="Enter mobile number" required>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label class="form-label fw-semibold">Quantity *</label>
-                                    <input type="number" name="quantity" class="form-control" placeholder="Enter quantity" min="1" value="1" required>
+                                    <label class="form-label fw-semibold">GST Number *</label>
+                                    <input type="text" name="gst_number" class="form-control" placeholder="Enter GST number" required>
                                 </div>
                             </div>
                         </div>
                         
                         <div class="mb-3">
-                            <label class="form-label fw-semibold">Address</label>
-                            <textarea name="address" class="form-control" rows="2" placeholder="Enter your address"></textarea>
-                        </div>
-                        
-                        <div class="row">
-                            <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label class="form-label fw-semibold">State</label>
-                                    <select name="state" class="form-select" id="quote_state">
-                                        <option value="">Select State</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label class="form-label fw-semibold">District</label>
-                                    <input type="text" name="district" class="form-control" id="quote_district" placeholder="Enter District">
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label class="form-label fw-semibold">Pincode</label>
-                                    <input type="text" name="pincode" class="form-control" placeholder="Enter pincode">
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold">Additional Requirements</label>
-                            <textarea name="additional_requirements" class="form-control" rows="3" placeholder="Describe your specific requirements or any additional information"></textarea>
+                            <label class="form-label fw-semibold">Message *</label>
+                            <textarea name="message" class="form-control" rows="4" placeholder="Please describe your requirements or any additional information (max 1000 characters)" maxlength="1000" required></textarea>
+                            <div class="form-text text-muted">Maximum 1000 characters allowed</div>
                         </div>
                     </div>
                     <div class="modal-footer border-0 d-flex align-items-center gap-3">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                         <button type="submit" id="quoteSubmitBtn" class="btn btn-get-quote">
                             <i class="bi bi-send me-2"></i>
-                            Submit Quote Request
+                            Submit Enquiry
                         </button>
                         <span id="quoteSuccessMsg" class="ms-2" style="display:none;"></span>
                     </div>
@@ -249,29 +479,34 @@
       <div class="col-lg-11 col-xl-9 col-xxl-8">
         {% for product in products %}
         <div class="card product-card overflow-hidden rounded-4 border-0 mb-4" data-aos="fade-up">
-          <div class="p-3">
-            <a href="{{ product.tally_link|default:'#' }}" target="_blank" rel="noopener noreferrer" class="d-block">
-              {% if product.tally_image %}
-                <div class="image-wrap">
-                  <img src="{{ product.tally_image.url }}" alt="{{ product.tally_name }}" />
-                </div>
-              {% else %}
-                <div class="image-wrap" style="background-color:#f8f9fa;">
-                  <div class="placeholder d-flex align-items-center justify-content-center">
-                    <i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
+          <div class="row g-0 h-100">
+            <!-- Left Section - Image/Logo -->
+            <div class="col-md-4 d-flex align-items-center justify-content-center p-4" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);">
+              <a href="{{ product.tally_link|default:'#' }}" target="_blank" rel="noopener noreferrer" class="d-block text-center">
+                {% if product.tally_image %}
+                  <div class="image-wrap">
+                    <img src="{{ product.tally_image.url }}" alt="{{ product.tally_name }}" />
                   </div>
-                </div>
+                {% else %}
+                  <div class="image-wrap" style="background-color:#f8f9fa;">
+                    <div class="placeholder d-flex align-items-center justify-content-center">
+                      <i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
+                    </div>
+                  </div>
+                {% endif %}
+              </a>
+            </div>
+            
+            <!-- Right Section - Product Info & CTA -->
+            <div class="col-md-8 p-4 d-flex flex-column justify-content-center">
+              {% if product.tally_name %}
+                <h3 class="product-heading mb-3">{{ product.tally_name }}</h3>
               {% endif %}
-            </a>
-          </div>
-          <div class="card-body pt-0 text-center">
-            {% if product.tally_name %}
-              <h5 class="product-title mb-3">{{ product.tally_name }}</h5>
-            {% endif %}
-            <div class="d-flex flex-wrap gap-2 justify-content-center">
-              <button id="sendEnquiryBtn" class="btn btn-primary btn-pill px-4">Send Enquiry</button>
-              <a href="{{ product.tally_link|default:'#' }}" target="_blank" rel="noopener noreferrer" class="btn btn-outline-primary btn-pill px-4">More Details</a>
-              <a href="{% url 'tally_form' %}" class="btn btn-light btn-pill px-4">Price list</a>
+              <div class="d-flex gap-3 flex-wrap">
+                <button id="sendEnquiryBtn" class="btn btn-primary btn-pill px-4">Send Enquiry</button>
+                <a href="{{ product.tally_link|default:'#' }}" target="_blank" rel="noopener noreferrer" class="btn btn-outline-primary btn-pill px-4">More Details</a>
+                <a href="{% url 'tally_form' %}" class="btn btn-light btn-pill px-4">Price list</a>
+              </div>
             </div>
           </div>
         </div>
@@ -284,29 +519,34 @@
       <div class="col-lg-11 col-xl-9 col-xxl-8">
         {% for product in emudhra_products %}
         <div class="card product-card overflow-hidden rounded-4 border-0 mb-4" data-aos="fade-up">
-          <div class="p-3">
-            <a href="{{ product.emudhra_link|default:'#' }}" target="_blank" rel="noopener noreferrer" class="d-block">
-              {% if product.emudhra_image %}
-                <div class="image-wrap">
-                  <img src="{{ product.emudhra_image.url }}" alt="{{ product.emudhra_name }}" />
-                </div>
-              {% else %}
-                <div class="image-wrap" style="background-color:#f8f9fa;">
-                  <div class="placeholder d-flex align-items-center justify-content-center">
-                    <i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
+          <div class="row g-0 h-100">
+            <!-- Left Section - Image/Logo -->
+            <div class="col-md-4 d-flex align-items-center justify-content-center p-4" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);">
+              <a href="{{ product.emudhra_link|default:'#' }}" target="_blank" rel="noopener noreferrer" class="d-block text-center">
+                {% if product.emudhra_image %}
+                  <div class="image-wrap">
+                    <img src="{{ product.emudhra_image.url }}" alt="{{ product.emudhra_name }}" />
                   </div>
-                </div>
+                {% else %}
+                  <div class="image-wrap" style="background-color:#f8f9fa;">
+                    <div class="placeholder d-flex align-items-center justify-content-center">
+                      <i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
+                    </div>
+                  </div>
+                {% endif %}
+              </a>
+            </div>
+            
+            <!-- Right Section - Product Info & CTA -->
+            <div class="col-md-8 p-4 d-flex flex-column justify-content-center">
+              {% if product.emudhra_name %}
+                <h3 class="product-heading mb-3">{{ product.emudhra_name }}</h3>
               {% endif %}
-            </a>
-          </div>
-          <div class="card-body pt-0 text-center">
-            {% if product.emudhra_name %}
-              <h5 class="product-title mb-3">{{ product.emudhra_name }}</h5>
-            {% endif %}
-            <div class="d-flex flex-wrap gap-2 justify-content-center">
-              <button id="sendEnquiryBtn2" class="btn btn-primary btn-pill px-4">Send Enquiry</button>
-              <a href="{{ product.emudhra_link|default:'#' }}" target="_blank" rel="noopener noreferrer" class="btn btn-outline-primary btn-pill px-4">More Details</a>
-              <a href="{% url 'emudhra_form' %}" class="btn btn-light btn-pill px-4">Price list</a>
+              <div class="d-flex gap-3 flex-wrap">
+                <button id="sendEnquiryBtn2" class="btn btn-primary btn-pill px-4">Send Enquiry</button>
+                <a href="{{ product.emudhra_link|default:'#' }}" target="_blank" rel="noopener noreferrer" class="btn btn-outline-primary btn-pill px-4">More Details</a>
+                <a href="{% url 'emudhra_form' %}" class="btn btn-light btn-pill px-4">Price list</a>
+              </div>
             </div>
           </div>
         </div>
@@ -319,29 +559,34 @@
       <div class="col-lg-11 col-xl-9 col-xxl-8">
         {% for product in fusiontec_products %}
         <div class="card product-card overflow-hidden rounded-4 border-0 mb-4" data-aos="fade-up">
-          <div class="p-3">
-            <a href="{{ product.fusiontec_link|default:'#' }}" target="_blank" rel="noopener noreferrer" class="d-block">
-              {% if product.fusiontec_image %}
-                <div class="image-wrap">
-                  <img src="{{ product.fusiontec_image.url }}" alt="{{ product.fusiontec_name }}" />
-                </div>
-              {% else %}
-                <div class="image-wrap" style="background-color:#f8f9fa;">
-                  <div class="placeholder d-flex align-items-center justify-content-center">
-                    <i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
+          <div class="row g-0 h-100">
+            <!-- Left Section - Image/Logo -->
+            <div class="col-md-4 d-flex align-items-center justify-content-center p-4" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);">
+              <a href="{{ product.fusiontec_link|default:'#' }}" target="_blank" rel="noopener noreferrer" class="d-block text-center">
+                {% if product.fusiontec_image %}
+                  <div class="image-wrap">
+                    <img src="{{ product.fusiontec_image.url }}" alt="{{ product.fusiontec_name }}" />
                   </div>
-                </div>
+                {% else %}
+                  <div class="image-wrap" style="background-color:#f8f9fa;">
+                    <div class="placeholder d-flex align-items-center justify-content-center">
+                      <i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
+                    </div>
+                  </div>
+                {% endif %}
+              </a>
+            </div>
+            
+            <!-- Right Section - Product Info & CTA -->
+            <div class="col-md-8 p-4 d-flex flex-column justify-content-center">
+              {% if product.fusiontec_name %}
+                <h3 class="product-heading mb-3">{{ product.fusiontec_name }}</h3>
               {% endif %}
-            </a>
-          </div>
-          <div class="card-body pt-0 text-center">
-            {% if product.fusiontec_name %}
-              <h5 class="product-title mb-3">{{ product.fusiontec_name }}</h5>
-            {% endif %}
-            <div class="d-flex flex-wrap gap-2 justify-content-center">
-              <button id="sendEnquiryBtn3" class="btn btn-primary btn-pill px-4">Send Enquiry</button>
-              <a href="{{ product.fusiontec_link|default:'#' }}" target="_blank" rel="noopener noreferrer" class="btn btn-outline-primary btn-pill px-4">More Details</a>
-              <a href="{% url 'fusiontec_form' %}" class="btn btn-light btn-pill px-4">Price list</a>
+              <div class="d-flex gap-3 flex-wrap">
+                <button id="sendEnquiryBtn3" class="btn btn-primary btn-pill px-4">Send Enquiry</button>
+                <a href="{{ product.fusiontec_link|default:'#' }}" target="_blank" rel="noopener noreferrer" class="btn btn-outline-primary btn-pill px-4">More Details</a>
+                <a href="{% url 'fusiontec_form' %}" class="btn btn-light btn-pill px-4">Price list</a>
+              </div>
             </div>
           </div>
         </div>
@@ -354,29 +599,34 @@
       <div class="col-lg-11 col-xl-9 col-xxl-8">
         {% for product in biz_products %}
         <div class="card product-card overflow-hidden rounded-4 border-0 mb-4" data-aos="fade-up">
-          <div class="p-3">
-            <a href="{{ product.biz_link|default:'#' }}" target="_blank" rel="noopener noreferrer" class="d-block">
-              {% if product.biz_image %}
-                <div class="image-wrap">
-                  <img src="{{ product.biz_image.url }}" alt="{{ product.biz_name }}" />
-                </div>
-              {% else %}
-                <div class="image-wrap" style="background-color:#f8f9fa;">
-                  <div class="placeholder d-flex align-items-center justify-content-center">
-                    <i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
+          <div class="row g-0 h-100">
+            <!-- Left Section - Image/Logo -->
+            <div class="col-md-4 d-flex align-items-center justify-content-center p-4" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);">
+              <a href="{{ product.biz_link|default:'#' }}" target="_blank" rel="noopener noreferrer" class="d-block text-center">
+                {% if product.biz_image %}
+                  <div class="image-wrap">
+                    <img src="{{ product.biz_image.url }}" alt="{{ product.biz_name }}" />
                   </div>
-                </div>
+                {% else %}
+                  <div class="image-wrap" style="background-color:#f8f9fa;">
+                    <div class="placeholder d-flex align-items-center justify-content-center">
+                      <i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
+                    </div>
+                  </div>
+                {% endif %}
+              </a>
+            </div>
+            
+            <!-- Right Section - Product Info & CTA -->
+            <div class="col-md-8 p-4 d-flex flex-column justify-content-center">
+              {% if product.biz_name %}
+                <h3 class="product-heading mb-3">{{ product.biz_name }}</h3>
               {% endif %}
-            </a>
-          </div>
-          <div class="card-body pt-0 text-center">
-            {% if product.biz_name %}
-              <h5 class="product-title mb-3">{{ product.biz_name }}</h5>
-            {% endif %}
-            <div class="d-flex flex-wrap gap-2 justify-content-center">
-              <button id="sendEnquiryBtn4" class="btn btn-primary btn-pill px-4">Send Enquiry</button>
-              <a href="{{ product.biz_link|default:'#' }}" target="_blank" rel="noopener noreferrer" class="btn btn-outline-primary btn-pill px-4">More Details</a>
-              <a href="{% url 'biz_form' %}" class="btn btn-light btn-pill px-4">Price list</a>
+              <div class="d-flex gap-3 flex-wrap">
+                <button id="sendEnquiryBtn4" class="btn btn-primary btn-pill px-4">Send Enquiry</button>
+                <a href="{{ product.biz_link|default:'#' }}" target="_blank" rel="noopener noreferrer" class="btn btn-outline-primary btn-pill px-4">More Details</a>
+                <a href="{% url 'biz_form' %}" class="btn btn-light btn-pill px-4">Price list</a>
+              </div>
             </div>
           </div>
         </div>
@@ -462,36 +712,13 @@ function showQuoteForm(productTypeId, productTypeName) {
     });
     document.getElementById('quote_date').value = dateString;
     
-    // Load states if not already loaded
-    loadStates();
-    
     // Show the modal
     const modal = new bootstrap.Modal(document.getElementById('quoteFormModal'));
     modal.show();
 }
 
-// Load states for the quote form
-function loadStates() {
-    const stateSelect = document.getElementById('quote_state');
-    
-    // Only load if not already loaded
-    if (stateSelect.options.length > 1) return;
-    
-    fetch('/api/states/')
-        .then(response => response.json())
-        .then(data => {
-            const states = Array.isArray(data.states) ? data.states : [];
-            stateSelect.innerHTML = '<option value="">Select State</option>';
-            states.forEach(state => {
-                const option = document.createElement('option');
-                option.value = state;
-                option.textContent = state;
-                stateSelect.appendChild(option);
-            });
-        })
-        .catch(error => console.error('Error loading states:', error));
-}
-// Delegate click for Get Quote buttons (no inline JS)
+
+                // Delegate click for Enquiry buttons (no inline JS)
 document.addEventListener('click', function(e) {
     const btn = e.target.closest('[data-quote-btn]');
     if (!btn) return;
@@ -544,19 +771,19 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             if (data.status === 'success') {
                 if (msgEl) {
-                    msgEl.textContent = 'Form submitted successfully';
+                    msgEl.textContent = 'Enquiry submitted successfully';
                     msgEl.style.display = '';
                     msgEl.classList.add('text-success', 'small');
                 }
                 // Mark success for landing page message
-                try { localStorage.setItem('quote_success', '1'); } catch (e) {}
+                try { localStorage.setItem('enquiry_success', '1'); } catch (e) {}
                 // Close modal if open, then redirect
                 try {
                     const modalEl = document.getElementById('quoteFormModal');
                     const instance = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
                     instance.hide();
                 } catch (e) {}
-                setTimeout(() => { window.location.href = '/?submitted=1#products'; }, 1200);
+                setTimeout(() => { window.location.href = '/?enquiry_submitted=1#products'; }, 1200);
             } else {
                 if (msgEl) {
                     msgEl.textContent = data.message || 'Submission failed. Please try again.';
