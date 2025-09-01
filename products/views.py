@@ -21,6 +21,394 @@ from django.conf import settings
 import os
 
 
+def _generate_dsc_proforma_pdf(
+    *,
+    customer_name: str,
+    company_name: str,
+    mobile: str,
+    email: str,
+    address: str,
+    gst_number: str,
+    reference_name: str,
+    reference_contact: str,
+    class_type: str,
+    user_type: str,
+    cert_type: str,
+    validity: str,
+    include_token: bool,
+    include_installation: bool,
+    quoted_price: str,
+    submission_id: int,
+):
+    """Create a DSC Proforma Invoice PDF.
+
+    Returns (buffer, filename)
+    """
+    buffer = BytesIO()
+    width, height = A4
+    margin = 18 * mm
+    content_w = width - 2 * margin
+
+    c = canvas.Canvas(buffer, pagesize=A4)
+
+    # Header band
+    c.setFillColorRGB(23/255, 63/255, 132/255)
+    header_h = 90
+    c.rect(0, height - header_h, width, header_h, fill=1, stroke=0)
+
+    # Try to place logo on left (use fusiontec.jpg to match popup)
+    logo_candidates = [
+        os.path.join(settings.BASE_DIR, 'staticfiles', 'products', 'img', 'fusiontec.jpg'),
+        os.path.join(settings.BASE_DIR, 'staticfiles', 'products', 'img', 'fusiontec.png'),
+        os.path.join(settings.BASE_DIR, 'staticfiles', 'products', 'img', 'logo.png'),
+    ]
+    logo_path = next((p for p in logo_candidates if os.path.exists(p)), None)
+    if logo_path and os.path.exists(logo_path):
+        try:
+            # Smaller logo, vertically centered in header
+            logo_w = 16 * mm
+            logo_h = 16 * mm
+            logo_y = height - header_h + (header_h - logo_h) / 2
+            c.drawImage(logo_path, margin, logo_y, width=logo_w, height=logo_h, mask='auto')
+        except Exception:
+            pass
+
+    # Left header text
+    c.setFillColorRGB(1, 1, 1)
+    # Place text to the right of the logo, vertically aligned with it
+    text_x = margin + (16 * mm) + (4 * mm)
+    c.setFont("Helvetica-Bold", 12)
+    # Nudge header text a bit lower to align with the logo visually
+    small_y = logo_y + (16 * mm) - 7
+    c.drawString(text_x, small_y, "Digital Signature Certificate (DSC)")
+    c.setFont("Helvetica-Bold", 20)
+    title_y = logo_y + (16 * mm) / 2 - 6
+    c.drawString(text_x, title_y, "PROFORMA INVOICE")
+
+    # Invoice meta on right
+    inv_no = f"PI-{int(datetime.now().timestamp())}"
+    inv_date = datetime.now().strftime("%d/%m/%Y")
+    c.setFont("Helvetica", 10)
+    c.drawRightString(width - margin, height - 48, f"Proforma Invoice No: {inv_no}")
+    c.drawRightString(width - margin, height - 30, f"Date: {inv_date}")
+
+    # Add a bit more breathing room below the header before seller/buyer blocks
+    y = height - 120
+    
+    # Seller information
+    c.setFont("Helvetica-Bold", 11)
+    c.setFillColorRGB(0.22, 0.25, 0.32)
+    c.drawString(margin, y, "FUSIONTEC SOFTWARE")
+    y -= 15
+    c.setFont("Helvetica", 9)
+    c.setFillColorRGB(0.4, 0.4, 0.4)
+    c.drawString(margin, y, "Suite No 17A, 2nd Floor, Crescent Court")
+    y -= 12
+    c.drawString(margin, y, "Door No 963 EVR Periyar Salai, Flowers Road Post")
+    y -= 12
+    c.drawString(margin, y, "Chennai -600 084")
+    y -= 12
+    c.drawString(margin, y, "GSTIN/UIN: 33AABFF1764F1ZU")
+    y -= 12
+    c.drawString(margin, y, "State Name : Tamil Nadu, Code : 33")
+    y -= 12
+    c.drawString(margin, y, "Contact : 04446072076 / 98416 99963 / 98416 34345")
+    y -= 12
+    c.drawString(margin, y, "E-Mail : dsc@fusiontec.com")
+    
+    # Buyer information (right side)
+    buyer_x = width - margin - 240  # Slightly wider for better text display
+    y = height - 120
+    c.setFont("Helvetica-Bold", 11)
+    c.setFillColorRGB(0.22, 0.25, 0.32)
+    c.drawString(buyer_x, y, "Bill To:")
+    y -= 15
+    c.setFillColorRGB(0.4, 0.4, 0.4)
+    
+    # Customer name (bold)
+    c.setFont("Helvetica-Bold", 9)
+    c.drawString(buyer_x, y, customer_name)
+    y -= 12
+    
+    # Company name if provided
+    if company_name and company_name.strip():
+        c.setFont("Helvetica", 9)
+        c.drawString(buyer_x, y, company_name)
+        y -= 12
+    
+    # Mobile number (user mobile, not reference)
+    c.setFont("Helvetica", 9)
+    c.drawString(buyer_x, y, f"Mobile: {mobile}")
+    y -= 12
+    
+    # Email
+    c.drawString(buyer_x, y, f"Email: {email}")
+    y -= 12
+    
+    # Address if provided
+    if address and address.strip():
+        # Wrap address if very long
+        addr_lines = []
+        line = ""
+        for word in address.split():
+            test = (line + " " + word).strip()
+            if c.stringWidth(test, "Helvetica", 9) > 200:
+                addr_lines.append(line)
+                line = word
+            else:
+                line = test
+        if line:
+            addr_lines.append(line)
+        for al in addr_lines:
+            c.drawString(buyer_x, y, f"Address: {al}" if al == addr_lines[0] else f"         {al}")
+            y -= 12
+    
+    # GST number if provided
+    if gst_number and gst_number.strip():
+        c.drawString(buyer_x, y, f"GST: {gst_number}")
+        y -= 12
+    
+    # Reference information
+    c.drawString(buyer_x, y, f"Reference Name: {reference_name}")
+    y -= 12
+    c.drawString(buyer_x, y, f"Reference Mobile: {reference_contact}")
+
+    # Product details table (Tally-style with 5 columns, no Qty)
+    y -= 30
+    table_y = y
+    header_h = 22
+    row_h = 26
+    
+    # Column widths (removed Qty column)
+    unit_w = 90
+    gstpct_w = 50
+    gstamt_w = 90
+    linetotal_w = 110
+    desc_w = content_w - (unit_w + gstpct_w + gstamt_w + linetotal_w)
+    
+    # Column x positions
+    x_desc = margin
+    x_unit = x_desc + desc_w
+    x_gstpct = x_unit + unit_w
+    x_gstamt = x_gstpct + gstpct_w
+    x_total = x_gstamt + gstamt_w
+    
+    # Header band
+    c.setFillColorRGB(23/255, 63/255, 132/255)
+    c.rect(margin, table_y, content_w, header_h, fill=1, stroke=0)
+    c.setFont("Helvetica-Bold", 10)
+    c.setFillColorRGB(1, 1, 1)
+    # Center the text vertically in the header row
+    header_text_y = table_y + (header_h / 2) + 3  # Center vertically with small offset for visual balance
+    c.drawString(x_desc + 8, header_text_y, "Description")
+    c.drawRightString(x_unit + unit_w - 8, header_text_y, "Unit Price")
+    c.drawCentredString(x_gstpct + gstpct_w/2, header_text_y, "GST %")
+    c.drawRightString(x_gstamt + gstamt_w - 8, header_text_y, "GST Amt")
+    c.drawRightString(x_total + linetotal_w - 8, header_text_y, "Line Total")
+    
+    # Single product row
+    table_y -= row_h
+    c.setFillColorRGB(1, 1, 1)
+    c.rect(margin, table_y, content_w, row_h, fill=1, stroke=1)
+    c.setFont("Helvetica", 9)
+    c.setFillColorRGB(0.2, 0.2, 0.2)
+    product_desc = f"DSC {class_type.upper()} - {user_type} - {cert_type} - {validity}"
+    
+    # Amounts
+    quoted_price_val = float(quoted_price or 0)
+    gst_rate = 18.0
+    basic_amount = quoted_price_val / (1 + (gst_rate / 100))
+    gst_amount = quoted_price_val - basic_amount
+    
+    # Handle long description with word wrapping
+    desc_lines = []
+    line = ""
+    for word in product_desc.split():
+        test = (line + " " + word).strip()
+        if c.stringWidth(test, "Helvetica", 9) > desc_w - 16:  # 16 for padding
+            if line:
+                desc_lines.append(line)
+                line = word
+            else:
+                desc_lines.append(word)
+        else:
+            line = test
+    if line:
+        desc_lines.append(line)
+    
+    # Draw description lines
+    desc_y = table_y + 16
+    for i, line in enumerate(desc_lines):
+        c.drawString(x_desc + 8, desc_y - (i * 12), line)
+    
+    # Draw other columns
+    c.drawRightString(x_unit + unit_w - 8, table_y + 16, f"{basic_amount:,.2f}")
+    c.drawCentredString(x_gstpct + gstpct_w/2, table_y + 16, f"{int(gst_rate)}%")
+    c.drawRightString(x_gstamt + gstamt_w - 8, table_y + 16, f"{gst_amount:,.2f}")
+    c.drawRightString(x_total + linetotal_w - 8, table_y + 16, f"{quoted_price_val:,.2f}")
+    
+    # Vertical column lines (header + row)
+    top_y = y
+    bottom_y = table_y
+    c.setStrokeColorRGB(0.85, 0.85, 0.85)
+    c.setLineWidth(0.8)
+    for x in [x_unit, x_gstpct, x_gstamt, x_total]:
+        c.line(x, bottom_y, x, top_y + header_h)
+    # Outer border
+    c.setStrokeColorRGB(0.5, 0.5, 0.5)
+    c.rect(margin, bottom_y, content_w, (top_y - bottom_y) + header_h, fill=0, stroke=1)
+    c.setStrokeColorRGB(0, 0, 0)
+    c.setLineWidth(1)
+    
+    # Summary block on the right
+    sum_label_x = width - margin - 150
+    sum_value_x = width - margin
+    sum_y = bottom_y - 40
+    c.setFont("Helvetica", 10)
+    c.setFillColorRGB(0.25, 0.25, 0.25)
+    c.drawString(sum_label_x, sum_y, "Basic Total")
+    c.drawRightString(sum_value_x, sum_y, f"{basic_amount:,.2f}")
+    sum_y -= 18
+    c.drawString(sum_label_x, sum_y, f"GST ({int(gst_rate)}%)")
+    c.drawRightString(sum_value_x, sum_y, f"{gst_amount:,.2f}")
+    sum_y -= 18
+    c.drawString(sum_label_x, sum_y, "Subtotal")
+    c.drawRightString(sum_value_x, sum_y, f"{quoted_price_val:,.2f}")
+    sum_y -= 22
+    c.setFont("Helvetica-Bold", 11)
+    c.drawString(sum_label_x, sum_y, "Grand Total")
+    c.drawRightString(sum_value_x, sum_y, f"INR {quoted_price_val:,.2f}")
+    
+    # Move y for terms block
+    table_y = sum_y - 28
+
+    # Terms & Conditions block (restored)
+    table_y -= 28
+    c.setFont("Helvetica-Bold", 10)
+    c.setFillColorRGB(0.22, 0.25, 0.32)
+    c.drawString(margin, table_y, "Terms & Conditions:")
+    table_y -= 15
+    c.setFont("Helvetica", 8)
+    c.setFillColorRGB(0.35, 0.35, 0.35)
+    terms = [
+        "• This is a proforma invoice and not a tax invoice",
+        "• Payment is required before processing",
+        "• Prices are subject to change without notice",
+        "• GST will be charged as applicable",
+        "• Delivery timeline: 3-5 business days after payment confirmation",
+        "• Support: 24/7 technical assistance included",
+    ]
+    for term in terms:
+        c.drawString(margin, table_y, term)
+        table_y -= 12
+    # Contact and payment terms lines
+    table_y -= 8
+    c.setFont("Helvetica-Bold", 9)
+    c.setFillColorRGB(0.22, 0.25, 0.32)
+    c.drawString(margin, table_y, "Please Contact us for any clarification at 98416 99963")
+    table_y -= 14
+    c.setFont("Helvetica", 8)
+    c.setFillColorRGB(0.4, 0.4, 0.4)
+    c.drawString(margin, table_y, "Terms: Payment due within 7 days. This PI is valid for 15 days from the issue date")
+
+    # Footer - use same color as header with white text
+    c.setFillColorRGB(23/255, 63/255, 132/255)
+    c.rect(0, 0, width, 30, fill=1, stroke=0)
+    c.setFont("Helvetica", 8)
+    c.setFillColorRGB(1, 1, 1)  # White text
+    c.drawCentredString(width / 2, 20, "This is computer generated proforma invoice signature not required")
+    
+    c.save()
+    buffer.seek(0)
+    
+    filename = f"DSC_Proforma_Invoice_{submission_id}_{datetime.now().strftime('%Y%m%d')}.pdf"
+    return buffer, filename
+
+@csrf_exempt
+def dsc_download_pdf_api(request):
+    """API endpoint to generate and download DSC proforma invoice PDF."""
+    print(f"[DEBUG] dsc_download_pdf_api called with method: {request.method}")
+    
+    if request.method == 'POST':
+        try:
+            print(f"[DEBUG] Request body: {request.body}")
+            data = json.loads(request.body)
+            print(f"[DEBUG] Parsed data: {data}")
+            
+            # Generate PDF using the same function as email
+            print(f"[DEBUG] Calling _generate_dsc_proforma_pdf...")
+            print(f"[DEBUG] Data received: {data}")
+            
+            # Ensure all string fields are properly handled
+            customer_name = str(data.get('customer_name', '')).strip()
+            company_name = str(data.get('company_name', '')).strip()
+            mobile = str(data.get('mobile', '')).strip()
+            email = str(data.get('email', '')).strip()
+            address = str(data.get('address', '')).strip()
+            gst_number = str(data.get('gst_number', '')).strip()
+            reference_name = str(data.get('reference_name', '')).strip()
+            reference_contact = str(data.get('reference_contact', '')).strip()
+            class_type = str(data.get('class_type', '')).strip()
+            user_type = str(data.get('user_type', '')).strip()
+            cert_type = str(data.get('cert_type', '')).strip()
+            validity = str(data.get('validity', '')).strip()
+            quoted_price = str(data.get('quoted_price', '0')).strip()
+            submission_id = int(data.get('submission_id', 0))
+            
+            print(f"[DEBUG] Processed data:")
+            print(f"  customer_name: '{customer_name}'")
+            print(f"  company_name: '{company_name}'")
+            print(f"  mobile: '{mobile}'")
+            print(f"  email: '{email}'")
+            print(f"  address: '{address}'")
+            print(f"  gst_number: '{gst_number}'")
+            print(f"  reference_name: '{reference_name}'")
+            print(f"  reference_contact: '{reference_contact}'")
+            print(f"  class_type: '{class_type}'")
+            print(f"  user_type: '{user_type}'")
+            print(f"  cert_type: '{cert_type}'")
+            print(f"  validity: '{validity}'")
+            print(f"  quoted_price: '{quoted_price}'")
+            print(f"  submission_id: {submission_id}")
+            
+            pdf_buffer, pdf_filename = _generate_dsc_proforma_pdf(
+                customer_name=customer_name,
+                company_name=company_name,
+                mobile=mobile,
+                email=email,
+                address=address,
+                gst_number=gst_number,
+                reference_name=reference_name,
+                reference_contact=reference_contact,
+                class_type=class_type,
+                user_type=user_type,
+                cert_type=cert_type,
+                validity=validity,
+                include_token=data.get('include_token', False),
+                include_installation=data.get('include_installation', False),
+                quoted_price=quoted_price,
+                submission_id=submission_id,
+            )
+            
+            print(f"[DEBUG] PDF generated successfully: {pdf_filename}")
+            print(f"[DEBUG] Buffer size: {pdf_buffer.getbuffer().nbytes}")
+            
+            # Return PDF as response
+            from django.http import HttpResponse
+            response = HttpResponse(pdf_buffer.getvalue(), content_type='application/pdf')
+            response['Content-Disposition'] = f'attachment; filename="{pdf_filename}"'
+            print(f"[DEBUG] Response created, returning PDF")
+            return response
+            
+        except Exception as e:
+            print(f"[DEBUG] Error in dsc_download_pdf_api: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            return JsonResponse({'error': str(e)}, status=500)
+    else:
+        print(f"[DEBUG] Invalid method: {request.method}")
+        return JsonResponse({'error': 'Invalid request method'}, status=405)
+
 def _generate_proforma_pdf(
     *,
     customer_name: str,
@@ -180,9 +568,11 @@ def _generate_proforma_pdf(
         ("TEXTCOLOR", (0,0), (-1,0), colors.white),
         ("FONTNAME", (0,0), (-1,0), "Helvetica-Bold"),
         ("FONTSIZE", (0,0), (-1,0), 10),
-        ("VALIGN", (0,1), (-1,-1), "TOP"),
-        ("ALIGN", (1,1), (-1,-1), "RIGHT"),
-        ("ALIGN", (0,0), (0,-1), "LEFT"),
+        ("VALIGN", (0,0), (-1,0), "MIDDLE"),  # Center header row vertically
+        ("ALIGN", (0,0), (-1,0), "CENTER"),   # Center header text horizontally
+        ("VALIGN", (0,1), (-1,-1), "TOP"),    # Data rows top-aligned
+        ("ALIGN", (1,1), (-1,-1), "RIGHT"),   # Data columns right-aligned
+        ("ALIGN", (0,1), (0,-1), "LEFT"),     # Description column left-aligned
         ("GRID", (0,0), (-1,-1), 0.5, colors.grey),
         ("FONTSIZE", (0,1), (-1,-1), 9),
         ("LEFTPADDING", (0,0), (-1,-1), 6),
@@ -348,6 +738,17 @@ def index(request):
                 to=[settings.CONTACT_FORM_RECIPIENT],
             )
             email_msg.content_subtype = "html"
+            
+            # Embed logo inline using CID
+            try:
+                from django.contrib.staticfiles import finders
+                logo_path = finders.find('products/img/fusiontec.png')
+                if logo_path:
+                    with open(logo_path, 'rb') as f:
+                        email_msg.attach_inline('fusiontec_logo', f.read(), 'image/png')
+            except Exception as _e:
+                print(f"Inline logo attach failed (admin): {_e}")
+            
             email_msg.send()
 
             # Send thank you to user
@@ -358,6 +759,17 @@ def index(request):
                 to=[email],
             )
             user_email.content_subtype = "html"
+            
+            # Embed logo inline using CID
+            try:
+                from django.contrib.staticfiles import finders
+                logo_path = finders.find('products/img/fusiontec.png')
+                if logo_path:
+                    with open(logo_path, 'rb') as f:
+                        user_email.attach_inline('fusiontec_logo', f.read(), 'image/png')
+            except Exception as _e:
+                print(f"Inline logo attach failed (user): {_e}")
+            
             user_email.send()
 
             messages.success(request, 'Your message has been sent successfully.')
@@ -580,7 +992,7 @@ def dsc_integrated_submission(request):
                     dsc_submission.ifc_certificate = request.FILES['ifc_certificate']
                 dsc_submission.save()
             
-                        # Send admin notification email
+            # Send admin notification email
             admin_email_content = render_to_string('products/dsc_form_email.html', {
                 'submission': dsc_submission,
                 'submission_type': submission_type.title(),
@@ -588,12 +1000,36 @@ def dsc_integrated_submission(request):
                 'logo_cid': 'fusiontec_logo'
             }, request=request)
 
-            # Send customer confirmation email
-            customer_email_content = render_to_string('products/dsc_form_thanks.html', {
+            # Generate proforma invoice PDF
+            try:
+                pdf_buffer, pdf_filename = _generate_dsc_proforma_pdf(
+                    customer_name=name,
+                    company_name=company_name or '',
+                    mobile=mobile,
+                    email=email,
+                    address=address or '',
+                    gst_number=gst_number or '',
+                    reference_name=reference_name or '',
+                    reference_contact=reference_contact or '',
+                    class_type=class_type,
+                    user_type=user_type,
+                    cert_type=cert_type,
+                    validity=validity,
+                    include_token=include_token,
+                    include_installation=include_installation,
+                    quoted_price=quoted_price,
+                    submission_id=dsc_submission.id,
+                )
+            except Exception as pdf_err:
+                print(f"PDF generation failed: {pdf_err}")
+                pdf_buffer = None
+                pdf_filename = None
+
+            # Send customer confirmation email with proforma invoice (no logo version)
+            customer_email_content = render_to_string('products/dsc_form_thanks_no_logo.html', {
                 'submission': dsc_submission,
                 'submission_type': submission_type.title(),
                 'customer_name': name,
-                'logo_cid': 'fusiontec_logo'
             }, request=request)
 
             try:
@@ -667,15 +1103,19 @@ def dsc_integrated_submission(request):
                 )
                 customer_email.content_subtype = "html"
                 customer_email.connection = email_backend
-                try:
-                    # Embed logo inline using CID
-                    from django.contrib.staticfiles import finders
-                    logo_path = finders.find('products/img/fusiontec.png')
-                    if logo_path:
-                        with open(logo_path, 'rb') as f:
-                            customer_email.attach_inline('fusiontec_logo', f.read(), 'image/png')
-                except Exception as _e:
-                    print(f"Inline logo attach failed (customer): {_e}")
+                
+                # Attach proforma invoice PDF if generated
+                if pdf_buffer and pdf_filename:
+                    try:
+                        pdf_bytes = pdf_buffer.getvalue()
+                        if pdf_bytes and len(pdf_bytes) > 500:
+                            customer_email.attach(pdf_filename, pdf_bytes, 'application/pdf')
+                            print(f"[EMAIL] Attached PDF '{pdf_filename}' size={len(pdf_bytes)} bytes to customer email")
+                        else:
+                            print("[EMAIL][WARN] Generated PDF is empty or too small; skipping attachment")
+                    except Exception as att_err:
+                        print(f"[EMAIL][ERROR] Failed to attach PDF to customer email: {att_err}")
+                
                 customer_email.send()
 
                 # Immediate success response after emails sent
@@ -1307,16 +1747,36 @@ def dsc_submission_api(request):
         return JsonResponse({'success': False, 'message': f'Server error: {str(exc)}'}, status=500)
 
 @csrf_exempt
+def test_dsc_payment_api(request):
+    """Test endpoint for DSC payment API."""
+    print("=== Test DSC Payment API Called ===")
+    return JsonResponse({'status': 'success', 'message': 'Test API working'})
+
+@csrf_exempt
 def create_dsc_payment_order(request):
     """Create Razorpay order for DSC purchase."""
+    print(f"=== DSC Payment Order API Called ===")
+    print(f"Request method: {request.method}")
+    print(f"Request headers: {dict(request.headers)}")
+    print(f"Request body: {request.body}")
+    
     if request.method != 'POST':
         return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=405)
     
     try:
         # Log the request for debugging
         print(f"Creating DSC payment order. Request body: {request.body}")
+        print(f"Request body type: {type(request.body)}")
+        print(f"Request body length: {len(request.body) if request.body else 0}")
         
-        data = json.loads(request.body or '{}')
+        try:
+            data = json.loads(request.body or '{}')
+            print(f"JSON parsed successfully: {data}")
+        except json.JSONDecodeError as json_error:
+            print(f"JSON decode error: {json_error}")
+            print(f"Raw body: {request.body}")
+            return JsonResponse({'status': 'error', 'message': f'Invalid JSON: {str(json_error)}'}, status=400)
+        
         submission_id = data.get('submission_id')
         amount = data.get('amount')
         
@@ -1326,16 +1786,36 @@ def create_dsc_payment_order(request):
             return JsonResponse({'status': 'error', 'message': 'Missing submission_id or amount'}, status=400)
         
         # Verify submission exists
-        submission = DscSubmission.objects.get(id=submission_id)
-        print(f"Found submission: {submission.name} - {submission.email}")
+        try:
+            submission = DscSubmission.objects.get(id=submission_id)
+            print(f"Found submission: {submission.name} - {submission.email}")
+        except DscSubmission.DoesNotExist:
+            print(f"Submission not found with ID: {submission_id}")
+            # List all submissions for debugging
+            all_submissions = DscSubmission.objects.all().values('id', 'name', 'email')[:10]
+            print(f"Available submissions: {list(all_submissions)}")
+            return JsonResponse({'status': 'error', 'message': 'Submission not found'}, status=404)
         
         # Convert amount to paise (Razorpay expects amount in paise)
-        amount_paise = int(float(amount) * 100)
-        print(f"Amount in paise: {amount_paise}")
+        try:
+            amount_paise = int(float(amount) * 100)
+            print(f"Amount in paise: {amount_paise}")
+            if amount_paise <= 0:
+                return JsonResponse({'status': 'error', 'message': 'Invalid amount: must be greater than 0'}, status=400)
+        except (ValueError, TypeError) as e:
+            print(f"Amount conversion error: {e}")
+            return JsonResponse({'status': 'error', 'message': f'Invalid amount format: {amount}'}, status=400)
         
         # Check Razorpay credentials
         print(f"Razorpay Key ID: {settings.RAZORPAY_KEY_ID}")
         print(f"Razorpay Key Secret: {'*' * len(settings.RAZORPAY_KEY_SECRET) if settings.RAZORPAY_KEY_SECRET else 'None'}")
+        
+        if not settings.RAZORPAY_KEY_ID or not settings.RAZORPAY_KEY_SECRET:
+            print("Razorpay credentials are missing")
+            return JsonResponse({
+                'status': 'error', 
+                'message': 'Razorpay credentials are not configured'
+            }, status=500)
         
         # Create Razorpay client
         try:
@@ -1368,6 +1848,8 @@ def create_dsc_payment_order(request):
             print(f"Razorpay order created successfully: {order['id']}")
         except Exception as order_error:
             print(f"Failed to create Razorpay order: {order_error}")
+            print(f"Order error type: {type(order_error)}")
+            print(f"Order error details: {str(order_error)}")
             return JsonResponse({
                 'status': 'error', 
                 'message': f'Failed to create Razorpay order: {str(order_error)}'
@@ -1559,8 +2041,8 @@ def save_product_submission(request):
                 status='new'
             )
             
-            # Send admin notification email
-            admin_email_content = render_to_string('products/product_form_email.html', {
+            # Send admin notification email (no logo version)
+            admin_email_content = render_to_string('products/product_form_email_no_logo.html', {
                 'customer_name': data.get('customer_name'),
                 'company_name': data.get('company_name', ''),
                 'email': data.get('email'),
@@ -1583,8 +2065,8 @@ def save_product_submission(request):
                 'submission_id': form_submission.id,
             })
 
-            # Send customer thank you email
-            customer_thank_you_content = render_to_string('products/product_form_thanks.html', {
+            # Send customer thank you email (no logo version)
+            customer_thank_you_content = render_to_string('products/product_form_thanks_no_logo.html', {
                 'customer_name': data.get('customer_name'),
                 'product_name': product_item.prdt_desc,
                 'quantity': data.get('quantity', 1),
@@ -1932,6 +2414,17 @@ def quote_form(request, product_id):
                 to=[settings.CONTACT_FORM_RECIPIENT],
             )
             admin_email.content_subtype = "html"
+            
+            # Embed logo inline using CID
+            try:
+                from django.contrib.staticfiles import finders
+                logo_path = finders.find('products/img/fusiontec.png')
+                if logo_path:
+                    with open(logo_path, 'rb') as f:
+                        admin_email.attach_inline('fusiontec_logo', f.read(), 'image/png')
+            except Exception as _e:
+                print(f"Inline logo attach failed (admin): {_e}")
+            
             admin_email.send()
 
             # Send thank you to customer
@@ -1942,6 +2435,17 @@ def quote_form(request, product_id):
                 to=[email],
             )
             customer_email.content_subtype = "html"
+            
+            # Embed logo inline using CID
+            try:
+                from django.contrib.staticfiles import finders
+                logo_path = finders.find('products/img/fusiontec.png')
+                if logo_path:
+                    with open(logo_path, 'rb') as f:
+                        customer_email.attach_inline('fusiontec_logo', f.read(), 'image/png')
+            except Exception as _e:
+                print(f"Inline logo attach failed (customer): {_e}")
+            
             customer_email.send()
 
             messages.success(request, 'Quote request submitted successfully! You will receive a confirmation email shortly.')
@@ -2009,6 +2513,17 @@ def contact_form(request):
                 to=[settings.CONTACT_FORM_RECIPIENT],
             )
             email_msg.content_subtype = "html"
+            
+            # Embed logo inline using CID
+            try:
+                from django.contrib.staticfiles import finders
+                logo_path = finders.find('products/img/fusiontec.png')
+                if logo_path:
+                    with open(logo_path, 'rb') as f:
+                        email_msg.attach_inline('fusiontec_logo', f.read(), 'image/png')
+            except Exception as _e:
+                print(f"Inline logo attach failed (admin): {_e}")
+            
             email_msg.send()
 
             # Send thank you to user
@@ -2019,6 +2534,17 @@ def contact_form(request):
                 to=[email],
             )
             user_email.content_subtype = "html"
+            
+            # Embed logo inline using CID
+            try:
+                from django.contrib.staticfiles import finders
+                logo_path = finders.find('products/img/fusiontec.png')
+                if logo_path:
+                    with open(logo_path, 'rb') as f:
+                        user_email.attach_inline('fusiontec_logo', f.read(), 'image/png')
+            except Exception as _e:
+                print(f"Inline logo attach failed (user): {_e}")
+            
             user_email.send()
 
             messages.success(request, 'Your message has been sent successfully! You will receive a confirmation email shortly.')

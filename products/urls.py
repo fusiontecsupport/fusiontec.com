@@ -26,8 +26,10 @@ urlpatterns = [
     path('api/dsc-enquiry/', views.dsc_enquiry_api, name='dsc_enquiry_api'),
     path('api/dsc-submission/', views.dsc_submission_api, name='dsc_submission_api'),
     path('api/dsc-payment/create-order/', views.create_dsc_payment_order, name='create_dsc_payment_order'),
+    path('api/dsc-payment/test/', views.test_dsc_payment_api, name='test_dsc_payment_api'),
     path('api/dsc-payment/verify/', views.verify_dsc_payment, name='verify_dsc_payment'),
     path('api/dsc-documents/', views.dsc_documents_upload_api, name='dsc_documents_upload_api'),
+    path('api/dsc-download-pdf/', views.dsc_download_pdf_api, name='dsc_download_pdf_api'),
     
     # ============================================================================
     # QUOTE & CONTACT FORMS

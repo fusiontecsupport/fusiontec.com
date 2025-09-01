@@ -169,34 +169,7 @@
             margin-bottom: 20px;
         }
         
-        .action-buttons {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-        
-        .action-btn {
-            display: inline-block;
-            padding: 12px 24px;
-            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
-            color: #ffffff;
-            text-decoration: none;
-            border-radius: 6px;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            border: none;
-            cursor: pointer;
-        }
-        
-        .action-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        }
-        
-        .action-btn.secondary {
-            background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
-        }
+
         
         /* Footer */
         .email-footer {
@@ -245,15 +218,7 @@
                 gap: 15px;
             }
             
-            .action-buttons {
-                flex-direction: column;
-                align-items: center;
-            }
-            
-            .action-btn {
-                width: 100%;
-                max-width: 250px;
-            }
+
         }
     </style>
 </head>
@@ -323,9 +288,8 @@
             <!-- Action Section -->
             <div class="action-section">
                 <div class="action-title">🚀 Take Action</div>
-                <div class="action-buttons">
-                    <a href="{{ admin_dashboard_url }}" class="action-btn">View in Dashboard</a>
-                    <a href="mailto:{{ email }}?subject=Re: Enquiry #{{ enquiry_id }} - {{ product_type }}" class="action-btn secondary">Reply to Customer</a>
+                <div style="text-align: center; color: #6c757d; font-size: 14px;">
+                    <p>Please review this enquiry in your admin dashboard and respond to the customer promptly.</p>
                 </div>
             </div>
             

@@ -409,20 +409,181 @@ document.addEventListener('DOMContentLoaded', function() {
   // Razorpay payment button
   document.getElementById('razorpayBtn').addEventListener('click', initiatePayment);
 
-  // Stay on the same page when PI modal is closed or Close button is clicked
+  // Attach modal event handlers
   const piModalEl = document.getElementById('piModal');
-  piModalEl.addEventListener('hidden.bs.modal', function () {
-    // no redirect
-  });
+  if (piModalEl) {
+    piModalEl.addEventListener('hidden.bs.modal', handleModalHidden);
+    piModalEl.addEventListener('click', handleModalClick);
+  }
+  
   const piCloseBtn = document.getElementById('piCloseBtn');
   if (piCloseBtn) {
-    piCloseBtn.addEventListener('click', function() {
-      const modalInstance = bootstrap.Modal.getInstance(piModalEl);
-      if (modalInstance) modalInstance.hide();
-      // no redirect
-    });
+    piCloseBtn.addEventListener('click', handleCloseButtonClick);
   }
 });
+
+// Function to refresh the form
+function refreshForm() {
+  console.log('Refreshing form...');
+  
+  // First, properly close and reset the modal state
+  const piModalEl = document.getElementById('piModal');
+  if (piModalEl) {
+    // Hide any existing modal instances
+    const existingModal = bootstrap.Modal.getInstance(piModalEl);
+    if (existingModal) {
+      existingModal.hide();
+    }
+    
+    // Clear modal content
+    const piContent = document.getElementById('piContent');
+    if (piContent) {
+      piContent.innerHTML = `
+        <!-- Success message -->
+        <div class="alert alert-success mb-3" id="successMessage" style="display: none;">
+          <i class="bi bi-check-circle-fill me-2"></i>
+          <strong>Success!</strong> Your form has been submitted successfully. Submission ID: <span id="quoteIdDisplay">-</span>
+        </div>
+        
+        <!-- PI content inserted here dynamically -->
+      `;
+    }
+  }
+  
+  // Reset all form fields
+  const form = document.getElementById('productForm');
+  if (form) {
+    form.reset();
+  }
+  
+  // Clear specific fields manually
+  const fieldsToClear = [
+    'customerName', 'companyName', 'mobile', 'email', 'gstNumber', 
+    'address', 'state', 'district', 'pincode', 'quantity'
+  ];
+  
+  fieldsToClear.forEach(fieldId => {
+    const field = document.getElementById(fieldId);
+    if (field) {
+      field.value = '';
+    }
+  });
+  
+  // Reset selectors
+  const productSelector = document.getElementById('productSelector');
+  const subProductSelector = document.getElementById('subProductSelector');
+  const gstSelector = document.getElementById('gstSelector');
+  
+  if (productSelector) productSelector.value = '';
+  if (subProductSelector) subProductSelector.value = '';
+  if (gstSelector) gstSelector.value = '';
+  
+  // Reset checkboxes
+  const addTokenCheckbox = document.getElementById('add_token');
+  const addInstallCheckbox = document.getElementById('add_installation');
+  if (addTokenCheckbox) addTokenCheckbox.checked = false;
+  if (addInstallCheckbox) addInstallCheckbox.checked = false;
+  
+  // Hide rate card details
+  hideRateCard();
+  
+  // Reset totals
+  document.getElementById('totalAmount').textContent = '0';
+  document.getElementById('basicAmount').textContent = '-';
+  document.getElementById('gstRate').textContent = '0';
+  document.getElementById('gst').textContent = '-';
+  document.getElementById('totalPrice').textContent = '-';
+  document.getElementById('finalTotal').textContent = '-';
+  
+  // Hide product details container
+  const productDetailsContainer = document.getElementById('productDetailsContainer');
+  if (productDetailsContainer) {
+    productDetailsContainer.style.display = 'none';
+  }
+  
+  // Reset GST fields visibility
+  const gstNumberField = document.getElementById('gstNumberField');
+  const nonGstFields = document.getElementById('nonGstFields');
+  if (gstNumberField) gstNumberField.style.display = 'none';
+  if (nonGstFields) nonGstFields.style.display = 'none';
+  
+  // Reset form heading
+  const formHeading = document.getElementById('formHeading');
+  if (formHeading) {
+    formHeading.textContent = 'Product Form';
+  }
+  
+  // Clear any error messages
+  const errorMessages = document.querySelectorAll('.error-message');
+  errorMessages.forEach(msg => {
+    msg.textContent = '';
+    msg.style.display = 'none';
+  });
+  
+  // Reset sub-product options visibility
+  if (subProductSelector) {
+    Array.from(subProductSelector.options).forEach((opt, idx) => {
+      if (idx === 0) return; // keep placeholder
+      opt.style.display = 'block';
+    });
+  }
+  
+  // Re-attach modal event handlers to ensure they work after refresh
+  setTimeout(() => {
+    reattachModalHandlers();
+  }, 100);
+  
+  console.log('Form refreshed successfully');
+}
+
+// Function to re-attach modal event handlers after form refresh
+function reattachModalHandlers() {
+  console.log('Re-attaching modal event handlers...');
+  
+  const piModalEl = document.getElementById('piModal');
+  if (!piModalEl) return;
+  
+  // Remove any existing event listeners to avoid duplicates
+  piModalEl.removeEventListener('hidden.bs.modal', handleModalHidden);
+  piModalEl.removeEventListener('click', handleModalClick);
+  
+  // Re-attach the event handlers
+  piModalEl.addEventListener('hidden.bs.modal', handleModalHidden);
+  piModalEl.addEventListener('click', handleModalClick);
+  
+  // Re-attach close button handler
+  const piCloseBtn = document.getElementById('piCloseBtn');
+  if (piCloseBtn) {
+    piCloseBtn.removeEventListener('click', handleCloseButtonClick);
+    piCloseBtn.addEventListener('click', handleCloseButtonClick);
+  }
+  
+  console.log('Modal event handlers re-attached successfully');
+}
+
+// Separate handler functions for better management
+function handleModalHidden() {
+  console.log('Modal hidden event triggered');
+  refreshForm();
+}
+
+function handleModalClick(event) {
+  if (event.target === event.currentTarget) {
+    // User clicked outside the modal content
+    console.log('Modal backdrop clicked');
+    setTimeout(() => {
+      refreshForm();
+    }, 150);
+  }
+}
+
+function handleCloseButtonClick() {
+  console.log('Close button clicked');
+  const piModalEl = document.getElementById('piModal');
+  const modalInstance = bootstrap.Modal.getInstance(piModalEl);
+  if (modalInstance) modalInstance.hide();
+  // Form will be refreshed by the hidden.bs.modal event
+}
 
 function updateProductInfo() {
   // This function updates the product info display when the page loads
@@ -570,8 +731,13 @@ async function generatePI() {
     const piContent = generatePIContent();
     document.getElementById('piContent').innerHTML = piContent;
     
-    // Show modal
-    const modal = new bootstrap.Modal(document.getElementById('piModal'));
+    // Show modal - ensure clean state
+    const piModalEl = document.getElementById('piModal');
+    const modal = new bootstrap.Modal(piModalEl, {
+      backdrop: true,
+      keyboard: true,
+      focus: true
+    });
     modal.show();
     
   } finally {

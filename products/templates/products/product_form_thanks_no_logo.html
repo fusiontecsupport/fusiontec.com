@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Product Form Submission Received - Fusiontec</title>
+    <style>
+        /* Reset styles for email clients */
+        body, table, td, p, a, li, blockquote {
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+        }
+        table, td {
+            mso-table-lspace: 0pt;
+            mso-table-rspace: 0pt;
+        }
+        img {
+            -ms-interpolation-mode: bicubic;
+            border: 0;
+            outline: none;
+            text-decoration: none;
+        }
+        
+        /* Base styles */
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 16px;
+            line-height: 1.6;
+            color: #333333;
+        }
+        
+        /* Container */
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Header - No logo version */
+        .email-header {
+            background: linear-gradient(135deg, #1f3c88 0%, #2563eb 100%);
+            padding: 30px 20px;
+            text-align: center;
+            color: #ffffff;
+        }
+        
+        .company-name {
+            font-size: 28px;
+            font-weight: 700;
+            margin: 0;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        .company-tagline {
+            font-size: 16px;
+            font-weight: 400;
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+        }
+        
+        /* Content */
+        .email-content {
+            padding: 40px 30px;
+        }
+        
+        .content-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1f3c88;
+            margin: 0 0 10px 0;
+            text-align: center;
+        }
+        
+        .content-subtitle {
+            font-size: 16px;
+            color: #6c757d;
+            margin: 0 0 30px 0;
+            text-align: center;
+        }
+        
+        .info-card {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 25px;
+            margin: 20px 0;
+            border-left: 4px solid #1f3c88;
+        }
+        
+        .info-card h3 {
+            color: #1f3c88;
+            font-size: 18px;
+            font-weight: 600;
+            margin: 0 0 15px 0;
+        }
+        
+        .info-card p {
+            margin: 0 0 10px 0;
+            color: #495057;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .status-info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        /* Buttons */
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #1f3c88 0%, #2563eb 100%);
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 500;
+            margin: 5px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+        }
+        
+        /* Footer */
+        .email-footer {
+            background: #2c3e50;
+            color: #ffffff;
+            text-align: center;
+            padding: 25px 20px;
+        }
+        
+        .footer-links {
+            margin: 20px 0;
+        }
+        
+        .footer-link {
+            display: inline-block;
+            margin: 0 10px;
+            color: #ffffff;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        
+        .footer-text {
+            margin: 0;
+            color: #bdc3c7;
+            font-size: 14px;
+        }
+        
+        /* Responsive */
+        @media only screen and (max-width: 600px) {
+            .email-container {
+                margin: 0;
+                box-shadow: none;
+            }
+            
+            .email-content {
+                padding: 20px 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <!-- Header - No Logo -->
+        <div class="email-header">
+            <h1 class="company-name">Fusiontec</h1>
+            <p class="company-tagline">Your Trusted Technology Partner</p>
+        </div>
+        
+        <!-- Content -->
+        <div class="email-content">
+            <h1 class="content-title">Thank You for Your Submission!</h1>
+            <p class="content-subtitle">We've received your product form and will process it shortly</p>
+
+            <div class="info-card">
+                <h3>👋 Hello {{ customer_name }},</h3>
+                <p>Thank you for submitting your product form to <strong>Fusiontec Software</strong>. We have successfully received your submission and our team will review your requirements shortly.</p>
+                <p>We appreciate your interest in our products and will get back to you within 24-48 hours with detailed information and next steps.</p>
+            </div>
+
+            <div class="info-card">
+                <h3>📦 Submission Details</h3>
+                <p><strong>Product:</strong> {{ product_name }}</p>
+                <p><strong>Quantity:</strong> {{ quantity }}</p>
+                <p><strong>Submission ID:</strong> <span class="status-badge status-info">{{ submission_id }}</span></p>
+            </div>
+
+            <div class="info-card">
+                <h3>📧 What Happens Next?</h3>
+                <ul style="margin: 0; padding-left: 20px; color: #495057;">
+                    <li>Our team will review your product requirements</li>
+                    <li>We'll verify pricing and availability</li>
+                    <li>You'll receive a detailed quote or proposal</li>
+                    <li>We'll discuss implementation timeline and support</li>
+                </ul>
+            </div>
+
+            <div style="text-align: center; margin-top: 30px;">
+                <a href="https://fusiontec.com" class="btn">Visit Our Website</a>
+                <a href="mailto:tally@fusiontec.com" class="btn btn-secondary">Contact Support</a>
+            </div>
+
+            <div style="margin-top: 30px; padding: 20px; background-color: #d4edda; border-radius: 8px; border-left: 4px solid #28a745;">
+                <h4 style="margin: 0 0 10px 0; color: #155724;">💡 Quick Tips</h4>
+                <p style="margin: 0; color: #155724; font-size: 14px;">
+                    <strong>Need immediate assistance?</strong><br>
+                    • Call us: <a href="tel:+919176699599" style="color: #155724;">+91 91766 99599</a> / <a href="tel:+919841699963" style="color: #155724;">+91 98416 99963</a><br>
+                    • Email: <a href="mailto:tally@fusiontec.com" style="color: #155724;">tally@fusiontec.com</a><br>
+                    • Business hours: Monday - Saturday, 10:00 AM - 6:00 PM IST
+                </p>
+            </div>
+
+            <div style="margin-top: 30px; text-align: center; padding: 20px; background-color: #f8f9fa; border-radius: 8px;">
+                <p style="margin: 0; color: #6c757d; font-size: 14px;">
+                    <strong>Best regards,</strong><br>
+                    The Fusiontec Software Team<br>
+                    <span style="color: #1f3c88;">Your Trusted Technology Partner</span>
+                </p>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="email-footer">
+            <div class="footer-links">
+                <a href="https://fusiontec.com" target="_blank" class="footer-link">Website</a>
+                <a href="mailto:support@fusiontec.com" class="footer-link">Support</a>
+                <a href="tel:+919876543210" class="footer-link">Call Us</a>
+            </div>
+            <p class="footer-text">
+                © {% now "Y" %} Fusiontec Software. All rights reserved.<br>
+                This email was sent from an automated system. Please do not reply directly to this email.
+            </p>
+        </div>
+    </div>
+</body>
+</html>
+
+

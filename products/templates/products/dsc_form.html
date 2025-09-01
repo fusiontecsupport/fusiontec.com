@@ -6,6 +6,8 @@
 {% block extra_head %}
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 <script src="{% static 'products/js/scripts.js' %}"></script>
+
+<meta name="csrf-token" content="{{ csrf_token }}">
 {% endblock %}
 
 {% block content %}
@@ -102,6 +104,14 @@
     font-weight: 500 !important;
     transition: all .2s ease !important;
     box-shadow: none !important;
+  }
+
+  /* Error message styling */
+  .error-message {
+    color: #dc3545;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+    font-weight: 500;
   }
   
   /* File input validation styling */
@@ -309,7 +319,8 @@
                           </div>
                           <div class="col-12 col-md-6">
                             <label class="form-label fw-semibold">Mobile Number *</label>
-                            <input type="tel" id="enqMobile" name="mobile" class="form-control form-control-lg" placeholder="Enter mobile number" required>
+                            <input type="tel" id="enqMobile" name="mobile" class="form-control form-control-lg" placeholder="Enter mobile number" maxlength="10" pattern="[0-9]*" inputmode="numeric" required>
+                            <div class="error-message" id="error-enqMobile"></div>
                           </div>
                           <div class="col-12 col-md-6">
                             <label class="form-label fw-semibold">Company Name</label>
@@ -329,7 +340,8 @@
                           </div>
                           <div class="col-12 col-md-6">
                             <label class="form-label fw-semibold">Reference Mobile *</label>
-                            <input type="tel" id="refMobile" name="reference_contact" class="form-control form-control-lg" placeholder="Enter reference mobile" required>
+                            <input type="tel" id="refMobile" name="reference_contact" class="form-control form-control-lg" placeholder="Enter reference mobile" maxlength="10" pattern="[0-9]*" inputmode="numeric" required>
+                            <div class="error-message" id="error-refMobile"></div>
                           </div>
                           
                           <!-- Hidden fields for DSC options -->
@@ -394,19 +406,10 @@
                         <div class="col-12 mt-2">
                           <div class="action-buttons">
                             <div class="row g-3">
-                              <div class="col-md-4">
-                                <button type="submit" id="enqSubmit" class="btn btn-success btn-lg btn-pro btn-pro-success w-100" data-submission-type="enquiry">
-                                  <i class="fas fa-paper-plane me-2"></i>Send Enquiry
-                                </button>
-                              </div>
-                              <div class="col-md-4">
-                                <button type="submit" id="proceedBtn" class="btn btn-primary btn-lg btn-pro btn-pro-primary w-100" data-submission-type="purchase">
-                                  <i class="fas fa-credit-card me-2"></i>Proceed to Buy
-                                </button>
-                              </div>
-                              <div class="col-md-4">
-                                <button type="button" class="btn btn-outline-secondary btn-lg btn-pro btn-pro-back w-100" onclick="(history.length>1)?history.back():window.location.assign('/#dsc')">
-                                  <i class="fas fa-arrow-left me-2"></i>Back
+                              <div class="col-md-6 mx-auto">
+                                <button type="button" id="generatePiBtn" class="btn btn-primary btn-lg btn-pro btn-pro-primary w-100">
+                                  <span id="generateBtnText">Generate Proforma Invoice</span>
+                                  <span id="generateBtnSpinner" class="spinner-border spinner-border-sm ms-2" style="display: none;" role="status" aria-hidden="true"></span>
                                 </button>
                               </div>
                             </div>
@@ -417,6 +420,32 @@
                     </div>
                   </div>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Proforma Invoice Modal -->
+        <div class="modal fade" id="piModal" tabindex="-1" aria-labelledby="piModalLabel" aria-hidden="true">
+          <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="piModalLabel">Proforma Invoice Preview</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body" id="piContent">
+                <!-- Success message -->
+                <div class="alert alert-success mb-3" id="successMessage" style="display: none;">
+                  <i class="bi bi-check-circle-fill me-2"></i>
+                  <strong>Success!</strong> Your form has been submitted successfully. Submission ID: <span id="quoteIdDisplay">-</span>
+                </div>
+                
+                <!-- PI content inserted here dynamically -->
+              </div>
+              <div class="modal-footer">
+
+                <button type="button" id="downloadPiBtn" class="btn btn-primary">Download PDF</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="piCloseBtn">Close</button>
               </div>
             </div>
           </div>
@@ -585,6 +614,49 @@
   const enqAddress = document.getElementById('enqAddress');
   const refName = document.getElementById('refName');
   const refMobile = document.getElementById('refMobile');
+
+  // Mobile validation functions
+  function validateMobileField(field, errorId) {
+    const value = field.value.trim();
+    const errorDiv = document.getElementById(errorId);
+    
+    // Remove non-numeric characters and limit to 10 digits
+    field.value = value.replace(/\D/g, '').slice(0, 10);
+    
+    if (!value) {
+      errorDiv.textContent = 'Mobile number is required';
+      return false;
+    } else if (!/^[6-9]\d{9}$/.test(field.value)) {
+      errorDiv.textContent = 'Enter a valid 10-digit mobile number starting with 6-9';
+      return false;
+    } else {
+      errorDiv.textContent = '';
+      return true;
+    }
+  }
+
+  // Add mobile validation event listeners
+  if (enqMobile) {
+    enqMobile.addEventListener('input', () => {
+      validateMobileField(enqMobile, 'error-enqMobile');
+      updateCTAEnabled();
+    });
+    enqMobile.addEventListener('blur', () => {
+      validateMobileField(enqMobile, 'error-enqMobile');
+      updateCTAEnabled();
+    });
+  }
+
+  if (refMobile) {
+    refMobile.addEventListener('input', () => {
+      validateMobileField(refMobile, 'error-refMobile');
+      updateCTAEnabled();
+    });
+    refMobile.addEventListener('blur', () => {
+      validateMobileField(refMobile, 'error-refMobile');
+      updateCTAEnabled();
+    });
+  }
 
 
 
@@ -902,6 +974,10 @@
     const totalStr = priceEl.textContent.replace(/[^0-9.]/g,'');
     const quoted = parseFloat(totalStr || '0') || 0;
     
+    // Mobile validation
+    const mobileValid = /^[6-9]\d{9}$/.test(mobile);
+    const refMobileValid = /^[6-9]\d{9}$/.test(refm);
+    
     // Ensure visible required file inputs have files selected AND are valid
     const docIds = ['doc_pan','doc_aadhar','doc_gst','doc_photo','doc_auth','doc_orgpan','doc_ifc'];
     let filesOk = true;
@@ -926,7 +1002,7 @@
         }
       }
     }
-    return !!(name && email && mobile && refn && refm && priced && quoted > 0 && filesOk);
+    return !!(name && email && mobile && mobileValid && refn && refm && refMobileValid && priced && quoted > 0 && filesOk);
   }
   function updateCTAEnabled(){
     const ok = isFormValid();
@@ -1223,102 +1299,125 @@
     }
   });
 
-  // Handle form submission for both enquiry and purchase
+  // Get form reference
   const dscForm = document.getElementById('dscForm');
-  if(dscForm){
-    dscForm.addEventListener('submit', async function(e){
-      e.preventDefault();
+  
+  // Handle Generate Proforma Invoice button click
+  const generatePiBtn = document.getElementById('generatePiBtn');
+  if(generatePiBtn){
+    generatePiBtn.addEventListener('click', async function(){
+      const generateBtn = this;
+      const generateBtnText = document.getElementById('generateBtnText');
+      const generateBtnSpinner = document.getElementById('generateBtnSpinner');
       
-      const submitButton = e.submitter;
-      const submissionType = submitButton.getAttribute('data-submission-type');
-      const originalHTML = submitButton.innerHTML;
-      submitButton.disabled = true;
-      submitButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Submitting...';
-      if(submitButton.id === 'proceedBtn'){ enqSubmit.disabled = true; } else { proceedBtn.disabled = true; }
-      
-      enqMsg.style.display = 'block';
-      enqMsg.textContent = '';
-      enqMsg.className = 'alert mt-3';
-      
-      // Validate required fields
-      const name = document.getElementById('enqName').value.trim();
-      const email = document.getElementById('enqEmail').value.trim();
-      const mobile = document.getElementById('enqMobile').value.trim();
-      const refNameVal = document.getElementById('refName').value.trim();
-      const refMobileVal = document.getElementById('refMobile').value.trim();
-      
-      // Validate all visible file inputs
-      const fileInputs = dscForm.querySelectorAll('input[type="file"]');
-      let filesValid = true;
-      
-      for (const input of fileInputs) {
-        const wrap = input.parentNode.parentNode; // Get the field wrapper
-        if (wrap.style.display !== 'none' && input.hasAttribute('required')) {
-          if (!input.files || input.files.length === 0) {
-            showFileError(input, 'This document is required.');
-            filesValid = false;
-          } else {
-            // Re-validate file type
-            const event = { target: input };
-            if (!validateFileType(event)) {
+      try {
+        // Show loading state
+        generateBtn.disabled = true;
+        generateBtnText.textContent = 'Generating...';
+        generateBtnSpinner.style.display = 'inline-block';
+        
+        // Validate required fields
+        const name = document.getElementById('enqName').value.trim();
+        const email = document.getElementById('enqEmail').value.trim();
+        const mobile = document.getElementById('enqMobile').value.trim();
+        const refNameVal = document.getElementById('refName').value.trim();
+        const refMobileVal = document.getElementById('refMobile').value.trim();
+        
+        // Validate all visible file inputs
+        const fileInputs = dscForm.querySelectorAll('input[type="file"]');
+        let filesValid = true;
+        
+        for (const input of fileInputs) {
+          const wrap = input.parentNode.parentNode; // Get the field wrapper
+          if (wrap.style.display !== 'none' && input.hasAttribute('required')) {
+            if (!input.files || input.files.length === 0) {
+              showFileError(input, 'This document is required.');
               filesValid = false;
+            } else {
+              // Re-validate file type
+              const event = { target: input };
+              if (!validateFileType(event)) {
+                filesValid = false;
+              }
             }
           }
         }
-      }
-      
-      if (!filesValid) {
-        enqMsg.textContent = 'Please fix file upload errors before submitting.';
-        enqMsg.className = 'alert alert-danger mt-3';
-        return;
-      }
-      
-      // Toggle required on visible document fields
-      const docFields = ['doc_pan','doc_aadhar','doc_gst','doc_photo','doc_auth','doc_orgpan','doc_ifc'];
-      docFields.forEach(id=>{
-        const fieldWrap = document.getElementById(id.replace('doc_','field_'));
-        const input = document.getElementById(id);
-        if(fieldWrap && input){
-          const isVisible = fieldWrap.style.display !== 'none';
-          if(isVisible){ input.setAttribute('required','required'); } else { input.removeAttribute('required'); }
+        
+        if (!filesValid) {
+          enqMsg.textContent = 'Please fix file upload errors before submitting.';
+          enqMsg.className = 'alert alert-danger mt-3';
+          enqMsg.style.display = 'block';
+          return;
         }
-      });
-
-      // Basic check for required text fields
-      if(!name || !email || !mobile || !refNameVal || !refMobileVal){
-        enqMsg.textContent = 'Please fill out all required fields (Name, Email, Mobile, Reference Name, Reference Mobile).';
-        enqMsg.className = 'alert alert-danger mt-3';
-        return;
-      }
-      
-      // Update hidden fields with current state
-      document.getElementById('classTypeField').value = state.classType;
-      document.getElementById('userTypeField').value = state.userType;
-      document.getElementById('certTypeField').value = state.certType;
-      document.getElementById('validityField').value = state.validity;
-      document.getElementById('includeTokenField').value = !!(tokenCheckbox && tokenCheckbox.checked);
-      document.getElementById('includeInstallField').value = !!(installCheckbox && installCheckbox.checked);
-      document.getElementById('outsideIndiaField').value = false;
-      
-      // Compute current quoted price number from UI text (safe fallback)
-      const totalStr = priceEl.textContent.replace(/[^0-9.]/g,'');
-      const quoted = parseFloat(totalStr || '0') || 0;
-      document.getElementById('quotedPriceField').value = quoted;
-      
-      // Add submission type to form data
-      const formData = new FormData(dscForm);
-      formData.append('submission_type', submissionType);
-      try{
-        console.log('[DSC] form submit', {
-          submissionType,
-          state: { classType: state.classType, userType: state.userType, certType: state.certType, validity: state.validity },
-          quoted,
-          include_token: !!(tokenCheckbox && tokenCheckbox.checked),
-          include_installation: !!(installCheckbox && installCheckbox.checked)
+        
+        // Toggle required on visible document fields
+        const docFields = ['doc_pan','doc_aadhar','doc_gst','doc_photo','doc_auth','doc_orgpan','doc_ifc'];
+        docFields.forEach(id=>{
+          const fieldWrap = document.getElementById(id.replace('doc_','field_'));
+          const input = document.getElementById(id);
+          if(fieldWrap && input){
+            const isVisible = fieldWrap.style.display !== 'none';
+            if(isVisible){ input.setAttribute('required','required'); } else { input.removeAttribute('required'); }
+          }
         });
-      }catch(_e){}
-      
-      try{
+
+        // Basic check for required text fields
+        if(!name || !email || !mobile || !refNameVal || !refMobileVal){
+          enqMsg.textContent = 'Please fill out all required fields (Name, Email, Mobile, Reference Name, Reference Mobile).';
+          enqMsg.className = 'alert alert-danger mt-3';
+          enqMsg.style.display = 'block';
+          return;
+        }
+        
+        // Update hidden fields with current state
+        document.getElementById('classTypeField').value = state.classType;
+        document.getElementById('userTypeField').value = state.userType;
+        document.getElementById('certTypeField').value = state.certType;
+        document.getElementById('validityField').value = state.validity;
+        document.getElementById('includeTokenField').value = (tokenCheckbox && tokenCheckbox.checked) ? 'on' : '';
+        document.getElementById('includeInstallField').value = (installCheckbox && installCheckbox.checked) ? 'on' : '';
+        document.getElementById('outsideIndiaField').value = '';
+        
+        // Compute current quoted price number from UI text (safe fallback)
+        const totalStr = priceEl.textContent.replace(/[^0-9.]/g,'');
+        const quoted = parseFloat(totalStr || '0') || 0;
+        document.getElementById('quotedPriceField').value = quoted;
+        
+        // Add submission type to form data
+        const formData = new FormData(dscForm);
+        formData.append('submission_type', 'purchase');
+        
+        try{
+          console.log('[DSC] form submit', {
+            submissionType: 'purchase',
+            state: { classType: state.classType, userType: state.userType, certType: state.certType, validity: state.validity },
+            quoted,
+            include_token: !!(tokenCheckbox && tokenCheckbox.checked),
+            include_installation: !!(installCheckbox && installCheckbox.checked)
+          });
+        }catch(_e){}
+        
+        // Check if form is valid before submission
+        console.log('=== Form Validation Check ===');
+        console.log('Form valid:', isFormValid());
+        
+        // Log individual field values for debugging
+        console.log('Name:', document.getElementById('enqName')?.value);
+        console.log('Email:', document.getElementById('enqEmail')?.value);
+        console.log('Mobile:', document.getElementById('enqMobile')?.value);
+        console.log('Reference Name:', document.getElementById('refName')?.value);
+        console.log('Reference Mobile:', document.getElementById('refMobile')?.value);
+        
+        // Submit form and generate proforma invoice
+        console.log('Submitting form to /dsc/submit/');
+        console.log('Form data entries:', Array.from(formData.entries()));
+        
+        // Check if form data has required fields
+        const hasName = formData.has('name');
+        const hasEmail = formData.has('email');
+        const hasMobile = formData.has('mobile');
+        console.log('Required fields check:', { hasName, hasEmail, hasMobile });
+        
         const resp = await fetch('/dsc/submit/', {
           method: 'POST',
           headers: { 'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || '' },
@@ -1330,17 +1429,22 @@
         }
         
         const data = await resp.json();
+        console.log('Form submission response:', data);
         if(data.success){
-          if(submissionType === 'enquiry'){
-            enqMsg.textContent = 'Enquiry submitted successfully! We will contact you soon.';
-            enqMsg.className = 'alert alert-success mt-3';
-          } else {
-            enqMsg.textContent = 'Purchase request submitted successfully! Please complete the payment to proceed.';
-            enqMsg.className = 'alert alert-success mt-3';
-          }
+          // Show success message in modal
+          document.getElementById('successMessage').style.display = 'block';
+          document.getElementById('quoteIdDisplay').textContent = data.submission_id;
+          console.log('Submission ID set to:', data.submission_id);
           
+          // Generate proforma invoice content
+          const piContent = generatePIContent();
+          document.getElementById('piContent').innerHTML = piContent;
           
-          // Clear form
+          // Show modal
+          const modal = new bootstrap.Modal(document.getElementById('piModal'));
+          modal.show();
+          
+          // Clear form after successful submission
           dscForm.reset();
           
           // Clear file inputs
@@ -1355,13 +1459,14 @@
         }
       } catch(err){
         console.error('Submission error:', err);
-        enqMsg.textContent = `Failed to submit ${submissionType}. Please try again. Error: ${err.message}`;
+        enqMsg.textContent = `Failed to submit form. Please try again. Error: ${err.message}`;
         enqMsg.className = 'alert alert-danger mt-3';
-      }
-      finally {
-        // restore button state
-        submitButton.innerHTML = originalHTML;
-        updateCTAEnabled();
+        enqMsg.style.display = 'block';
+      } finally {
+        // Reset button state
+        generateBtn.disabled = false;
+        generateBtnText.textContent = 'Generate Proforma Invoice';
+        generateBtnSpinner.style.display = 'none';
       }
     });
   }
@@ -1803,8 +1908,17 @@
           }
         };
         
-        const rzp = new Razorpay(options);
-        rzp.open();
+                    console.log('Razorpay options:', options);
+            console.log('Razorpay object available:', typeof Razorpay);
+            
+            if (typeof Razorpay === 'undefined') {
+              alert('Razorpay is not loaded. Please refresh the page and try again.');
+              return;
+            }
+            
+            const rzp = new Razorpay(options);
+            console.log('Razorpay instance created:', rzp);
+            rzp.open();
         
       } catch(err){
         enqMsg.textContent = `Payment initialization failed: ${err.message}`;
@@ -1831,9 +1945,288 @@
     });
   }, { rootMargin: '0px 0px -10% 0px', threshold: 0.1 });
   revealEls.forEach(el=> io.observe(el));
+
+  // Proforma Invoice functionality
+  function generatePIContent() {
+    console.log('Generating PI content...');
+    
+    const customerName = document.getElementById('enqName').value;
+    const companyName = document.getElementById('enqCompany').value;
+    const mobile = document.getElementById('enqMobile').value;
+    const email = document.getElementById('enqEmail').value;
+    const gstNumber = document.getElementById('enqGst').value;
+    const address = document.getElementById('enqAddress').value;
+    const referenceName = document.getElementById('refName').value;
+    const referenceContact = document.getElementById('refMobile').value;
+    
+    // Get pricing data from current state
+    const totalStr = priceEl.textContent.replace(/[^0-9.]/g,'');
+    const totalAmount = parseFloat(totalStr || '0') || 0;
+    
+    // Calculate GST (assuming 18% for DSC)
+    const gstRate = 18;
+    const basicAmount = totalAmount / (1 + (gstRate / 100));
+    const gstAmount = totalAmount - basicAmount;
+    
+    const productName = `DSC ${state.classType.toUpperCase()} - ${state.userType} - ${state.certType} - ${state.validity}`;
+    
+    return `
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-12">
+            <div class="text-center mb-4">
+              <h4 class="text-primary fw-bold">PROFORMA INVOICE</h4>
+              <p class="text-muted mb-0">FUSIONTEC SOFTWARE</p>
+            </div>
+            
+            <div class="row mb-4">
+              <div class="col-md-6">
+                <h6 class="fw-bold text-secondary">Seller:</h6>
+                <p class="mb-1"><strong>FUSIONTEC SOFTWARE</strong></p>
+                <p class="mb-1">Suite No 17A, 2nd Floor, Crescent Court</p>
+                <p class="mb-1">Door No 963 EVR Periyar Salai, Flowers Road Post</p>
+                <p class="mb-1">Chennai -600 084</p>
+                <p class="mb-1">GSTIN/UIN: 33AABFF1764F1ZU</p>
+                <p class="mb-1">State Name : Tamil Nadu, Code : 33</p>
+                <p class="mb-1">Contact : 04446072076 / 98416 99963 / 98416 34345</p>
+                <p class="mb-1">E-Mail : dsc@fusiontec.com</p>
+              </div>
+              <div class="col-md-6">
+                <h6 class="fw-bold text-secondary">Bill To:</h6>
+                <p class="mb-1"><strong>${customerName}</strong></p>
+                ${companyName ? `<p class="mb-1">${companyName}</p>` : ''}
+                <p class="mb-1">Mobile: ${mobile}</p>
+                <p class="mb-1">Email: ${email}</p>
+                ${address ? `<p class="mb-1">Address: ${address}</p>` : ''}
+                ${gstNumber ? `<p class="mb-1">GST: ${gstNumber}</p>` : ''}
+                <p class="mb-1">Reference Name: ${referenceName}</p>
+                <p class="mb-1">Reference Mobile: ${referenceContact}</p>
+              </div>
+            </div>
+            
+            <div class="row mb-3">
+              <div class="col-12 text-end">
+                <h6 class="fw-bold text-secondary">Invoice Details:</h6>
+                <p class="mb-1">Date: ${new Date().toLocaleDateString()}</p>
+                <p class="mb-1">Invoice #: PI-${Date.now()}</p>
+              </div>
+            </div>
+            
+            <div class="table-responsive">
+              <table class="table table-bordered">
+                <thead class="table-light">
+                  <tr>
+                    <th>Description</th>
+                    <th class="text-center">Amount</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>${productName}</td>
+                    <td class="text-end">₹${basicAmount.toFixed(2)}</td>
+                  </tr>
+                  <tr>
+                    <td>GST (${gstRate}%)</td>
+                    <td class="text-end">₹${gstAmount.toFixed(2)}</td>
+                  </tr>
+                  <tr class="table-active fw-bold">
+                    <td>Total</td>
+                    <td class="text-end">₹${totalAmount.toFixed(2)}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            
+
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // Modal button functionality
+  document.addEventListener('DOMContentLoaded', function() {
+    // Download PDF button
+    const downloadPiBtn = document.getElementById('downloadPiBtn');
+    console.log('Download button element:', downloadPiBtn);
+    if (downloadPiBtn) {
+      console.log('Adding click event listener to download button');
+      downloadPiBtn.addEventListener('click', function() {
+        console.log('Download PDF button clicked');
+        
+        // Get form data from the modal content or stored values
+        let customerName, companyName, mobile, email, gstNumber, address, referenceName, referenceContact;
+        let quotedPrice = 0;
+        
+        // Extract data from modal content since form is reset after submission
+        try {
+          const modalContent = document.getElementById('piContent');
+          if (modalContent) {
+            // Extract customer name from modal
+            const customerNameEl = modalContent.querySelector('.col-md-6:last-child p:first-of-type strong');
+            if (customerNameEl) {
+              customerName = customerNameEl.textContent.trim();
+            }
+            
+            // Extract company name
+            const companyNameEl = modalContent.querySelector('.col-md-6:last-child p:nth-of-type(2)');
+            if (companyNameEl && companyNameEl.textContent.trim() && !companyNameEl.textContent.includes('Mobile:')) {
+              companyName = companyNameEl.textContent.trim();
+            }
+            
+            // Extract mobile
+            const allP = modalContent.querySelectorAll('.col-md-6:last-child p');
+            for (let p of allP) {
+              if (p.textContent.includes('Mobile:')) {
+                mobile = p.textContent.replace('Mobile:', '').trim();
+                break;
+              }
+            }
+            
+            // Extract email
+            for (let p of allP) {
+              if (p.textContent.includes('Email:')) {
+                email = p.textContent.replace('Email:', '').trim();
+                break;
+              }
+            }
+            
+            // Extract address
+            for (let p of allP) {
+              if (p.textContent.includes('Address:')) {
+                address = p.textContent.replace('Address:', '').trim();
+                break;
+              }
+            }
+            
+            // Extract GST
+            for (let p of allP) {
+              if (p.textContent.includes('GST:')) {
+                gstNumber = p.textContent.replace('GST:', '').trim();
+                break;
+              }
+            }
+            
+            // Extract reference name
+            for (let p of allP) {
+              if (p.textContent.includes('Reference Name:')) {
+                referenceName = p.textContent.replace('Reference Name:', '').trim();
+                break;
+              }
+            }
+            
+            // Extract reference mobile
+            for (let p of allP) {
+              if (p.textContent.includes('Reference Mobile:')) {
+                referenceContact = p.textContent.replace('Reference Mobile:', '').trim();
+                break;
+              }
+            }
+            
+            // Get price from price display
+            const totalStr = document.getElementById('priceValue')?.textContent?.replace(/[^0-9.]/g,'') || '0';
+            quotedPrice = parseFloat(totalStr) || 0;
+            
+            console.log('Data extracted from modal:', {
+              customerName, companyName, mobile, email, gstNumber, address, 
+              referenceName, referenceContact, quotedPrice
+            });
+          }
+        } catch (e) {
+          console.error('Error extracting data from modal:', e);
+        }
+        
+        // Fallback values if still no data
+        if (!customerName) customerName = 'Customer';
+        if (!email) email = 'customer@example.com';
+        if (!mobile) mobile = 'N/A';
+        if (!referenceName) referenceName = 'N/A';
+        if (!referenceContact) referenceContact = 'N/A';
+        
+        console.log('Final data for PDF:', {
+          customerName, companyName, mobile, email, gstNumber, address, 
+          referenceName, referenceContact, quotedPrice,
+          classType: state.classType,
+          userType: state.userType,
+          certType: state.certType,
+          validity: state.validity
+        });
+
+        // Get CSRF token
+        let csrfToken = '';
+        try {
+          // Try multiple ways to get CSRF token
+          csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || 
+                     document.querySelector('meta[name=csrf-token]')?.content ||
+                     document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1] || '';
+        } catch (e) {
+          console.error('Error getting CSRF token:', e);
+        }
+        
+        console.log('CSRF Token:', csrfToken ? 'Found' : 'Not found');
+        
+        // Call the API to generate PDF using the same template as email
+        fetch('/api/dsc-download-pdf/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken
+          },
+          body: JSON.stringify({
+            customer_name: customerName,
+            company_name: companyName || '',
+            mobile: mobile,
+            email: email,
+            address: address || '',
+            gst_number: gstNumber || '',
+            reference_name: referenceName || '',
+            reference_contact: referenceContact || '',
+            class_type: state.classType || 'class3',
+            user_type: state.userType || 'individual',
+            cert_type: state.certType || 'signature',
+            validity: state.validity || '2y',
+            include_token: !!(tokenCheckbox && tokenCheckbox.checked),
+            include_installation: !!(installCheckbox && installCheckbox.checked),
+            quoted_price: quotedPrice.toString(),
+            submission_id: document.getElementById('quoteIdDisplay')?.textContent || Date.now()
+          })
+        })
+        .then(response => {
+          console.log('PDF API response status:', response.status);
+          if (response.ok) {
+            return response.blob();
+          }
+          return response.text().then(text => {
+            console.error('PDF API error response:', text);
+            throw new Error(`Failed to generate PDF: ${response.status} ${response.statusText}`);
+          });
+        })
+        .then(blob => {
+          console.log('PDF blob received, size:', blob.size);
+          // Create download link
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `DSC_Proforma_Invoice_${Date.now()}.pdf`;
+          document.body.appendChild(a);
+          a.click();
+          window.URL.revokeObjectURL(url);
+          document.body.removeChild(a);
+          console.log('PDF download initiated');
+        })
+        .catch(error => {
+          console.error('Error downloading PDF:', error);
+          alert('Failed to download PDF. Please try again. Error: ' + error.message);
+        });
+      });
+    }
+
+
+  });
 })();
 </script>
 
-<!-- Razorpay Script -->
-<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<!-- Required Scripts -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.3/jspdf.plugin.autotable.min.js"></script>
 {% endblock %}

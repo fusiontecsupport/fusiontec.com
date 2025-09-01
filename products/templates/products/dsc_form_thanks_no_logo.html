@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>DSC {{ submission_type }} Submission - Fusiontec</title>
+    <style>
+        /* Reset styles for email clients */
+        body, table, td, p, a, li, blockquote {
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+        }
+        table, td {
+            mso-table-lspace: 0pt;
+            mso-table-rspace: 0pt;
+        }
+        img {
+            -ms-interpolation-mode: bicubic;
+            border: 0;
+            outline: none;
+            text-decoration: none;
+        }
+        
+        /* Base styles */
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 16px;
+            line-height: 1.6;
+            color: #333333;
+        }
+        
+        /* Container */
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Header - No logo version */
+        .email-header {
+            background: linear-gradient(135deg, #1f3c88 0%, #2563eb 100%);
+            padding: 30px 20px;
+            text-align: center;
+            color: #ffffff;
+        }
+        
+        .company-name {
+            font-size: 28px;
+            font-weight: 700;
+            margin: 0;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        .company-tagline {
+            font-size: 16px;
+            font-weight: 400;
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+        }
+        
+        /* Content */
+        .email-content {
+            padding: 40px 30px;
+        }
+        
+        .content-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1f3c88;
+            margin: 0 0 10px 0;
+            text-align: center;
+        }
+        
+        .content-subtitle {
+            font-size: 16px;
+            color: #6c757d;
+            margin: 0 0 30px 0;
+            text-align: center;
+        }
+        
+        .info-card {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 25px;
+            margin: 20px 0;
+            border-left: 4px solid #1f3c88;
+        }
+        
+        .info-card h3 {
+            color: #1f3c88;
+            font-size: 18px;
+            font-weight: 600;
+            margin: 0 0 15px 0;
+        }
+        
+        .info-card p {
+            margin: 0 0 10px 0;
+            color: #495057;
+        }
+        
+        /* Buttons */
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #1f3c88 0%, #2563eb 100%);
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 500;
+            margin: 5px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* Footer */
+        .email-footer {
+            background: #2c3e50;
+            color: #ffffff;
+            text-align: center;
+            padding: 25px 20px;
+        }
+        
+        .footer-text {
+            margin: 0;
+            color: #bdc3c7;
+            font-size: 14px;
+        }
+        
+        /* Responsive */
+        @media only screen and (max-width: 600px) {
+            .email-container {
+                margin: 0;
+                box-shadow: none;
+            }
+            
+            .email-content {
+                padding: 20px 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <!-- Header - No Logo -->
+        <div class="email-header">
+            <h1 class="company-name">Fusiontec</h1>
+            <p class="company-tagline">Your Trusted Technology Partner</p>
+        </div>
+        
+        <!-- Content -->
+        <div class="email-content">
+            <div style="text-align: center; margin-bottom: 30px;">
+                <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #198754 0%, #20c997 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+                    <span style="color: white; font-size: 40px;">✓</span>
+                </div>
+                <h2 style="margin: 0 0 10px 0; color: #198754; font-size: 22px;">Submission Successful!</h2>
+                <p style="margin: 0; color: #6c757d; font-size: 16px;">
+                    Dear {{ customer_name }},<br>
+                    We have successfully received your Digital Signature Certificate {{ submission_type|lower }}.
+                </p>
+            </div>
+
+            <!-- Submission Details -->
+            <div class="info-card">
+                <h3>📋 Submission Summary</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 14px;">
+                    <div>
+                        <strong>Submission ID:</strong><br>
+                        <span style="color: #6c757d;">#{{ submission.id }}</span>
+                    </div>
+                    <div>
+                        <strong>Type:</strong><br>
+                        <span style="color: #6c757d;">{{ submission_type }}</span>
+                    </div>
+                    <div>
+                        <strong>DSC Class:</strong><br>
+                        <span style="color: #6c757d;">{{ submission.class_type|upper }}</span>
+                    </div>
+                    <div>
+                        <strong>Validity:</strong><br>
+                        <span style="color: #6c757d;">{{ submission.validity }}</span>
+                    </div>
+                    <div>
+                        <strong>Quoted Price:</strong><br>
+                        <span style="color: #198754; font-weight: 600;">₹{{ submission.quoted_price|floatformat:2 }}</span>
+                    </div>
+                    <div>
+                        <strong>Date:</strong><br>
+                        <span style="color: #6c757d;">{{ submission.created_at|date:"d M Y, h:i A" }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Next Steps -->
+            <div style="background-color: #e7f3ff; border: 1px solid #b3d9ff; border-radius: 6px; padding: 20px; margin-bottom: 25px;">
+                <h3 style="margin: 0 0 15px 0; color: #0d6efd; font-size: 18px;">🚀 What Happens Next?</h3>
+                {% if submission_type == 'Enquiry' %}
+                <div style="font-size: 14px; color: #0d6efd;">
+                    <p style="margin: 0 0 10px 0;"><strong>For Enquiry Submissions:</strong></p>
+                    <ul style="margin: 0; padding-left: 20px;">
+                        <li>Our DSC experts will review your requirements within 24 hours</li>
+                        <li>We'll contact you to discuss your specific needs</li>
+                        <li>You'll receive a detailed quote with all applicable charges</li>
+                        <li>We'll guide you through the complete process</li>
+                    </ul>
+                </div>
+                {% else %}
+                <div style="font-size: 14px; color: #0d6efd;">
+                    <p style="margin: 0 0 10px 0;"><strong>For Purchase Submissions:</strong></p>
+                    <ul style="margin: 0; padding-left: 20px;">
+                        <li>Our team will verify your submitted documents</li>
+                        <li>We'll process your payment and create your DSC order</li>
+                        <li>You'll receive payment confirmation and order details</li>
+                        <li>We'll coordinate with you for document verification and issuance</li>
+                    </ul>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Contact Information -->
+            <div class="info-card">
+                <h3>📞 Need Help?</h3>
+                <div style="font-size: 14px; color: #6c757d;">
+                    <p style="margin: 0 0 10px 0;">Our dedicated DSC team is here to assist you:</p>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div>
+                            <strong>Email:</strong><br>
+                            <a href="mailto:dsc@fusiontec.com" style="color: #0d6efd; text-decoration: none;">dsc@fusiontec.com</a>
+                        </div>
+                        <div>
+                            <strong>Phone Numbers:</strong><br>
+                            <a href="tel:+919841634345" style="color: #0d6efd; text-decoration: none;">+91 98416 34345</a><br>
+                            <a href="tel:+919841699963" style="color: #0d6efd; text-decoration: none;">+91 98416 99963</a>
+                        </div>
+                    </div>
+                    <p style="margin: 15px 0 0 0; font-size: 12px;">
+                        <strong>Response Time:</strong> We typically respond within 2-4 hours during business hours.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Important Notes -->
+            <div style="background-color: #fff3cd; border: 1px solid #ffeaa7; border-radius: 6px; padding: 20px; margin-bottom: 25px;">
+                <h3 style="margin: 0 0 15px 0; color: #856404; font-size: 18px;">📝 Important Information</h3>
+                <div style="font-size: 14px; color: #856404;">
+                    <ul style="margin: 0; padding-left: 20px;">
+                        <li>Please keep this email for your records</li>
+                        <li>Your submission ID: <strong>#{{ submission.id }}</strong></li>
+                        <li>All communications will reference this ID</li>
+                        <li>Documents submitted are securely stored and encrypted</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 30px;">
+                <a href="https://fusiontec.com" class="btn">Visit Our Website</a>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="email-footer">
+            <p class="footer-text">
+                Thank you for choosing FusionTec for your Digital Signature Certificate needs.<br>
+                <strong>Submission ID:</strong> #{{ submission.id }} | <strong>Date:</strong> {{ submission.created_at|date:"d M Y, h:i A" }}
+            </p>
+        </div>
+    </div>
+</body>
+</html>
+
+

@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>DSC {{ submission_type }} Submission - Fusiontec</title>
+    <style>
+        /* Reset styles for email clients */
+        body, table, td, p, a, li, blockquote {
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+        }
+        table, td {
+            mso-table-lspace: 0pt;
+            mso-table-rspace: 0pt;
+        }
+        img {
+            -ms-interpolation-mode: bicubic;
+            border: 0;
+            outline: none;
+            text-decoration: none;
+        }
+        
+        /* Base styles */
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 16px;
+            line-height: 1.6;
+            color: #333333;
+        }
+        
+        /* Container */
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Header - No logo version */
+        .email-header {
+            background: linear-gradient(135deg, #1f3c88 0%, #2563eb 100%);
+            padding: 30px 20px;
+            text-align: center;
+            color: #ffffff;
+        }
+        
+        .company-name {
+            font-size: 28px;
+            font-weight: 700;
+            margin: 0;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        .company-tagline {
+            font-size: 16px;
+            font-weight: 400;
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+        }
+        
+        /* Content */
+        .email-content {
+            padding: 40px 30px;
+        }
+        
+        .content-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1f3c88;
+            margin: 0 0 10px 0;
+            text-align: center;
+        }
+        
+        .content-subtitle {
+            font-size: 16px;
+            color: #6c757d;
+            margin: 0 0 30px 0;
+            text-align: center;
+        }
+        
+        .info-card {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 25px;
+            margin: 20px 0;
+            border-left: 4px solid #1f3c88;
+        }
+        
+        .info-card h3 {
+            color: #1f3c88;
+            font-size: 18px;
+            font-weight: 600;
+            margin: 0 0 15px 0;
+        }
+        
+        .info-card p {
+            margin: 0 0 10px 0;
+            color: #495057;
+        }
+        
+        /* Footer */
+        .email-footer {
+            background: #2c3e50;
+            color: #ffffff;
+            text-align: center;
+            padding: 25px 20px;
+        }
+        
+        .footer-text {
+            margin: 0;
+            color: #bdc3c7;
+            font-size: 14px;
+        }
+        
+        /* Responsive */
+        @media only screen and (max-width: 600px) {
+            .email-container {
+                margin: 0;
+                box-shadow: none;
+            }
+            
+            .email-content {
+                padding: 20px 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <!-- Header - No Logo -->
+        <div class="email-header">
+            <h1 class="company-name">Fusiontec</h1>
+            <p class="company-tagline">Your Trusted Technology Partner</p>
+        </div>
+        
+        <!-- Content -->
+        <div class="email-content">
+            <h1 class="content-title">DSC {{ submission_type }} Submission</h1>
+            <p class="content-subtitle">New Digital Signature Certificate {{ submission_type|lower }} received</p>
+
+            <div class="info-card">
+                <h3>📋 Submission Details</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 14px;">
+                    <div>
+                        <strong>Submission ID:</strong><br>
+                        <span style="color: #6c757d;">#{{ submission.id }}</span>
+                    </div>
+                    <div>
+                        <strong>Submission Type:</strong><br>
+                        <span style="color: #6c757d;">{{ submission_type }}</span>
+                    </div>
+                    <div>
+                        <strong>Date:</strong><br>
+                        <span style="color: #6c757d;">{{ submission.created_at|date:"d M Y, h:i A" }}</span>
+                    </div>
+                    <div>
+                        <strong>Status:</strong><br>
+                        <span style="color: #6c757d;">{{ submission.status|title }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Customer Information -->
+            <div class="info-card">
+                <h3>👤 Customer Information</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 14px;">
+                    <div>
+                        <strong>Name:</strong><br>
+                        <span style="color: #6c757d;">{{ submission.name }}</span>
+                    </div>
+                    <div>
+                        <strong>Email:</strong><br>
+                        <span style="color: #6c757d;">{{ submission.email }}</span>
+                    </div>
+                    <div>
+                        <strong>Mobile:</strong><br>
+                        <span style="color: #6c757d;">{{ submission.mobile }}</span>
+                    </div>
+                    <div>
+                        <strong>Company:</strong><br>
+                        <span style="color: #6c757d;">{{ submission.company_name|default:"Not provided" }}</span>
+                    </div>
+                    {% if submission.gst_number %}
+                    <div>
+                        <strong>GST Number:</strong><br>
+                        <span style="color: #6c757d;">{{ submission.gst_number }}</span>
+                    </div>
+                    {% endif %}
+                    {% if submission.address %}
+                    <div>
+                        <strong>Address:</strong><br>
+                        <span style="color: #6c757d;">{{ submission.address }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Reference Information -->
+            {% if submission.reference_name or submission.reference_contact %}
+            <div class="info-card">
+                <h3>📞 Reference Information</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 14px;">
+                    {% if submission.reference_name %}
+                    <div>
+                        <strong>Reference Name:</strong><br>
+                        <span style="color: #6c757d;">{{ submission.reference_name }}</span>
+                    </div>
+                    {% endif %}
+                    {% if submission.reference_contact %}
+                    <div>
+                        <strong>Reference Contact:</strong><br>
+                        <span style="color: #6c757d;">{{ submission.reference_contact }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- DSC Configuration -->
+            <div class="info-card">
+                <h3>🔐 DSC Configuration</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 14px;">
+                    <div>
+                        <strong>Class Type:</strong><br>
+                        <span style="color: #6c757d;">{{ submission.class_type|upper }}</span>
+                    </div>
+                    <div>
+                        <strong>User Type:</strong><br>
+                        <span style="color: #6c757d;">{{ submission.user_type|title }}</span>
+                    </div>
+                    <div>
+                        <strong>Certificate Type:</strong><br>
+                        <span style="color: #6c757d;">{{ submission.cert_type|title }}</span>
+                    </div>
+                    <div>
+                        <strong>Validity:</strong><br>
+                        <span style="color: #6c757d;">{{ submission.validity }}</span>
+                    </div>
+                    <div>
+                        <strong>Include Token:</strong><br>
+                        <span style="color: #6c757d;">{{ submission.include_token|yesno:"Yes,No" }}</span>
+                    </div>
+                    <div>
+                        <strong>Include Installation:</strong><br>
+                        <span style="color: #6c757d;">{{ submission.include_installation|yesno:"Yes,No" }}</span>
+                    </div>
+                    <div>
+                        <strong>Outside India:</strong><br>
+                        <span style="color: #6c757d;">{{ submission.outside_india|yesno:"Yes,No" }}</span>
+                    </div>
+                    <div>
+                        <strong>Quoted Price:</strong><br>
+                        <span style="color: #6c757d;">₹{{ submission.quoted_price|floatformat:2 }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Document Uploads -->
+            {% if submission.pan_copy or submission.aadhar_copy or submission.photo or submission.gst_certificate or submission.authorization_letter or submission.company_pan or submission.ifc_certificate %}
+            <div class="info-card">
+                <h3>📎 Uploaded Documents</h3>
+                <div style="font-size: 14px;">
+                    {% if submission.pan_copy %}
+                    <div style="margin-bottom: 8px;">
+                        <strong>PAN Card:</strong> ✅ Uploaded
+                    </div>
+                    {% endif %}
+                    {% if submission.aadhar_copy %}
+                    <div style="margin-bottom: 8px;">
+                        <strong>Aadhar Card:</strong> ✅ Uploaded
+                    </div>
+                    {% endif %}
+                    {% if submission.photo %}
+                    <div style="margin-bottom: 8px;">
+                        <strong>Photo:</strong> ✅ Uploaded
+                    </div>
+                    {% endif %}
+                    {% if submission.gst_certificate %}
+                    <div style="margin-bottom: 8px;">
+                        <strong>GST Certificate:</strong> ✅ Uploaded
+                    </div>
+                    {% endif %}
+                    {% if submission.authorization_letter %}
+                    <div style="margin-bottom: 8px;">
+                        <strong>Authorization Letter:</strong> ✅ Uploaded
+                    </div>
+                    {% endif %}
+                    {% if submission.company_pan %}
+                    <div style="margin-bottom: 8px;">
+                        <strong>Company PAN:</strong> ✅ Uploaded
+                    </div>
+                    {% endif %}
+                    {% if submission.ifc_certificate %}
+                    <div style="margin-bottom: 8px;">
+                        <strong>IFC Certificate:</strong> ✅ Uploaded
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Action Required -->
+            <div style="background-color: #fff3cd; border: 1px solid #ffeaa7; border-radius: 6px; padding: 20px; margin-bottom: 25px;">
+                <h3 style="margin: 0 0 15px 0; color: #856404; font-size: 18px;">⚠️ Action Required</h3>
+                <p style="margin: 0; color: #856404; font-size: 14px;">
+                    {% if submission_type == 'Enquiry' %}
+                    This is an enquiry submission. Please contact the customer to discuss requirements and provide a detailed quote.
+                    {% else %}
+                    This is a purchase submission. Please process the order and coordinate with the customer for payment completion.
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="email-footer">
+            <p class="footer-text">
+                This email was sent from the FusionTec DSC form system.<br>
+                Submission ID: #{{ submission.id }} | Date: {{ submission.created_at|date:"d M Y, h:i A" }}
+            </p>
+        </div>
+    </div>
+</body>
+</html>
+
+

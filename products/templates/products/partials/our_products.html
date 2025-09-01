@@ -100,6 +100,14 @@
         gap: 1rem !important;
       }
 
+      /* Error message styling */
+      .error-message {
+        color: #dc3545;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+        font-weight: 500;
+      }
+
       #products .product-card .btn,
       #products .product-type-card .btn {
         flex: 1;
@@ -445,7 +453,8 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label class="form-label fw-semibold">Mobile Number *</label>
-                                    <input type="tel" name="mobile" class="form-control" placeholder="Enter mobile number" required>
+                                    <input type="tel" name="mobile" id="productMobile" class="form-control" placeholder="Enter mobile number" maxlength="10" pattern="[0-9]*" inputmode="numeric" required>
+                                    <div class="error-message" id="error-productMobile"></div>
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -733,9 +742,46 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!form) return;
     const submitBtn = document.getElementById('quoteSubmitBtn');
     const msgEl = document.getElementById('quoteSuccessMsg');
+    const mobileInput = document.getElementById('productMobile');
+
+    // Mobile validation function
+    function validateMobileField(field, errorId) {
+        const value = field.value.trim();
+        const errorDiv = document.getElementById(errorId);
+        
+        // Remove non-numeric characters and limit to 10 digits
+        field.value = value.replace(/\D/g, '').slice(0, 10);
+        
+        if (!value) {
+            errorDiv.textContent = 'Mobile number is required';
+            return false;
+        } else if (!/^[6-9]\d{9}$/.test(field.value)) {
+            errorDiv.textContent = 'Enter a valid 10-digit mobile number starting with 6-9';
+            return false;
+        } else {
+            errorDiv.textContent = '';
+            return true;
+        }
+    }
+
+    // Add mobile validation event listeners
+    if (mobileInput) {
+        mobileInput.addEventListener('input', () => {
+            validateMobileField(mobileInput, 'error-productMobile');
+        });
+        mobileInput.addEventListener('blur', () => {
+            validateMobileField(mobileInput, 'error-productMobile');
+        });
+    }
 
     form.addEventListener('submit', async function(ev) {
         ev.preventDefault();
+        
+        // Validate mobile number before submission
+        if (mobileInput && !validateMobileField(mobileInput, 'error-productMobile')) {
+            return; // Stop submission if mobile is invalid
+        }
+        
         try {
             if (submitBtn) {
                 submitBtn.disabled = true;

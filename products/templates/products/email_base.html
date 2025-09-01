@@ -124,9 +124,10 @@
             background-color: #1f3c88;
             color: #ffffff;
             padding: 15px 12px;
-            text-align: left;
+            text-align: center;
             font-weight: 600;
             font-size: 14px;
+            vertical-align: middle;
         }
         
         .data-table td {
@@ -279,7 +280,7 @@
             {% if logo_cid %}
             <img src="cid:{{ logo_cid }}" alt="Fusiontec Logo" class="logo">
             {% else %}
-            <img src="{{ request.scheme|default:'https' }}://{{ request.get_host|default:'127.0.0.1:8000' }}{% static 'products/img/fusiontec.png' %}" alt="Fusiontec Logo" class="logo">
+            <img src="cid:fusiontec_logo" alt="Fusiontec Logo" class="logo">
             {% endif %}
             <h1 class="company-name">Fusiontec</h1>
             <p class="company-tagline">Your Trusted Technology Partner</p>
@@ -295,7 +296,7 @@
             <div class="footer-links">
                 <a href="https://fusiontec.com" target="_blank">Website</a>
                 <a href="mailto:support@fusiontec.com">Support</a>
-                <a href="tel:+919876543210">Call Us</a>
+                <a href="tel:+919841699963">Call Us</a>
             </div>
             <p class="footer-text">
                 © {% now "Y" %} Fusiontec Software. All rights reserved.<br>
