@@ -4228,125 +4228,170 @@ def edit_tally_product(request, product_id):
 
 @admin_required
 def edit_razorpay_info(request, info_id):
-    """Edit Razorpay payment info"""
-    from .models_old import RazorpayInfo
-    info = get_object_or_404(RazorpayInfo, id=info_id)
-    
+    """Edit Razorpay Settings (PaymentSettings model)."""
+    from .models import PaymentSettings
+    razorpay = get_object_or_404(PaymentSettings, id=info_id, setting_type='razorpay')
+
     if request.method == 'POST':
-        info.key_id = request.POST.get('key_id', '').strip()
-        info.key_secret = request.POST.get('key_secret', '').strip()
-        info.save()
-        messages.success(request, 'Razorpay info updated successfully.')
+        razorpay.title = request.POST.get('title', '').strip()
+        razorpay.description = request.POST.get('description', '').strip()
+        razorpay.payment_button_id = request.POST.get('payment_button_id', '').strip()
+        # Optional keys if later added to the form
+        razorpay.razorpay_key_id = request.POST.get('key_id', razorpay.razorpay_key_id or '').strip() or razorpay.razorpay_key_id
+        razorpay.razorpay_key_secret = request.POST.get('key_secret', razorpay.razorpay_key_secret or '').strip() or razorpay.razorpay_key_secret
+        razorpay.is_active = True
+        razorpay.save()
+        messages.success(request, 'Razorpay settings updated successfully.')
         return redirect('custom_admin_settings')
-    
-    context = {'info': info}
+
+    context = { 'razorpay_info': razorpay }
     return render(request, 'products/admin/edit_razorpay_info.html', context)
 
 @admin_required
 def add_razorpay_info(request):
-    """Add new Razorpay payment info"""
-    from .models_old import RazorpayInfo
-    
+    """Add new Razorpay Settings (PaymentSettings model)."""
+    from .models import PaymentSettings
+
     if request.method == 'POST':
-        key_id = request.POST.get('key_id', '').strip()
-        key_secret = request.POST.get('key_secret', '').strip()
-        
-        if not key_id or not key_secret:
-            messages.error(request, 'Both Key ID and Key Secret are required.')
+        title = request.POST.get('title', '').strip()
+        description = request.POST.get('description', '').strip()
+        payment_button_id = request.POST.get('payment_button_id', '').strip()
+
+        if not title or not description or not payment_button_id:
+            messages.error(request, 'Please fill Title, Description and Payment Button ID.')
             return redirect('add_razorpay_info')
-        
-        RazorpayInfo.objects.create(key_id=key_id, key_secret=key_secret)
-        messages.success(request, 'Razorpay info added successfully.')
+
+        # Ensure only one active Razorpay settings row
+        PaymentSettings.objects.filter(setting_type='razorpay').delete()
+        PaymentSettings.objects.create(
+            setting_type='razorpay',
+            title=title,
+            description=description,
+            payment_button_id=payment_button_id,
+            is_active=True,
+        )
+        messages.success(request, 'Razorpay settings added successfully.')
         return redirect('custom_admin_settings')
-    
+
     return render(request, 'products/admin/add_razorpay_info.html')
 
 @admin_required
 def edit_qr_info(request, info_id):
-    """Edit QR payment info"""
-    from .models_old import CompanyPaymentInfoQR
-    info = get_object_or_404(CompanyPaymentInfoQR, id=info_id)
-    
+    """Edit QR Code Settings (PaymentSettings model)."""
+    from .models import PaymentSettings
+    qr = get_object_or_404(PaymentSettings, id=info_id, setting_type='qr_code')
+
     if request.method == 'POST':
-        info.qr_code = request.FILES.get('qr_code') or info.qr_code
-        info.account_number = request.POST.get('account_number', '').strip()
-        info.ifsc_code = request.POST.get('ifsc_code', '').strip()
-        info.account_holder_name = request.POST.get('account_holder_name', '').strip()
-        info.save()
-        messages.success(request, 'QR info updated successfully.')
+        company_name = request.POST.get('company_name', '').strip()
+        upi_id = request.POST.get('upi_id', '').strip()
+        qr_file = request.FILES.get('qr_image')
+
+        if not all([company_name, upi_id]):
+            messages.error(request, 'Company Name and UPI ID are required.')
+            return redirect('edit_qr_info', info_id=qr.id)
+
+        qr.title = company_name
+        qr.upi_id = upi_id
+        if qr_file:
+            qr.qr_image = qr_file
+        qr.is_active = True
+        qr.save()
+        messages.success(request, 'QR code settings updated successfully.')
         return redirect('custom_admin_settings')
-    
-    context = {'info': info}
+
+    context = { 'qr_info': qr }
     return render(request, 'products/admin/edit_qr_info.html', context)
 
 @admin_required
 def add_qr_info(request):
-    """Add new QR payment info"""
-    from .models_old import CompanyPaymentInfoQR
-    
+    """Add QR Code Settings (PaymentSettings model)."""
+    from .models import PaymentSettings
+
     if request.method == 'POST':
-        qr_code = request.FILES.get('qr_code')
-        account_number = request.POST.get('account_number', '').strip()
-        ifsc_code = request.POST.get('ifsc_code', '').strip()
-        account_holder_name = request.POST.get('account_holder_name', '').strip()
-        
-        if not all([qr_code, account_number, ifsc_code, account_holder_name]):
+        company_name = request.POST.get('company_name', '').strip()
+        upi_id = request.POST.get('upi_id', '').strip()
+        qr_file = request.FILES.get('qr_image')
+
+        if not all([company_name, upi_id]):
             messages.error(request, 'All fields are required.')
             return redirect('add_qr_info')
-        
-        CompanyPaymentInfoQR.objects.create(
-            qr_code=qr_code,
-            account_number=account_number,
-            ifsc_code=ifsc_code,
-            account_holder_name=account_holder_name
+
+        # Keep only one active QR settings row
+        PaymentSettings.objects.filter(setting_type='qr_code').delete()
+        qr = PaymentSettings(
+            setting_type='qr_code',
+            title=company_name,
+            upi_id=upi_id,
+            is_active=True,
         )
-        messages.success(request, 'QR info added successfully.')
+        if qr_file:
+            qr.qr_image = qr_file
+        qr.save()
+        messages.success(request, 'QR code settings added successfully.')
         return redirect('custom_admin_settings')
-    
+
     return render(request, 'products/admin/add_qr_info.html')
 
 @admin_required
 def edit_bank_info(request, info_id):
-    """Edit bank transfer info"""
-    from .models_old import BankTransferInfo
-    info = get_object_or_404(BankTransferInfo, id=info_id)
-    
+    """Edit Bank Transfer Settings (PaymentSettings model)."""
+    from .models import PaymentSettings
+    bank = get_object_or_404(PaymentSettings, id=info_id, setting_type='bank_transfer')
+
     if request.method == 'POST':
-        info.bank_name = request.POST.get('bank_name', '').strip()
-        info.account_number = request.POST.get('account_number', '').strip()
-        info.ifsc_code = request.POST.get('ifsc_code', '').strip()
-        info.account_holder_name = request.POST.get('account_holder_name', '').strip()
-        info.save()
-        messages.success(request, 'Bank info updated successfully.')
+        title = request.POST.get('title', '').strip()
+        account_name = request.POST.get('account_name', '').strip()
+        account_number = request.POST.get('account_number', '').strip()
+        ifsc_code = request.POST.get('ifsc_code', '').strip()
+        bank_name = request.POST.get('bank_name', '').strip()
+
+        if not all([title, account_name, account_number, ifsc_code, bank_name]):
+            messages.error(request, 'All fields are required.')
+            return redirect('edit_bank_info', info_id=bank.id)
+
+        bank.title = title
+        bank.account_name = account_name
+        bank.account_number = account_number
+        bank.ifsc_code = ifsc_code
+        bank.bank_name = bank_name
+        bank.is_active = True
+        bank.save()
+        messages.success(request, 'Bank transfer settings updated successfully.')
         return redirect('custom_admin_settings')
-    
-    context = {'info': info}
+
+    context = { 'bank_info': bank }
     return render(request, 'products/admin/edit_bank_info.html', context)
 
 @admin_required
 def add_bank_info(request):
-    """Add new bank transfer info"""
-    from .models_old import BankTransferInfo
-    
+    """Add Bank Transfer Settings (PaymentSettings model)."""
+    from .models import PaymentSettings
+
     if request.method == 'POST':
-        bank_name = request.POST.get('bank_name', '').strip()
+        title = request.POST.get('title', '').strip()
+        account_name = request.POST.get('account_name', '').strip()
         account_number = request.POST.get('account_number', '').strip()
         ifsc_code = request.POST.get('ifsc_code', '').strip()
-        account_holder_name = request.POST.get('account_holder_name', '').strip()
-        
-        if not all([bank_name, account_number, ifsc_code, account_holder_name]):
+        bank_name = request.POST.get('bank_name', '').strip()
+
+        if not all([title, account_name, account_number, ifsc_code, bank_name]):
             messages.error(request, 'All fields are required.')
             return redirect('add_bank_info')
-        
-        BankTransferInfo.objects.create(
-            bank_name=bank_name,
+
+        # Keep only one active bank transfer settings row
+        PaymentSettings.objects.filter(setting_type='bank_transfer').delete()
+        PaymentSettings.objects.create(
+            setting_type='bank_transfer',
+            title=title,
+            account_name=account_name,
             account_number=account_number,
             ifsc_code=ifsc_code,
-            account_holder_name=account_holder_name
+            bank_name=bank_name,
+            is_active=True,
         )
-        messages.success(request, 'Bank info added successfully.')
+        messages.success(request, 'Bank transfer settings added successfully.')
         return redirect('custom_admin_settings')
-    
+
     return render(request, 'products/admin/add_bank_info.html')
 
 # ============================================================================

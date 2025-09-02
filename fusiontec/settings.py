@@ -162,5 +162,5 @@ CONTACT_FORM_RECIPIENT = 'support@fusiontec.com'
 # razor pay id
 # my test API test id and key 
 
-RAZORPAY_KEY_ID = "rzp_test_REyAx6Xr4GLWoB"
-RAZORPAY_KEY_SECRET = "7bm4B8IncrKBR0SlAyibZWpQ"
+RAZORPAY_KEY_ID = "rzp_live_RCdwJTn2UGBRHB"
+RAZORPAY_KEY_SECRET = "mJd9S0Ft19MhD4PhcJAunPdk"

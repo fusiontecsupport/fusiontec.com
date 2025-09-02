@@ -445,6 +445,7 @@
               <div class="modal-footer">
 
                 <button type="button" id="downloadPiBtn" class="btn btn-primary">Download PDF</button>
+                <button type="button" id="payOnlineBtn" class="btn btn-success">PAY-ONLINE</button>
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="piCloseBtn">Close</button>
               </div>
             </div>
@@ -1435,6 +1436,15 @@
           document.getElementById('successMessage').style.display = 'block';
           document.getElementById('quoteIdDisplay').textContent = data.submission_id;
           console.log('Submission ID set to:', data.submission_id);
+
+          // Persist submission id for payment button reliability
+          try {
+            window._dscLastSubmissionId = data.submission_id;
+            const piModalEl = document.getElementById('piModal');
+            if (piModalEl) {
+              piModalEl.setAttribute('data-submission-id', String(data.submission_id));
+            }
+          } catch(_e) {}
           
           // Generate proforma invoice content
           const piContent = generatePIContent();
@@ -2221,12 +2231,109 @@
       });
     }
 
+    // PAY-ONLINE button
+    const payOnlineBtn = document.getElementById('payOnlineBtn');
+    if (payOnlineBtn) {
+      payOnlineBtn.addEventListener('click', async function(){
+        try{
+          // Resolve submission id from multiple sources
+          let submissionId = '';
+          const piModalEl = document.getElementById('piModal');
+          if (piModalEl?.getAttribute('data-submission-id')) {
+            submissionId = piModalEl.getAttribute('data-submission-id');
+          }
+          if (!submissionId && typeof window._dscLastSubmissionId !== 'undefined') {
+            submissionId = String(window._dscLastSubmissionId || '').trim();
+          }
+          if (!submissionId) {
+            submissionId = document.getElementById('quoteIdDisplay')?.textContent?.trim() || '';
+          }
+          if(!submissionId){
+            alert('Submission not found. Please click "Generate Proforma Invoice" again, then try PAY-ONLINE.');
+            return;
+          }
+
+          // Amount from current price display
+          const totalStr = document.getElementById('priceValue')?.textContent?.replace(/[^0-9.]/g,'') || '0';
+          const quoted = parseFloat(totalStr || '0') || 0;
+          if(quoted <= 0){
+            alert('Invalid amount. Please configure DSC options and try again.');
+            return;
+          }
+
+          // Create payment order
+          const orderResp = await fetch('/api/dsc-payment/create-order/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ submission_id: submissionId, amount: quoted })
+          });
+          const orderData = await orderResp.json();
+          if(orderData.status !== 'success'){
+            throw new Error(orderData.message || 'Failed to create payment order');
+          }
+
+          const customerName = (document.querySelector('#piContent .col-md-6:last-child p strong')?.textContent || '').trim();
+          let contact = '';
+          let email = '';
+          document.querySelectorAll('#piContent .col-md-6:last-child p').forEach(p=>{
+            const t = p.textContent || '';
+            if(t.includes('Mobile:')) contact = t.replace('Mobile:','').trim();
+            if(t.includes('Email:')) email = t.replace('Email:','').trim();
+          });
+
+          if (typeof Razorpay === 'undefined') {
+            alert('Payment library not loaded. Please refresh and try again.');
+            return;
+          }
+
+          const options = {
+            key: orderData.key,
+            amount: orderData.amount,
+            currency: orderData.currency,
+            name: 'FusionTec Solutions',
+            description: `DSC ${state.classType.toUpperCase()} - ${state.userType} - ${state.certType} - ${state.validity}`,
+            order_id: orderData.order_id,
+            handler: async function (response) {
+              try{
+                const verifyResp = await fetch('/api/dsc-payment/verify/', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    razorpay_payment_id: response.razorpay_payment_id,
+                    razorpay_order_id: response.razorpay_order_id,
+                    razorpay_signature: response.razorpay_signature,
+                    submission_id: submissionId
+                  })
+                });
+                const verifyData = await verifyResp.json();
+                if(verifyData.status === 'success'){
+                  alert('Payment successful! Thank you.');
+                } else {
+                  throw new Error(verifyData.message || 'Payment verification failed');
+                }
+              } catch(err){
+                alert('Payment verification failed: ' + err.message);
+              }
+            },
+            prefill: { name: customerName, email: email, contact: contact },
+            theme: { color: '#2563eb' }
+          };
+
+          const rzp = new Razorpay(options);
+          rzp.open();
+        } catch(err){
+          alert('Payment initialization failed: ' + err.message);
+        }
+      });
+    }
+
 
   });
 })();
 </script>
 
 <!-- Required Scripts -->
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.3/jspdf.plugin.autotable.min.js"></script>
 {% endblock %}

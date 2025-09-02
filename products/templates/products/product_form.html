@@ -1172,13 +1172,10 @@ async function downloadPDF() {
   doc.setFontSize(9);
   doc.setTextColor(255, 255, 255);
   
-  // Center the text horizontally using improved character width estimation
+  // Center the text horizontally using jsPDF align option
   const footerText = 'This is computer generated proforma invoice signature not required';
-  const estimatedCharWidth = 5.5; // Adjusted width per character for better centering
-  const estimatedTextWidth = footerText.length * estimatedCharWidth;
-  const centerX = (pageWidth - estimatedTextWidth) / 2;
-  
-  doc.text(footerText, centerX, footerY + 15);
+  // Place text at the vertical middle of the footer band and perfectly centered horizontally
+  doc.text(footerText, pageWidth / 2, footerY + (footerHeight / 2), { align: 'center', baseline: 'middle' });
 
   const safe = (productName || 'product').toLowerCase().replace(/\s+/g, '_');
   doc.save(safe + '_PI.pdf');
