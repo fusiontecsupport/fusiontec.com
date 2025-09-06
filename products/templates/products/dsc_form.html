@@ -294,7 +294,7 @@
                   <div class="small text-muted mt-2">
                     <i class="fas fa-info-circle me-1"></i>
                     Price includes DSC charges, token, service charges & GST. 
-                    <a href="/dsc/price-list/" class="text-decoration-none">View detailed breakdown</a>
+                    <a href="/digital-signature/price-list/" class="text-decoration-none">View detailed breakdown</a>
                   </div>
                 </div>
 
@@ -1410,7 +1410,7 @@
         console.log('Reference Mobile:', document.getElementById('refMobile')?.value);
         
         // Submit form and generate proforma invoice
-        console.log('Submitting form to /dsc/submit/');
+        console.log('Submitting form to /digital-signature/submit/');
         console.log('Form data entries:', Array.from(formData.entries()));
         
         // Check if form data has required fields
@@ -1419,7 +1419,7 @@
         const hasMobile = formData.has('mobile');
         console.log('Required fields check:', { hasName, hasEmail, hasMobile });
         
-        const resp = await fetch('/dsc/submit/', {
+        const resp = await fetch('/digital-signature/submit/', {
           method: 'POST',
           headers: { 'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || '' },
           body: formData

@@ -913,9 +913,19 @@ def product_type_products(request, type_id):
     }
     return render(request, 'products/product_type.html', context)
 
-def product_type_form(request, type_id):
+def product_type_form(request, type_name):
     """Display product form for a specific product type with Sub Products and rates per sub product."""
-    product_type = get_object_or_404(ProductTypeMaster, id=type_id)
+    from django.utils.text import slugify
+    
+    # Try to find by slugified name first, then by exact name
+    product_type = None
+    for pt in ProductTypeMaster.objects.all():
+        if slugify(pt.prdt_desc) == type_name:
+            product_type = pt
+            break
+    
+    if not product_type:
+        product_type = get_object_or_404(ProductTypeMaster, prdt_desc__iexact=type_name)
     
     # All products for this type
     available_products = ProductMasterV2.objects.filter(product_type=product_type).order_by('id')

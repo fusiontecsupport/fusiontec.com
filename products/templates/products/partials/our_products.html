@@ -384,7 +384,7 @@
                 <h3 class="product-heading mb-3">{{ pt.prdt_desc }}</h3>
                 <p class="product-description mb-4">Explore solutions under {{ pt.prdt_desc }}.</p>
                 <div class="d-flex gap-3 flex-wrap">
-                  <a href="{% url 'product_type_form' pt.id %}" class="btn btn-buy-online">Buy Online</a>
+                  <a href="{% url 'product_type_form' pt.prdt_desc|slugify %}" class="btn btn-buy-online">Buy Online</a>
                   <button type="button" class="btn btn-enquiry" data-quote-btn data-pt-id="{{ pt.id }}" data-pt-name="{{ pt.prdt_desc|escapejs }}">Enquiry</button>
                 </div>
               </div>
