@@ -61,20 +61,20 @@
       <!-- Navigation Menu -->
       <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
-          <li class="nav-item"><a class="nav-link" href="#top">Home</a></li>
-          <li class="nav-item"><a class="nav-link" href="#about">About</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'home' %}">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'about' %}">About</a></li>
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
               Services
             </a>
             <ul class="dropdown-menu">
-              <li><a class="dropdown-item" href="#process">Process</a></li>
-              <li><a class="dropdown-item" href="#products">Tally</a></li>
-              <li><a class="dropdown-item" href="/#dsc">Digital Signature</a></li>
+              <li><a class="dropdown-item" href="{% url 'process' %}">Process</a></li>
+              <li><a class="dropdown-item" href="{% url 'products' %}">Tally</a></li>
+              <li><a class="dropdown-item" href="{% url 'dsc' %}">Digital Signature</a></li>
             </ul>
           </li>
-          <li class="nav-item"><a class="nav-link" href="#net_banking">Net Banking & Payment</a></li>
-          <li class="nav-item"><a class="nav-link" href="#footer">Contact</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'net_banking' %}">Net Banking & Payment</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'contact' %}">Contact</a></li>
         </ul>
         
         <!-- Get a Free Quote Button -->
@@ -233,7 +233,7 @@
   </div>
   
   <div class="enquiry-body">
-    <form method="POST" action="{% url 'contact_form' %}" enctype="multipart/form-data" class="enquiry-form">
+    <form method="POST" action="{% url 'footer_contact_form' %}" enctype="multipart/form-data" class="enquiry-form">
       {% csrf_token %}
       {% if messages %}
       <div id="message-container">
@@ -682,6 +682,9 @@ document.addEventListener("DOMContentLoaded", function () {
       const submitBtn = this.querySelector('.submit-btn');
       submitBtn.classList.add('loading');
       submitBtn.innerHTML = '<i class="bi bi-arrow-clockwise me-1"></i>Sending...';
+      
+      // Allow form to submit normally
+      // The server will handle the response and redirect
     });
   }
 

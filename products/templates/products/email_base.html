@@ -52,11 +52,6 @@
             color: #ffffff;
         }
         
-        .logo {
-            width: 120px;
-            height: auto;
-            margin-bottom: 15px;
-        }
         
         .company-name {
             font-size: 28px;
@@ -278,11 +273,6 @@
     <div class="email-container">
         <!-- Header -->
         <div class="email-header">
-            {% if logo_cid %}
-            <img src="cid:{{ logo_cid }}" alt="Fusiontec Logo" class="logo">
-            {% else %}
-            <img src="cid:fusiontec_logo" alt="Fusiontec Logo" class="logo">
-            {% endif %}
             <h1 class="company-name">Fusiontec</h1>
             <p class="company-tagline">Your Trusted Technology Partner</p>
         </div>

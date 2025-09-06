@@ -38,10 +38,10 @@
                     </p>
                     
                     <div class="hero-buttons d-flex flex-wrap gap-3 mb-5" data-aos="fade-up" data-aos-delay="600">
-                        <a href="#about" class="btn btn-primary btn-lg px-5 py-3 fw-semibold hero-btn-primary">
+                        <a href="{% url 'about' %}" class="btn btn-primary btn-lg px-5 py-3 fw-semibold hero-btn-primary">
                             <i class="bi bi-arrow-right me-2"></i>Explore Solutions
                         </a>
-                        <a href="#products" class="btn btn-outline-light btn-lg px-5 py-3 fw-semibold hero-btn-secondary">
+                        <a href="{% url 'products' %}" class="btn btn-outline-light btn-lg px-5 py-3 fw-semibold hero-btn-secondary">
                             <i class="bi bi-briefcase me-2"></i>View Portfolio
                         </a>
                     </div>
@@ -109,7 +109,7 @@
     
     <!-- iOS-Style Scroll indicator -->
     <div class="scroll-indicator" data-aos="fade-up" data-aos-delay="800">
-        <a href="#about" class="scroll-link">
+        <a href="{% url 'about' %}" class="scroll-link">
             <div class="scroll-content">
                 <span class="scroll-text">Discover More</span>
                 <i class="bi bi-chevron-down scroll-icon"></i>
@@ -978,6 +978,19 @@
       easing: 'ease-in-out',
       once: true
     });
+    
+    // Auto-scroll to highlighted section if specified
+    {% if highlight_section %}
+    setTimeout(function() {
+      const section = document.getElementById('{{ highlight_section }}');
+      if (section) {
+        section.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'start' 
+        });
+      }
+    }, 500); // Small delay to ensure page is fully loaded
+    {% endif %}
   });
 
   // code for opening floating form using send enquiry button 
@@ -1104,19 +1117,19 @@ function showDscQuoteForm() {
       } catch (error) {
         console.error('Error showing modal:', error);
         // Fallback: redirect to DSC form page
-        window.location.href = '/dsc/';
+        window.location.href = '/digital_signature/';
       }
     } else {
       console.error('Quote form inputs not found');
       console.log('productTypeIdInput:', productTypeIdInput);
       console.log('productTypeNameInput:', productTypeNameInput);
       // Fallback: redirect to DSC form page
-      window.location.href = '/dsc/';
+      window.location.href = '/digital_signature/';
     }
   } else {
     console.log('Quote form modal not found, redirecting to DSC form page');
     // If modal doesn't exist, redirect to DSC form page
-    window.location.href = '/dsc/';
+    window.location.href = '/digital_signature/';
   }
 }
 

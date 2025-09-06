@@ -800,6 +800,59 @@ def index(request):
     }
     return render(request, 'products/index.html', context)
 
+def _get_index_context(highlight_section=None):
+    """Helper function to get the common context for index page variations"""
+    product_masters = ProductMaster.objects.filter(is_active=True).order_by('display_order')
+    product_type_masters = ProductTypeMaster.objects.all().order_by('id')
+    dsc_type = ProductTypeMaster.objects.filter(prdt_desc__icontains='dsc').first()
+    razorpay_infos = PaymentSettings.objects.filter(setting_type='razorpay', is_active=True)
+    payment_infos = PaymentSettings.objects.filter(setting_type='qr_code', is_active=True)
+    bank_infos = PaymentSettings.objects.filter(setting_type='bank_transfer', is_active=True)
+    
+    context = {
+        'product_masters': product_masters,
+        'product_type_masters': product_type_masters,
+        'dsc_type': dsc_type,
+        'razorpay_infos': razorpay_infos,
+        'payment_infos': payment_infos,
+        'bank_infos': bank_infos,
+    }
+    
+    if highlight_section:
+        context['highlight_section'] = highlight_section
+    
+    return context
+
+def about_page(request):
+    """About page - renders home page with about section highlighted"""
+    context = _get_index_context('about')
+    return render(request, 'products/index.html', context)
+
+def process_page(request):
+    """Process page - renders home page with process section highlighted"""
+    context = _get_index_context('process')
+    return render(request, 'products/index.html', context)
+
+def products_page(request):
+    """Products page - renders home page with products section highlighted"""
+    context = _get_index_context('products')
+    return render(request, 'products/index.html', context)
+
+def contact_page(request):
+    """Contact page - renders home page with contact section highlighted"""
+    context = _get_index_context('footer')
+    return render(request, 'products/index.html', context)
+
+def dsc_page(request):
+    """DSC page - renders home page with DSC section highlighted"""
+    context = _get_index_context('dsc')
+    return render(request, 'products/index.html', context)
+
+def net_banking_page(request):
+    """Net Banking page - renders home page with net banking section highlighted"""
+    context = _get_index_context('net_banking')
+    return render(request, 'products/index.html', context)
+
 def product_catalog(request):
     """Product catalog page showing all products"""
     product_masters = ProductMaster.objects.filter(is_active=True).order_by('display_order')
@@ -2468,6 +2521,85 @@ def quote_detail(request, quote_id):
     }
     return render(request, 'products/quote_detail.html', context)
 
+def footer_contact_form(request):
+    """Handle footer contact form submission"""
+    print(f"Footer contact form called with method: {request.method}")
+    
+    if request.method == 'POST':
+        name = request.POST.get('name', '').strip()
+        email = request.POST.get('email', '').strip()
+        phone = request.POST.get('phone', '').strip()
+        subject = request.POST.get('subject', '').strip()
+        message = request.POST.get('message', '').strip()
+
+        print(f"Form data received - Name: {name}, Email: {email}, Phone: {phone}, Subject: {subject}")
+
+        if not all([name, email, phone, subject, message]):
+            print("Missing required fields")
+            messages.error(request, 'Please fill out all required fields.')
+            return redirect(request.META.get('HTTP_REFERER', 'index'))
+
+        # Save to database
+        ContactSubmission.objects.create(
+            name=name,
+            email=email,
+            phone=phone,
+            subject=subject,
+            message=message,
+        )
+
+        # Admin notification email
+        email_html_content = render_to_string('products/contact_form_email.html', {
+            'name': name,
+            'email': email,
+            'phone': phone,
+            'subject': subject,
+            'message': message,
+        })
+
+        # User thank-you email
+        user_thank_you_content = render_to_string('products/contact_form_thanks.html', {
+            'name': name,
+        })
+
+        try:
+            # Send to admin (no logo)
+            admin_email_msg = EmailMessage(
+                subject=f"[Fusiontec Contact] - {subject}",
+                body=email_html_content,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                to=[settings.CONTACT_FORM_RECIPIENT],
+            )
+            admin_email_msg.content_subtype = "html"
+            
+            # Send admin email
+            admin_email_msg.send()
+            print(f"Admin email sent successfully to {settings.CONTACT_FORM_RECIPIENT}")
+
+            # Send thank you to user (no logo)
+            user_email_msg = EmailMessage(
+                subject="Thanks for contacting Fusiontec!",
+                body=user_thank_you_content,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                to=[email],
+            )
+            user_email_msg.content_subtype = "html"
+            
+            # Send user email
+            user_email_msg.send()
+            print(f"User email sent successfully to {email}")
+
+            messages.success(request, 'Your message has been sent successfully! You will receive a confirmation email shortly.')
+        except Exception as e:
+            print(f"Email sending error: {str(e)}")
+            messages.error(request, f'Message saved but there was an error sending confirmation emails: {str(e)}')
+
+        # Redirect back to the referring page
+        return redirect(request.META.get('HTTP_REFERER', 'index'))
+    
+    # If it's a GET request, redirect to home page
+    return redirect('index')
+
 def contact_form(request):
     """Contact form page"""
     if request.method == 'POST':
@@ -2506,13 +2638,13 @@ def contact_form(request):
 
         try:
             # Send to admin
-            email_msg = EmailMessage(
+            admin_email_msg = EmailMessage(
                 subject=f"[Fusiontec Contact] - {subject}",
                 body=email_html_content,
                 from_email=settings.DEFAULT_FROM_EMAIL,
                 to=[settings.CONTACT_FORM_RECIPIENT],
             )
-            email_msg.content_subtype = "html"
+            admin_email_msg.content_subtype = "html"
             
             # Embed logo inline using CID
             try:
@@ -2520,20 +2652,22 @@ def contact_form(request):
                 logo_path = finders.find('products/img/fusiontec.png')
                 if logo_path:
                     with open(logo_path, 'rb') as f:
-                        email_msg.attach_inline('fusiontec_logo', f.read(), 'image/png')
+                        admin_email_msg.attach_inline('fusiontec_logo', f.read(), 'image/png')
             except Exception as _e:
                 print(f"Inline logo attach failed (admin): {_e}")
             
-            email_msg.send()
+            # Send admin email
+            admin_email_msg.send()
+            print(f"Admin email sent successfully to {settings.CONTACT_FORM_RECIPIENT}")
 
             # Send thank you to user
-            user_email = EmailMessage(
+            user_email_msg = EmailMessage(
                 subject="Thanks for contacting Fusiontec!",
                 body=user_thank_you_content,
                 from_email=settings.DEFAULT_FROM_EMAIL,
                 to=[email],
             )
-            user_email.content_subtype = "html"
+            user_email_msg.content_subtype = "html"
             
             # Embed logo inline using CID
             try:
@@ -2541,14 +2675,17 @@ def contact_form(request):
                 logo_path = finders.find('products/img/fusiontec.png')
                 if logo_path:
                     with open(logo_path, 'rb') as f:
-                        user_email.attach_inline('fusiontec_logo', f.read(), 'image/png')
+                        user_email_msg.attach_inline('fusiontec_logo', f.read(), 'image/png')
             except Exception as _e:
                 print(f"Inline logo attach failed (user): {_e}")
             
-            user_email.send()
+            # Send user email
+            user_email_msg.send()
+            print(f"User email sent successfully to {email}")
 
             messages.success(request, 'Your message has been sent successfully! You will receive a confirmation email shortly.')
         except Exception as e:
+            print(f"Email sending error: {str(e)}")
             messages.error(request, f'Message saved but there was an error sending confirmation emails: {str(e)}')
 
         # Redirect back to the referring page or home page

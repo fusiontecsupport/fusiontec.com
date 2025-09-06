@@ -8,6 +8,13 @@ urlpatterns = [
     # MAIN PAGES
     # ============================================================================
     path('', views.index, name='index'),
+    path('home/', views.index, name='home'),
+    path('about/', views.about_page, name='about'),
+    path('process/', views.process_page, name='process'),
+    path('products/', views.products_page, name='products'),
+    path('contact/', views.contact_page, name='contact'),
+    path('dsc/', views.dsc_page, name='dsc'),
+    path('net_banking/', views.net_banking_page, name='net_banking'),
     path('catalog/', views.product_catalog, name='product_catalog'),
     path('product/<int:product_id>/', views.product_detail, name='product_detail'),
     path('product-type/<int:type_id>/', views.product_type_products, name='product_type_products'),
@@ -17,7 +24,7 @@ urlpatterns = [
     path('api/payments/verify/', views.verify_payment, name='verify_payment'),
     path('submit-quote/', views.submit_quote, name='submit_quote'),
     # DSC form (e-Mudhra-like)
-    path('dsc/', views.dsc_form, name='dsc_form'),
+    path('digital_signature/', views.dsc_form, name='dsc_form'),
     path('dsc/price-list/', views.dsc_price_list_page, name='dsc_price_list_page'),
     path('dsc/submit/', views.dsc_integrated_submission, name='dsc_integrated_submission'),
 
@@ -37,6 +44,7 @@ urlpatterns = [
     path('quote/<int:product_id>/', views.quote_form, name='quote_form'),
     path('quote-detail/<int:quote_id>/', views.quote_detail, name='quote_detail'),
     path('contact/', views.contact_form, name='contact_form'),
+    path('footer-contact/', views.footer_contact_form, name='footer_contact_form'),
     
     # ============================================================================
     # API ENDPOINTS
