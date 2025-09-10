@@ -677,6 +677,7 @@ class DscSubmission(BaseTimestampModel):
     authorization_letter = models.FileField(upload_to='uploads/authorization/', blank=True, null=True)
     company_pan = models.FileField(upload_to='uploads/company_pan/', blank=True, null=True)
     ifc_certificate = models.FileField(upload_to='uploads/ifc/', blank=True, null=True)
+    other_document = models.FileField(upload_to='uploads/other/', blank=True, null=True)
     
     # Submission type
     submission_type = models.CharField(

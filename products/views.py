@@ -172,6 +172,19 @@ def _generate_dsc_proforma_pdf(
     c.drawString(buyer_x, y, f"Reference Name: {reference_name}")
     y -= 12
     c.drawString(buyer_x, y, f"Reference Mobile: {reference_contact}")
+    # Optional add-ons section (Yes/No)
+    y -= 18
+    c.setFont("Helvetica-Bold", 10)
+    c.setFillColorRGB(0.22, 0.25, 0.32)
+    c.drawString(buyer_x, y, "Optional add-ons")
+    y -= 14
+    c.setFont("Helvetica", 9)
+    c.setFillColorRGB(0.4, 0.4, 0.4)
+    # Include Token?
+    c.drawString(buyer_x, y, f"Include Token?  {'Yes' if include_token else 'No'}")
+    y -= 12
+    # Include Installation?
+    c.drawString(buyer_x, y, f"Include Installation?  {'Yes' if include_installation else 'No'}")
 
     # Product details table (Tally-style with 5 columns, no Qty)
     y -= 30
@@ -998,6 +1011,15 @@ def dsc_integrated_submission(request):
                 messages.error(request, 'Please fill out all required fields.')
                 return JsonResponse({'success': False, 'message': 'Required fields missing'})
             
+            # Enforce required uploads
+            # Others is required for all scenarios
+            if 'other_document' not in request.FILES or not request.FILES.get('other_document'):
+                return JsonResponse({'success': False, 'message': 'Others document is required.'}, status=400)
+            # IEC Certificate required only for DGFT class
+            if (class_type or '').strip().lower() == 'dgft':
+                if 'ifc_certificate' not in request.FILES or not request.FILES.get('ifc_certificate'):
+                    return JsonResponse({'success': False, 'message': 'IEC Certificate is required for DGFT.'}, status=400)
+            
             # Create or get customer
             customer, created = Customer.objects.get_or_create(
                 email=email,
@@ -1053,6 +1075,8 @@ def dsc_integrated_submission(request):
                     dsc_submission.company_pan = request.FILES['company_pan']
                 if 'ifc_certificate' in request.FILES:
                     dsc_submission.ifc_certificate = request.FILES['ifc_certificate']
+                if 'other_document' in request.FILES:
+                    dsc_submission.other_document = request.FILES['other_document']
                 dsc_submission.save()
             
             # Send admin notification email
@@ -1138,7 +1162,8 @@ def dsc_integrated_submission(request):
                         ('gst_certificate', 'GST Certificate'),
                         ('authorization_letter', 'Authorization Letter'),
                         ('company_pan', 'Company PAN'),
-                        ('ifc_certificate', 'IFC Certificate'),
+                        ('ifc_certificate', 'IEC Certificate'),
+                        ('other_document', 'Others'),
                     ]
                     for field, label in attachments:
                         file_field = getattr(dsc_submission, field, None)

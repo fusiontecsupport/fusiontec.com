@@ -223,26 +223,29 @@
                   <div class="btn-group toggle-group" id="validityGroup" role="group"></div>
                 </div>
 
-                <!-- Core price (base only, without add-ons or GST) -->
-                <div class="mb-2">
-                  <div class="small text-muted fw-semibold mb-1">Base Price</div>
-                  <div class="mini-price-box d-flex align-items-center justify-content-between p-2 rounded-3">
-                    <div class="mini-price-item">
-                      <div class="mini-price-label">Base</div>
-                      <div id="coreBaseAmount" class="mini-price-value">₹ 0</div>
+                <div id="addOnsContainer" class="mb-3" style="">
+                  <div class="fw-semibold mb-2">Optional add-ons</div>
+                  <div id="tokenRow" class="mb-2" style="display:block;">
+                    <div class="fw-semibold mb-1">Include Token?</div>
+                    <div class="form-check form-check-inline">
+                      <input class="form-check-input" type="radio" name="add_token" id="add_token_yes" value="yes">
+                      <label class="form-check-label" for="add_token_yes">Yes</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                      <input class="form-check-input" type="radio" name="add_token" id="add_token_no" value="no" checked>
+                      <label class="form-check-label" for="add_token_no">No</label>
                     </div>
                   </div>
-                </div>
-
-                <div id="addOnsContainer" class="mb-3" style="display:none;">
-                  <div class="fw-semibold mb-2">Optional add-ons</div>
-                  <div id="tokenRow" class="form-check form-switch mb-2" style="display:none;">
-                    <input class="form-check-input" type="checkbox" id="add_token" checked>
-                    <label class="form-check-label" for="add_token">Add Token (<span id="tokenAmountLabel">₹0</span>)</label>
-                  </div>
-                  <div id="installRow" class="form-check form-switch" style="display:none;">
-                    <input class="form-check-input" type="checkbox" id="add_installation" checked>
-                    <label class="form-check-label" for="add_installation">Add Installation Charges (<span id="installAmountLabel">₹0</span>)</label>
+                  <div id="installRow" class="mb-2" style="display:block;">
+                    <div class="fw-semibold mb-1">Include Installation?</div>
+                    <div class="form-check form-check-inline">
+                      <input class="form-check-input" type="radio" name="add_installation" id="add_installation_yes" value="yes">
+                      <label class="form-check-label" for="add_installation_yes">Yes</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                      <input class="form-check-input" type="radio" name="add_installation" id="add_installation_no" value="no" checked>
+                      <label class="form-check-label" for="add_installation_no">No</label>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -259,19 +262,15 @@
                 <div class="border rounded-3 p-4 bg-white shadow-sm">
                   <div class="d-flex justify-content-between align-items-center mb-3">
                     <div class="fw-semibold fs-5">Price Breakdown</div>
-                    <a href="{% static 'products/dsc_price_list.pdf' %}" target="_blank" 
-                       class="btn btn-outline-primary btn-sm d-flex align-items-center gap-2">
-                      <i class="fas fa-file-pdf"></i>
-                      <span>View Price List</span>
-                    </a>
                   </div>
                   
                   <!-- Price Breakdown Card -->
                   <div class="row g-3 mb-3">
                     <div class="col-md-4">
-                      <div class="text-center p-3 rounded-3 price-breakdown-card" style="background: #f8f9fa;">
-                        <div class="small text-muted mb-1">Base Amount</div>
-                        <div id="baseAmount" class="h5 fw-bold text-primary mb-0">₹ 0</div>
+                      <div class="p-3 rounded-3 price-breakdown-card" style="background: #f8f9fa;">
+                        <div class="small text-muted mb-1">Amount</div>
+                        <input type="number" min="1" step="1" id="baseAmountInput" class="form-control form-control-sm" placeholder="Enter amount" required inputmode="numeric" />
+                        <div class="form-text">Amount is required</div>
                       </div>
                     </div>
                     <div class="col-md-4">
@@ -290,12 +289,6 @@
                   
                   <div id="notConfiguredHint" class="text-danger small d-none">Price not configured for this selection.</div>
                   
-                  <!-- Price breakdown info -->
-                  <div class="small text-muted mt-2">
-                    <i class="fas fa-info-circle me-1"></i>
-                    Price includes DSC charges, token, service charges & GST. 
-                    <a href="/digital-signature/price-list/" class="text-decoration-none">View detailed breakdown</a>
-                  </div>
                 </div>
 
                 <!-- Enhanced Enquiry Form -->
@@ -396,8 +389,13 @@
                           <div class="form-text">Allowed: PDF, DOC, DOCX</div>
                         </div>
                         <div class="col-12 col-md-6 doc-field" id="field_ifc" style="display:none;">
-                          <label class="form-label fw-semibold">IFC Certificate</label>
-                          <input type="file" id="doc_ifc" name="ifc_certificate" class="form-control" accept=".pdf,.doc,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/msword">
+                          <label class="form-label fw-semibold">IEC Certificate</label>
+                          <input type="file" id="doc_ifc" name="ifc_certificate" class="form-control" required accept=".pdf,.doc,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/msword">
+                          <div class="form-text">Allowed: PDF, DOC, DOCX</div>
+                        </div>
+                        <div class="col-12 col-md-6" id="field_other">
+                          <label class="form-label fw-semibold">Others</label>
+                          <input type="file" id="doc_other" name="other_document" class="form-control" required accept=".pdf,.doc,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/msword">
                           <div class="form-text">Allowed: PDF, DOC, DOCX</div>
                         </div>
                         </div>
@@ -582,8 +580,12 @@
   const addOnsContainer = document.getElementById('addOnsContainer');
   const tokenRow = document.getElementById('tokenRow');
   const installRow = document.getElementById('installRow');
-  const tokenCheckbox = document.getElementById('add_token');
-  const installCheckbox = document.getElementById('add_installation');
+  // New radios for add-ons
+  const tokenYes = document.getElementById('add_token_yes');
+  const tokenNo = document.getElementById('add_token_no');
+  const installYes = document.getElementById('add_installation_yes');
+  const installNo = document.getElementById('add_installation_no');
+  const baseAmountInput = document.getElementById('baseAmountInput');
   const tokenAmtLabel = document.getElementById('tokenAmountLabel');
   const installAmtLabel = document.getElementById('installAmountLabel');
   const enqSubmit = document.getElementById('enqSubmit');
@@ -813,103 +815,18 @@
   }
 
   function renderComputedPrice(){
-    if(!lastComponents){
-      return;
-    }
-    const dsc = parseFloat(lastComponents.dsc_charge || 0);
-    const token = parseFloat(lastComponents.token_amount || 0);
-    const install = parseFloat(lastComponents.installation_charge || 0);
-    const gstPct = parseFloat(lastGST || 0);
-    const includeToken = token > 0 && (tokenCheckbox ? tokenCheckbox.checked : true);
-    const includeInstall = install > 0 && (installCheckbox ? installCheckbox.checked : true);
-    const base = dsc + (includeToken ? token : 0) + (includeInstall ? install : 0);
-    
-    // Calculate GST with proper rounding (456.49 → 456, 456.50 → 457)
-    const gstAmount = roundTaxAmount((base * gstPct) / 100);
-    const total = base + gstAmount;
-    try{ console.log('[DSC] renderComputedPrice', { state, lastComponents, includeToken, includeInstall, base, gstAmount, total }); }catch(e){}
-    
-    setPriceValue(total, base, gstAmount);
-    updateCTAEnabled();
+    updatePrice();
   }
 
   async function updatePrice(){
-    try{
-      const params = new URLSearchParams({
-        class_type: state.classType,
-        user_type: state.userType,
-        cert_type: state.certType,
-        validity: state.validity,
-        outside: '0'
-      });
-      const resp = await fetch(`/api/dsc-price/?${params.toString()}`);
-      const data = await resp.json();
-      if(data.success){
-        // Front-end guard: require exact 4-field match present in options map
-        const exactExists = hasPriceForCombination(state.classType, state.userType, state.certType, state.validity);
-        if(!exactExists){
-          throw new Error('Exact combination not configured');
-        }
-        if(notCfg) notCfg.classList.add('d-none');
-        const comps = data.components || {};
-        lastComponents = comps;
-        lastGST = comps.gst_percent || 0;
-        lastSurcharge = data.outside_surcharge || 0;
-        try{ console.log('[DSC] updatePrice success', { query: Object.fromEntries(params), data }); }catch(e){}
-
-        // Update core price (DSC only, excluding token/installation and GST)
-        const coreBase = parseFloat(comps.dsc_charge || 0);
-        try{ console.log('[DSC] coreBase from API', coreBase); }catch(e){}
-        updateCorePriceDisplay(coreBase);
-
-        // Show/hide add-on toggles
-        const tokenVal = parseFloat(comps.token_amount || 0);
-        const installVal = parseFloat(comps.installation_charge || 0);
-        if(tokenVal > 0 || installVal > 0){
-          addOnsContainer.style.display = '';
-        } else {
-          addOnsContainer.style.display = 'none';
-        }
-        if(tokenVal > 0){
-          tokenRow.style.display = '';
-          const roundedToken = roundTax(tokenVal);
-          tokenAmtLabel.textContent = `₹${roundedToken.toLocaleString('en-IN')}`;
-          if(tokenCheckbox) tokenCheckbox.checked = true;
-        } else {
-          tokenRow.style.display = 'none';
-          if(tokenCheckbox) tokenCheckbox.checked = false;
-        }
-        if(installVal > 0){
-          installRow.style.display = '';
-          const roundedInstall = roundTax(installVal);
-          installAmtLabel.textContent = `₹${roundedInstall.toLocaleString('en-IN')}`;
-          if(installCheckbox) installCheckbox.checked = true;
-        } else {
-          installRow.style.display = 'none';
-          if(installCheckbox) installCheckbox.checked = false;
-        }
-
-        renderComputedPrice();
-        updateCTAEnabled();
-      } else {
-        throw new Error('Price not configured for this combination');
-      }
-    } catch(e){
-      // Strict behavior: if API has no exact price, reset everything to zero
-      if(notCfg) notCfg.classList.remove('d-none');
-      lastComponents = null;
-      if(addOnsContainer) addOnsContainer.style.display = 'none';
-      if(tokenRow) tokenRow.style.display = 'none';
-      if(installRow) installRow.style.display = 'none';
-      if(tokenCheckbox) tokenCheckbox.checked = false;
-      if(installCheckbox) installCheckbox.checked = false;
-
-      setPriceValue(0, 0, 0);
-      updateCorePriceDisplay(0);
-      priceEl.textContent = 'Price not configured for this combination';
-      priceEl.classList.add('text-muted');
-      updateCTAEnabled();
-    }
+    // Always hide not-configured hint since we accept manual input
+    if (notCfg) notCfg.classList.add('d-none');
+    const base = Number((baseAmountInput && baseAmountInput.value) || 0);
+    const gstPct = 18;
+    const gstAmount = roundTaxAmount((base * gstPct) / 100);
+    const total = base + gstAmount;
+    setPriceValue(total, base, gstAmount);
+    updateCTAEnabled();
   }
 
   function wireGroup(groupId, key){
@@ -957,12 +874,10 @@
 
 
 
-  if(tokenCheckbox){
-    tokenCheckbox.addEventListener('change', renderComputedPrice);
-  }
-  if(installCheckbox){
-    installCheckbox.addEventListener('change', renderComputedPrice);
-  }
+  // Wire radio changes
+  [tokenYes, tokenNo, installYes, installNo].forEach(el=>{ if(el){ el.addEventListener('change', renderComputedPrice); }});
+  // Wire base amount input
+  if(baseAmountInput){ baseAmountInput.addEventListener('input', updatePrice); }
 
   // Disable/enable CTAs until form is valid
   function isFormValid(){
@@ -971,7 +886,8 @@
     const mobile = (enqMobile?.value || '').trim();
     const refn = (refName?.value || '').trim();
     const refm = (refMobile?.value || '').trim();
-    const priced = hasPriceForCombination(state.classType, state.userType, state.certType, state.validity);
+    const baseVal = Number((baseAmountInput && baseAmountInput.value) || 0);
+    const priced = baseVal > 0;
     const totalStr = priceEl.textContent.replace(/[^0-9.]/g,'');
     const quoted = parseFloat(totalStr || '0') || 0;
     
@@ -1212,7 +1128,8 @@
       'doc_photo': 'Photo',
       'doc_auth': 'Authorisation Letter',
       'doc_orgpan': 'Organisation PAN',
-      'doc_ifc': 'IFC Certificate'
+      'doc_ifc': 'IEC Certificate',
+      'doc_other': 'Others'
     };
     return fieldNames[fieldId] || 'Document';
   }
@@ -1285,7 +1202,7 @@
   };
 
   // Listen to file input changes to re-validate CTA enablement
-  ;['doc_pan','doc_aadhar','doc_gst','doc_photo','doc_auth','doc_orgpan','doc_ifc'].forEach(id=>{
+  ;['doc_pan','doc_aadhar','doc_gst','doc_photo','doc_auth','doc_orgpan','doc_ifc','doc_other'].forEach(id=>{
     const inp = document.getElementById(id);
     if(inp){ 
       inp.addEventListener('change', updateCTAEnabled); 
@@ -1310,6 +1227,21 @@
       const generateBtn = this;
       const generateBtnText = document.getElementById('generateBtnText');
       const generateBtnSpinner = document.getElementById('generateBtnSpinner');
+      
+      // Require Base Amount before generating PI
+      const baseVal = Number((baseAmountInput && baseAmountInput.value) || 0);
+      if (!baseVal || baseVal <= 0) {
+        if (enqMsg) {
+          enqMsg.textContent = 'Please enter Base Amount before generating the Proforma Invoice.';
+          enqMsg.className = 'alert alert-warning mt-3';
+          enqMsg.style.display = 'block';
+        }
+        // Ensure button UI is reset
+        generateBtn.disabled = false;
+        if (generateBtnText) generateBtnText.textContent = 'Generate Proforma Invoice';
+        if (generateBtnSpinner) generateBtnSpinner.style.display = 'none';
+        return;
+      }
       
       try {
         // Show loading state
@@ -1375,8 +1307,8 @@
         document.getElementById('userTypeField').value = state.userType;
         document.getElementById('certTypeField').value = state.certType;
         document.getElementById('validityField').value = state.validity;
-        document.getElementById('includeTokenField').value = (tokenCheckbox && tokenCheckbox.checked) ? 'on' : '';
-        document.getElementById('includeInstallField').value = (installCheckbox && installCheckbox.checked) ? 'on' : '';
+        document.getElementById('includeTokenField').value = (tokenYes && tokenYes.checked) ? 'on' : '';
+        document.getElementById('includeInstallField').value = (installYes && installYes.checked) ? 'on' : '';
         document.getElementById('outsideIndiaField').value = '';
         
         // Compute current quoted price number from UI text (safe fallback)
@@ -1393,8 +1325,8 @@
             submissionType: 'purchase',
             state: { classType: state.classType, userType: state.userType, certType: state.certType, validity: state.validity },
             quoted,
-            include_token: !!(tokenCheckbox && tokenCheckbox.checked),
-            include_installation: !!(installCheckbox && installCheckbox.checked)
+            include_token: !!(tokenYes && tokenYes.checked),
+            include_installation: !!(installYes && installYes.checked)
           });
         }catch(_e){}
         
@@ -1498,9 +1430,10 @@
       return [];
     },
     dgft: function(){
-      return ['pan','aadhar','gst','photo','auth','orgpan','ifc'];
-    }
-  };
+    // For DGFT, require the standard 7 docs including IEC; 'Others' is handled separately
+    return ['pan','aadhar','gst','photo','auth','orgpan','ifc'];
+  }
+};
 
   const FIELD_IDS = {
     pan: 'field_pan',
@@ -1523,11 +1456,20 @@
     needed.forEach(key => { const el = document.getElementById(FIELD_IDS[key]); if(el){ el.style.display = ''; } });
     const hint = document.getElementById('docHint');
     if(hint){
-      hint.innerHTML = needed.length
-        ? `Required documents: <strong>${needed.map(k=>({pan:'PAN Card',aadhar:'Aadhar Card',gst:'GST Certificate',photo:'Photo',auth:'Authorisation Letter',orgpan:'Organisation PAN',ifc:'IFC Certificate'}[k])).join(', ')}</strong>`
-        : 'Select Class/User/Certificate above to see required documents.';
+      const names = {
+        pan: 'PAN Card',
+        aadhar: 'Aadhar Card',
+        gst: 'GST Certificate',
+        photo: 'Photo',
+        auth: 'Authorisation Letter',
+        orgpan: 'Organisation PAN',
+        ifc: 'IEC Certificate'
+      };
+      const visibleList = needed.map(k => names[k] || k);
+      // Always include Others at the end
+      visibleList.push('Others');
+      hint.textContent = 'Required documents: ' + visibleList.join(', ');
     }
-
     // Apply required attribute to visible upload inputs
     const mapToInput = {
       pan: 'doc_pan', aadhar: 'doc_aadhar', gst: 'doc_gst', photo: 'doc_photo', auth: 'doc_auth', orgpan: 'doc_orgpan', ifc: 'doc_ifc'
@@ -1538,15 +1480,15 @@
       const wrap = document.getElementById(wrapId);
       const input = document.getElementById(inputId);
       if(!input) return;
-      const requiredNow = needed.includes(key);
-      if(wrap && wrap.style.display === 'none'){
-        input.removeAttribute('required');
-      } else if(requiredNow){
-        input.setAttribute('required','required');
+      if(wrap && wrap.style.display === ''){
+        input.setAttribute('required', 'required');
       } else {
         input.removeAttribute('required');
       }
     });
+    // Ensure 'Others' is always required
+    const otherInput = document.getElementById('doc_other');
+    if(otherInput){ otherInput.setAttribute('required','required'); }
     // Update CTA enabled state whenever document requirements change
     updateCTAEnabled();
     
@@ -1588,7 +1530,7 @@
     const gstEl = document.getElementById('gstAmount');
     const priceEl = document.getElementById('priceValue');
     
-    if (baseEl) baseEl.textContent = '₹ 0';
+    if (baseAmountInput) baseAmountInput.value = baseAmountInput.value || '';
     if (gstEl) gstEl.textContent = '₹ 0';
     if (priceEl) priceEl.textContent = '₹ 0';
   }
@@ -1636,9 +1578,8 @@
     renderGroup('certTypeGroup', FIXED_CERTS, state.certType, v=> v.charAt(0).toUpperCase()+v.slice(1));
     renderGroup('validityGroup', FIXED_VALIDS, state.validity, v=> ({'1y':'1 Year','2y':'2 Years','3y':'3 Years'}[v]||v));
 
-    // Initial price and button styles
+    // Initial price computation
     updatePrice();
-    updateButtonStyles();
   }
 
   // Helper function to render button groups
@@ -1811,9 +1752,9 @@
       // Compute current quoted price
       const totalStr = priceEl.textContent.replace(/[^0-9.]/g,'');
       const quoted = parseFloat(totalStr || '0') || 0;
-      
+        
       if(quoted <= 0){
-        enqMsg.textContent = 'Please select valid DSC options to proceed with payment.';
+        enqMsg.textContent = 'Please enter a valid Base Amount to proceed.';
         enqMsg.className = 'alert alert-warning mt-3';
         return;
       }
@@ -2195,8 +2136,8 @@
             user_type: state.userType || 'individual',
             cert_type: state.certType || 'signature',
             validity: state.validity || '2y',
-            include_token: !!(tokenCheckbox && tokenCheckbox.checked),
-            include_installation: !!(installCheckbox && installCheckbox.checked),
+            include_token: !!(tokenYes && tokenYes.checked),
+            include_installation: !!(installYes && installYes.checked),
             quoted_price: quotedPrice.toString(),
             submission_id: document.getElementById('quoteIdDisplay')?.textContent || Date.now()
           })
