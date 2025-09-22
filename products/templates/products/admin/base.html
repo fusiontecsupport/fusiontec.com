@@ -269,6 +269,10 @@
                            href="{% url 'custom_admin_dsc_submissions' %}">
                             <i class="fas fa-shopping-cart me-2"></i> DSC Submissions
                         </a>
+                        <a class="nav-link {% if request.resolver_match.url_name == 'dsc_checking_admin' %}active{% endif %}"
+                           href="{% url 'dsc_checking_admin' %}">
+                            <i class="fas fa-search me-2"></i> DSC Datas
+                        </a>
                         
                         <hr class="text-white-50 my-3">
                         

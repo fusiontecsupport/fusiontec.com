@@ -1,24 +1,35 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from django.urls import reverse
-from django.conf import settings
-from django.contrib import messages
-from django.core.mail import EmailMessage, send_mail
-from django.core.mail.backends.smtp import EmailBackend
-import time
-from django.template.loader import render_to_string
-from django.http import JsonResponse
+from django.shortcuts import render, get_object_or_404, redirect
+from django.http import JsonResponse, HttpResponse, Http404, HttpResponseRedirect
 from django.views.decorators.csrf import csrf_exempt
-from io import BytesIO
-from reportlab.lib.pagesizes import A4
-from reportlab.pdfgen import canvas
-from reportlab.lib.units import mm
-from reportlab.lib import colors
-from reportlab.platypus import Table, TableStyle, Paragraph
-from reportlab.lib.styles import ParagraphStyle
-from django.templatetags.static import static
-from datetime import datetime
+from django.views.decorators.http import require_http_methods
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth import authenticate, login, logout
+from django.contrib import messages
+from django.core.paginator import Paginator
+from django.db.models import Q, Count, Sum
+from django.utils import timezone
 from django.conf import settings
+from django.template.loader import render_to_string
+from django.core.mail import EmailMessage
+from django.core.mail.backends.smtp import EmailBackend
+from functools import wraps
+import json
+import logging
+from decimal import Decimal
+from datetime import datetime, timedelta
+import razorpay
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import letter, A4
+from reportlab.lib import colors
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib.units import inch, mm
+from io import BytesIO
+import io
 import os
+import openpyxl
+from openpyxl.styles import Font, Alignment, PatternFill
+from openpyxl.utils import get_column_letter
 
 
 def _generate_dsc_proforma_pdf(
@@ -668,20 +679,13 @@ def _generate_proforma_pdf(
     except Exception:
         pass
     return buffer, f"{filename_safe}_PI.pdf"
-from django.http import HttpResponseRedirect
-from functools import wraps
-from django.contrib.auth.decorators import login_required
-from django.core.paginator import Paginator
-from django.db.models import Q
-import json
-import razorpay
 
 from .models import (
     ProductMaster, ProductType, ProductItem, RateCardMaster, Customer, 
     QuoteSubmission, ContactSubmission, PaymentTransaction, 
-    PaymentSettings, Applicant,
+    PaymentSettings, Applicant, QuoteRequest,
     ProductTypeMaster, ProductMasterV2, ProductSubMaster, RateCardEntry,
-    ProductFormSubmission, DscPrice, DscSubmission,
+    ProductFormSubmission, DscPrice, DscSubmission, DscEnquiry,
 )
 
 # ============================================================================
@@ -1356,15 +1360,16 @@ def dsc_enquiry_api(request):
         outside_india = bool(payload.get('outside_india'))
         quoted_price = float(payload.get('quoted_price') or 0)
 
-        if not (name and email and mobile):
-            return JsonResponse({'success': False, 'message': 'Name, Email and Mobile are required.'}, status=400)
+        if not (name and email and mobile and address):
+            return JsonResponse({'success': False, 'message': 'Name, Email, Mobile and Address are required.'}, status=400)
 
-        from .models import DscEnquiry
         enquiry = DscEnquiry.objects.create(
             name=name,
             email=email,
             mobile=mobile,
             address=address,
+            company_name=company_name,
+            gst_number=gst_number,
             class_type=class_type or '',
             user_type=user_type or '',
             cert_type=cert_type or '',
@@ -2020,13 +2025,10 @@ def verify_dsc_payment(request):
         return JsonResponse({'status': 'error', 'message': 'Submission not found'}, status=404)
     except json.JSONDecodeError as e:
         return JsonResponse({'status': 'error', 'message': f'Invalid JSON data: {str(e)}'}, status=400)
-    except Exception as e:
-        return JsonResponse({'status': 'error', 'message': f'Payment verification failed: {str(e)}'}, status=500)
 
 @admin_required
 def custom_admin_dsc_enquiries(request):
     """List DSC enquiries in custom admin."""
-    from .models import DscEnquiry
     enquiries = DscEnquiry.objects.all().order_by('-created_at')
     paginator = Paginator(enquiries, 20)
     page_number = request.GET.get('page')
@@ -2037,7 +2039,6 @@ def custom_admin_dsc_enquiries(request):
 @admin_required
 def custom_admin_dsc_submissions(request):
     """List DSC submissions (actual purchases) in custom admin."""
-    from .models import DscSubmission
     submissions = DscSubmission.objects.all().order_by('-created_at')
     paginator = Paginator(submissions, 20)
     page_number = request.GET.get('page')
@@ -2842,7 +2843,6 @@ def submit_quote(request):
             
             # Create submission record
             from django.utils import timezone
-            from .models import QuoteRequest
             quote_request = QuoteRequest.objects.create(
                 customer_name=customer_name,
                 company_name='',  # Not collected in new form
@@ -2893,8 +2893,6 @@ def submit_quote(request):
                     subject = f"Enquiry Confirmation - {product_type.prdt_desc}"
 
                     # Render HTML email template
-                    from django.template.loader import render_to_string
-                    from django.utils import timezone
                     
                     email_context = {
                         'customer_name': customer_name,
@@ -4622,7 +4620,6 @@ def get_submission_details(request, submission_id):
         submission = ProductFormSubmission.objects.get(id=submission_id)
         
         # Render the details HTML
-        from django.template.loader import render_to_string
         html_content = render_to_string('products/admin/submission_details.html', {
             'submission': submission
         })
@@ -4689,3 +4686,235 @@ def handler404(request, exception):
 def handler500(request):
     """Custom 500 error handler"""
     return render(request, 'products/500.html', status=500)
+
+# ============================================================================
+# DSC CHECKING ADMIN VIEW
+# ============================================================================
+
+@admin_required
+def dsc_checking_admin(request):
+    """DSC Checking admin panel with date filtering, pagination, and Excel export"""
+    
+    # Get filter parameters
+    from_date = request.GET.get('from_date', '')
+    to_date = request.GET.get('to_date', '')
+    per_page = request.GET.get('per_page', '10')
+    export_excel = request.GET.get('export_excel', '')
+    
+    # Base queryset
+    queryset = DscSubmission.objects.all().order_by('-created_at')
+    
+    # Debug: Show some sample dates from database
+    sample_submissions = DscSubmission.objects.all()[:5]
+    print(f"[DSC_CHECKING_DEBUG] Sample submission dates:")
+    for i, sub in enumerate(sample_submissions):
+        print(f"  {i+1}. ID: {sub.id}, Date: {sub.created_at}, Name: {sub.name}")
+    
+    # Apply date filters
+    date_error = None
+    
+    if from_date:
+        try:
+            from_date_parsed = datetime.strptime(from_date, '%Y-%m-%d').date()
+            # Convert to timezone-aware datetime for the start of the day
+            from_datetime = timezone.make_aware(datetime.combine(from_date_parsed, datetime.min.time()))
+            queryset = queryset.filter(created_at__gte=from_datetime)
+            print(f"Applied from_date filter: {from_datetime}")
+        except ValueError as e:
+            date_error = f"Invalid from date format: {from_date}"
+            print(f"From date parsing error: {e}")
+    
+    if to_date:
+        try:
+            from datetime import time
+            to_date_parsed = datetime.strptime(to_date, '%Y-%m-%d').date()
+            # Convert to timezone-aware datetime for the end of the day
+            to_datetime = timezone.make_aware(datetime.combine(to_date_parsed, time(23, 59, 59, 999999)))
+            queryset = queryset.filter(created_at__lte=to_datetime)
+            print(f"Applied to_date filter: {to_datetime}")
+        except ValueError as e:
+            date_error = f"Invalid to date format: {to_date}"
+            print(f"To date parsing error: {e}")
+    
+    # Validate date range
+    if from_date and to_date and not date_error:
+        try:
+            from_date_obj = datetime.strptime(from_date, '%Y-%m-%d').date()
+            to_date_obj = datetime.strptime(to_date, '%Y-%m-%d').date()
+            if from_date_obj > to_date_obj:
+                date_error = "From Date cannot be later than To Date."
+        except ValueError:
+            pass
+    
+    # Handle Excel export
+    if export_excel == 'true':
+        return export_dsc_data_to_excel(queryset, from_date, to_date)
+    
+    # Pagination
+    try:
+        per_page_int = int(per_page)
+        if per_page_int not in [10, 20, 50, 100]:
+            per_page_int = 10
+    except:
+        per_page_int = 10
+    
+    paginator = Paginator(queryset, per_page_int)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    # Statistics
+    total_submissions = queryset.count()
+    new_submissions = queryset.filter(status='submitted').count()
+    payment_received = queryset.filter(status='payment_received').count()
+    processing = queryset.filter(status='processing').count()
+    completed = queryset.filter(status='completed').count()
+    
+    # Debug information
+    print(f"[DSC_CHECKING_DEBUG] from_date: {from_date}, to_date: {to_date}")
+    print(f"[DSC_CHECKING_DEBUG] Total records after filtering: {total_submissions}")
+    print(f"[DSC_CHECKING_DEBUG] Date error: {date_error}")
+    
+    # Get all submission dates for debugging
+    if total_submissions > 0:
+        first_submission = queryset.first()
+        last_submission = queryset.last()
+        print(f"[DSC_CHECKING_DEBUG] First submission date: {first_submission.created_at}")
+        print(f"[DSC_CHECKING_DEBUG] Last submission date: {last_submission.created_at}")
+    
+    context = {
+        'page_obj': page_obj,
+        'from_date': from_date,
+        'to_date': to_date,
+        'per_page': per_page,
+        'total_submissions': total_submissions,
+        'new_submissions': new_submissions,
+        'payment_received': payment_received,
+        'processing': processing,
+        'completed': completed,
+        'per_page_options': [10, 20, 50, 100],
+        'date_error': date_error,
+    }
+    
+    return render(request, 'products/admin/dsc_checking.html', context)
+
+def export_dsc_data_to_excel(queryset, from_date, to_date):
+    """Export DSC data to Excel file"""
+    from django.http import HttpResponse
+    
+    # Create workbook and worksheet
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "DSC Data"
+    
+    # Define headers as per requirement
+    headers = [
+        'S.NO', 'Date', 'Application No.', 'CUSTOMER NAME', 'MOBILE NUMBER', 
+        'E-MAIL', 'NEW / RENEWAL', 'REFERENCE NAME', 'REFERENCE MOBILE', 
+        'Company Name / Individual Name', 'TYPE', 'E-SIGN / pantan e-sing', 
+        'GST', 'AMOUNT', 'TOKEN', 'ADDRESS', 'Order No', 'UPI ID FUSIONTEC'
+    ]
+    
+    # Style headers
+    header_font = Font(bold=True, color="FFFFFF")
+    header_fill = PatternFill(start_color="366092", end_color="366092", fill_type="solid")
+    header_alignment = Alignment(horizontal="center", vertical="center")
+    
+    # Add headers
+    for col_num, header in enumerate(headers, 1):
+        cell = ws.cell(row=1, column=col_num)
+        cell.value = header
+        cell.font = header_font
+        cell.fill = header_fill
+        cell.alignment = header_alignment
+    
+    # Add data rows
+    for row_num, submission in enumerate(queryset, 2):
+        # S.NO
+        ws.cell(row=row_num, column=1, value=row_num - 1)
+        
+        # Date
+        ws.cell(row=row_num, column=2, value=submission.created_at.strftime('%d/%m/%Y'))
+        
+        # Application No.
+        ws.cell(row=row_num, column=3, value=f"DSC-{submission.id}")
+        
+        # CUSTOMER NAME
+        ws.cell(row=row_num, column=4, value=submission.name)
+        
+        # MOBILE NUMBER
+        ws.cell(row=row_num, column=5, value=submission.mobile)
+        
+        # E-MAIL
+        ws.cell(row=row_num, column=6, value=submission.email)
+        
+        # NEW / RENEWAL (assuming all are NEW for DSC)
+        ws.cell(row=row_num, column=7, value="NEW")
+        
+        # REFERENCE NAME
+        ws.cell(row=row_num, column=8, value=submission.reference_name or "")
+        
+        # REFERENCE MOBILE
+        ws.cell(row=row_num, column=9, value=submission.reference_contact or "")
+        
+        # Company Name / Individual Name
+        company_or_individual = submission.company_name if submission.company_name else "Individual"
+        ws.cell(row=row_num, column=10, value=company_or_individual)
+        
+        # TYPE
+        dsc_type = f"{submission.class_type} - {submission.user_type} - {submission.cert_type} - {submission.validity}"
+        ws.cell(row=row_num, column=11, value=dsc_type)
+        
+        # E-SIGN / pantan e-sing
+        ws.cell(row=row_num, column=12, value=submission.cert_type.upper())
+        
+        # GST
+        ws.cell(row=row_num, column=13, value=submission.gst_number or "")
+        
+        # AMOUNT
+        ws.cell(row=row_num, column=14, value=float(submission.quoted_price))
+        
+        # TOKEN
+        token_status = "Yes" if submission.include_token else "No"
+        ws.cell(row=row_num, column=15, value=token_status)
+        
+        # ADDRESS
+        ws.cell(row=row_num, column=16, value=submission.address or "")
+        
+        # Order No
+        ws.cell(row=row_num, column=17, value=submission.razorpay_order_id or "")
+        
+        # UPI ID FUSIONTEC (placeholder)
+        ws.cell(row=row_num, column=18, value="dsc@fusiontec.com")
+    
+    # Auto-adjust column widths
+    for column in ws.columns:
+        max_length = 0
+        column_letter = get_column_letter(column[0].column)
+        for cell in column:
+            try:
+                if len(str(cell.value)) > max_length:
+                    max_length = len(str(cell.value))
+            except:
+                pass
+        adjusted_width = min(max_length + 2, 50)
+        ws.column_dimensions[column_letter].width = adjusted_width
+    
+    # Create filename with date range
+    if from_date and to_date:
+        filename = f"DSC_Data_{from_date}_to_{to_date}.xlsx"
+    elif from_date:
+        filename = f"DSC_Data_from_{from_date}.xlsx"
+    elif to_date:
+        filename = f"DSC_Data_to_{to_date}.xlsx"
+    else:
+        filename = f"DSC_Data_{datetime.now().strftime('%Y%m%d')}.xlsx"
+    
+    # Create response
+    response = HttpResponse(
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    
+    # Save workbook to response
+    wb.save(response)
+    return response

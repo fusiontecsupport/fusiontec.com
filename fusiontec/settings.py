@@ -147,8 +147,7 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-
-# Email settings (use Gmail or your SMTP provider)
+# # Email settings (use Gmail or your SMTP provider)
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'   # or your SMTP server
 EMAIL_PORT = 587
@@ -158,6 +157,17 @@ EMAIL_HOST_PASSWORD = 'vlcm kcyv eyqf xzna'     # use actual SMTP passwor
 DEFAULT_FROM_EMAIL = 'support@fusiontec.com'
 
 CONTACT_FORM_RECIPIENT = 'support@fusiontec.com'
+
+# # Email settings (use Gmail or your SMTP provider)
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_HOST = 'smtp.gmail.com'   # or your SMTP server
+# EMAIL_PORT = 587
+# EMAIL_USE_TLS = True
+# EMAIL_HOST_USER = 'dsc@fusiontec.com'
+# EMAIL_HOST_PASSWORD = 'pcjn sxte zvci tljs'     # use actual SMTP password
+# DEFAULT_FROM_EMAIL = 'dsc@fusiontec.com'
+
+# CONTACT_FORM_RECIPIENT = 'dsc@fusiontec.com'
 
 # razor pay id
 # my test API test id and key 

@@ -78,6 +78,7 @@ urlpatterns = [
     path('admin-payments/', views.custom_admin_payments, name='custom_admin_payments'),
     path('admin-applicants/', views.custom_admin_applicants, name='custom_admin_applicants'),
     path('admin-settings/', views.custom_admin_settings, name='custom_admin_settings'),
+    path('admin-dsc-checking/', views.dsc_checking_admin, name='dsc_checking_admin'),
     
     # legacy routes kept but redirected inside views
     path('admin-product-types/<int:master_id>/', views.admin_product_types, name='admin_product_types'),

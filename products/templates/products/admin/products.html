@@ -359,110 +359,6 @@
 </style>
 {% endblock %}
 
-<script>
-function deleteType(typeId) {
-    if (confirm('Are you sure you want to delete this product type? This will also delete all associated products and rate cards.')) {
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.innerHTML = `
-            {% csrf_token %}
-            <input type="hidden" name="action" value="delete_type">
-            <input type="hidden" name="type_id" value="${typeId}">
-        `;
-        document.body.appendChild(form);
-        form.submit();
-    }
-}
-
-function deleteProduct(productId) {
-    if (confirm('Are you sure you want to delete this product? This will also delete all associated rate cards.')) {
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.innerHTML = `
-            {% csrf_token %}
-            <input type="hidden" name="action" value="delete_product">
-            <input type="hidden" name="product_id" value="${productId}">
-        `;
-        document.body.appendChild(form);
-        form.submit();
-    }
-}
-
-// Enhanced Filter functionality
-function applyFilter() {
-    const filterSelect = document.getElementById('type-filter');
-    const filterSection = document.querySelector('.filter-section');
-    
-    // Add loading animation
-    filterSection.style.opacity = '0.7';
-    filterSection.style.transform = 'scale(0.98)';
-    
-    console.log('Filter value:', filterSelect.value);
-    
-    const currentUrl = new URL(window.location);
-    
-    if (filterSelect.value) {
-        currentUrl.searchParams.set('type_filter', filterSelect.value);
-    } else {
-        currentUrl.searchParams.delete('type_filter');
-    }
-    
-    console.log('Redirecting to:', currentUrl.toString());
-    
-    // Smooth transition
-    setTimeout(() => {
-        window.location.href = currentUrl.toString();
-    }, 200);
-}
-
-
-
-// Add smooth animations on page load
-document.addEventListener('DOMContentLoaded', function() {
-    const filterSection = document.querySelector('.filter-section');
-    const productRows = document.querySelectorAll('.product-row');
-    
-    // Animate filter section
-    if (filterSection) {
-        filterSection.style.opacity = '0';
-        filterSection.style.transform = 'translateY(-20px)';
-        
-        setTimeout(() => {
-            filterSection.style.transition = 'all 0.5s ease';
-            filterSection.style.opacity = '1';
-            filterSection.style.transform = 'translateY(0)';
-        }, 100);
-    }
-    
-    // Animate product rows with stagger
-    productRows.forEach((row, index) => {
-        row.style.opacity = '0';
-        row.style.transform = 'translateX(-20px)';
-        
-        setTimeout(() => {
-            row.style.transition = 'all 0.4s ease';
-            row.style.opacity = '1';
-            row.style.transform = 'translateX(0)';
-        }, 200 + (index * 50));
-    });
-});
-
-// Enhanced hover effects
-document.addEventListener('DOMContentLoaded', function() {
-    const productRows = document.querySelectorAll('.product-row');
-    
-    productRows.forEach(row => {
-        row.addEventListener('mouseenter', function() {
-            this.style.transform = 'translateX(8px) scale(1.01)';
-        });
-        
-        row.addEventListener('mouseleave', function() {
-            this.style.transform = 'translateX(0) scale(1)';
-        });
-    });
-});
-</script>
-
 {% block content %}
 <div class="row">
     <div class="col-12">
@@ -705,7 +601,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 {% else %}
                     <div class="text-center py-4">
                         <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
-                        <p class="text-muted">No products found. Add a type and a product on the left.</p>
+                        <p class="text-muted small">
+                            This page manages the new minimal schema tables: `ProductTypeMaster`, `ProductMaster`, and `RateCardMaster`.
+                        </p>
                     </div>
                 {% endif %}
             </div>
@@ -822,7 +720,40 @@ document.addEventListener('DOMContentLoaded', function() {
     </div>
 </div>
 
+{% endblock %}
+
+{% block extra_js %}
 <script>
+function deleteType(typeId) {
+    if (confirm('Are you sure you want to delete this product type? This will also delete all associated products and rate cards.')) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '';
+        form.innerHTML = `
+            <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+            <input type="hidden" name="action" value="delete_type">
+            <input type="hidden" name="type_id" value="${typeId}">
+        `;
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+function deleteProduct(productId) {
+    if (confirm('Are you sure you want to delete this product? This will also delete all associated rate cards.')) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '';
+        form.innerHTML = `
+            <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+            <input type="hidden" name="action" value="delete_product">
+            <input type="hidden" name="product_id" value="${productId}">
+        `;
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
 function editType(id, prdt_desc, sender_email, app_password) {
     document.getElementById('edit_type_id').value = id;
     document.getElementById('edit_prdt_desc').value = prdt_desc;
@@ -832,5 +763,79 @@ function editType(id, prdt_desc, sender_email, app_password) {
     var modal = new bootstrap.Modal(document.getElementById('editTypeModal'));
     modal.show();
 }
+
+// Enhanced Filter functionality
+function applyFilter() {
+    const filterSelect = document.getElementById('type-filter');
+    const filterSection = document.querySelector('.filter-section');
+    
+    // Add loading animation
+    if (filterSection) {
+        filterSection.style.opacity = '0.7';
+        filterSection.style.transform = 'scale(0.98)';
+    }
+    
+    console.log('Filter value:', filterSelect.value);
+    
+    const currentUrl = new URL(window.location);
+    
+    if (filterSelect.value) {
+        currentUrl.searchParams.set('type_filter', filterSelect.value);
+    } else {
+        currentUrl.searchParams.delete('type_filter');
+    }
+    
+    console.log('Redirecting to:', currentUrl.toString());
+    
+    // Smooth transition
+    setTimeout(() => {
+        window.location.href = currentUrl.toString();
+    }, 200);
+}
+
+// Add smooth animations on page load
+document.addEventListener('DOMContentLoaded', function() {
+    const filterSection = document.querySelector('.filter-section');
+    const productRows = document.querySelectorAll('.product-row');
+    
+    // Animate filter section
+    if (filterSection) {
+        filterSection.style.opacity = '0';
+        filterSection.style.transform = 'translateY(-20px)';
+        
+        setTimeout(() => {
+            filterSection.style.transition = 'all 0.5s ease';
+            filterSection.style.opacity = '1';
+            filterSection.style.transform = 'translateY(0)';
+        }, 100);
+    }
+    
+    // Animate product rows with stagger
+    productRows.forEach((row, index) => {
+        row.style.opacity = '0';
+        row.style.transform = 'translateX(-20px)';
+        
+        setTimeout(() => {
+            row.style.transition = 'all 0.4s ease';
+            row.style.opacity = '1';
+            row.style.transform = 'translateX(0)';
+        }, 200 + (index * 50));
+    });
+});
+
+// Enhanced hover effects
+document.addEventListener('DOMContentLoaded', function() {
+    const productRows = document.querySelectorAll('.product-row');
+    
+    productRows.forEach(row => {
+        row.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateX(8px) scale(1.01)';
+        });
+        
+        row.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateX(0) scale(1)';
+        });
+    });
+});
 </script>
-{% endblock %} 
+{% endblock %}
