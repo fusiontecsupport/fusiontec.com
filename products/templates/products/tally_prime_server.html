@@ -1,0 +1,263 @@
+{% extends 'products/base.html' %}
+
+{% load static %}
+
+{% block title %}TallyPrime Server - Enterprise Class Solution | FusionTec{% endblock %}
+
+{% block content %}
+
+<!-- Hero Section with Background Image -->
+<section class="hero-section" style="background: linear-gradient(135deg, rgba(248, 249, 250, 0.95) 0%, rgba(233, 236, 239, 0.95) 100%), url('/media/tally server/preview.jpg'); background-size: cover; background-position: center; background-attachment: fixed; padding: 120px 0 100px; position: relative; overflow: hidden;">
+    <div class="container" style="position: relative; z-index: 2;">
+        <div class="row align-items-center min-vh-75">
+            <div class="col-lg-6" data-aos="fade-right">
+                <div class="hero-content">
+                    <h1 class="display-2 fw-bold mb-4" style="color: #1e3a8a;">TallyPrime Server</h1>
+                    <h2 class="h3 fw-light mb-4" style="color: #4b5563;">Unleash the power of TallyPrime with a Client-Server Architecture</h2>
+                    <p class="lead mb-5" style="font-size: 1.25rem; line-height: 1.8; color: #4b5563;">
+                        TallyPrime Server offers powerful data server capabilities over the Gold license. This server-based Data Architecture unleashes greater concurrency, secured data access, and advanced monitoring capabilities. TallyPrime Server is truly an Enterprise Class product that helps fast-growing medium and large businesses improve their business efficiencies.
+                    </p>
+                    <div class="d-flex gap-3 flex-wrap">
+                        <a href="{% url 'contact' %}" class="btn btn-primary btn-lg px-5 py-3 fw-semibold shadow-lg">
+                            <i class="bi bi-envelope me-2"></i>Get Free Quote
+                        </a>
+                        <a href="{% url 'product_catalog' %}" class="btn btn-outline-primary btn-lg px-5 py-3 fw-semibold">
+                            <i class="bi bi-grid me-2"></i>View Products
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6" data-aos="fade-left">
+                <div class="text-center">
+                    <img src="/media/tally server/2081047.jpg" alt="Tally Prime Server" class="img-fluid rounded-4 shadow-lg" style="width: 100%; object-fit: contain; max-height: 600px;">
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Introduction Section -->
+<section class="py-5" style="background: white;">
+    <div class="container py-5">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-12" data-aos="fade-up">
+                <div class="text-center">
+                    <span class="badge bg-primary mb-3 px-3 py-2" style="font-size: 0.9rem;">ENTERPRISE SOLUTION</span>
+                    <h2 class="display-4 fw-bold mb-4" style="color: #1e3a8a;">TallyPrime Server</h2>
+                    <p class="lead mb-4" style="color: #4b5563; line-height: 1.8; max-width: 900px; margin: 0 auto;">
+                        TallyPrime Server offers powerful data server capabilities over the Gold license. This server-based Data Architecture unleashes greater concurrency, secured data access, and advanced monitoring capabilities. TallyPrime Server is truly an Enterprise Class product that helps fast-growing medium and large businesses improve their business efficiencies.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- High Concurrency Section -->
+<section class="py-5" style="background: #e9ecef;">
+    <div class="container py-5">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-6" data-aos="fade-right">
+                <div class="pe-lg-4">
+                    <span class="badge bg-success mb-3 px-3 py-2" style="font-size: 0.9rem;">HIGH CONCURRENCY</span>
+                    <h2 class="display-4 fw-bold mb-4" style="color: #1e3a8a;">High Concurrency</h2>
+                    <p class="lead mb-4" style="color: #4b5563; line-height: 1.8;">
+                        Performing operations in a frictionless environment
+                    </p>
+                    <p class="mb-4" style="color: #6b7280; line-height: 1.8;">
+                        Multiple users will be able to simultaneously load companies, save transactions, export reports, print reports, import data, take backup and perform other data related activities without experiencing any downtime.
+                    </p>
+                    <p class="mb-0" style="color: #6b7280; line-height: 1.8;">
+                        This will directly result in optimal utilization of man hours as the velocity at which a task gets completed will increase. Further, the users will be able to seamlessly work on the same data. Your Data will always be real-time, consistent, and accurate.
+                    </p>
+                </div>
+            </div>
+            <div class="col-lg-6" data-aos="fade-left">
+                <div class="position-relative">
+                    <img src="/media/tally server/5120328.jpg" alt="High Concurrency" class="img-fluid rounded-4 shadow-lg" style="width: 100%; object-fit: contain; max-height: 500px;">
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Secured by Design Section -->
+<section class="py-5" style="background: white;">
+    <div class="container py-5">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-6 order-lg-2" data-aos="fade-left">
+                <div class="ps-lg-4">
+                    <span class="badge bg-info mb-3 px-3 py-2" style="font-size: 0.9rem;">SECURITY</span>
+                    <h2 class="display-4 fw-bold mb-4" style="color: #1e3a8a;">Secured by design</h2>
+                    <p class="lead mb-4" style="color: #4b5563; line-height: 1.8;">
+                        Providing controlled access to data files
+                    </p>
+                    <p class="mb-4" style="color: #6b7280; line-height: 1.8;">
+                        When data files are managed through TallyPrime Server, the location of the data on the server is not required. The name of the data server is sufficient to access and operate TallyPrime.
+                    </p>
+                    <p class="mb-0" style="color: #6b7280; line-height: 1.8;">
+                        Operations over the company data like backup and restore are controlled with server level permissions available with authorization only. This ensures better control over user's access to data.
+                    </p>
+                </div>
+            </div>
+            <div class="col-lg-6 order-lg-1" data-aos="fade-right">
+                <div class="position-relative">
+                    <img src="/media/tally server/6478097.jpg" alt="Secured by Design" class="img-fluid rounded-4 shadow-lg" style="width: 100%; object-fit: contain; max-height: 500px;">
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- High Reliability Section -->
+<section class="py-5" style="background: #e9ecef;">
+    <div class="container py-5">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-6" data-aos="fade-right">
+                <div class="pe-lg-4">
+                    <span class="badge bg-warning mb-3 px-3 py-2" style="font-size: 0.9rem;">RELIABILITY</span>
+                    <h2 class="display-4 fw-bold mb-4" style="color: #1e3a8a;">High Reliability</h2>
+                    <p class="lead mb-4" style="color: #4b5563; line-height: 1.8;">
+                        Minimizing instances of system unavailability
+                    </p>
+                    <p class="mb-4" style="color: #6b7280; line-height: 1.8;">
+                        Continue recording transactions or viewing reports while taking backup with no compromise on speed or access or accuracy. It also limits discrepancies at the client end to the client systems and ensures that neither data on the server nor the operations of other users get impacted.
+                    </p>
+                    <p class="mb-0" style="color: #6b7280; line-height: 1.8;">
+                        Thus, improves work productivity and business performance by avoiding disruption of work and ensuring zero downtime.
+                    </p>
+                </div>
+            </div>
+            <div class="col-lg-6" data-aos="fade-left">
+                <div class="position-relative">
+                    <img src="/media/tally server/6488722.jpg" alt="High Reliability" class="img-fluid rounded-4 shadow-lg" style="width: 100%; object-fit: contain; max-height: 500px;">
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Business Process Optimization Section -->
+<section class="py-5" style="background: white;">
+    <div class="container py-5">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-6 order-lg-2" data-aos="fade-left">
+                <div class="ps-lg-4">
+                    <span class="badge bg-primary mb-3 px-3 py-2" style="font-size: 0.9rem;">OPTIMIZATION</span>
+                    <h2 class="display-4 fw-bold mb-4" style="color: #1e3a8a;">Business Process Optimization</h2>
+                    <p class="lead mb-4" style="color: #4b5563; line-height: 1.8;">
+                        Increased Productivity & Business Performance
+                    </p>
+                    <p class="mb-0" style="color: #6b7280; line-height: 1.8;">
+                        A comprehensive monitoring capability allows authorized users to manage user sessions, such as who is logged in and activities in progress. Also, with the ability to track, monitor user activities /sessions and even disconnect users, if required, it helps to optimize processes or system usage for enhanced productivity.
+                    </p>
+                </div>
+            </div>
+            <div class="col-lg-6 order-lg-1" data-aos="fade-right">
+                <div class="position-relative">
+                    <img src="/media/tally server/2081047.jpg" alt="Business Process Optimization" class="img-fluid rounded-4 shadow-lg" style="width: 100%; object-fit: contain; max-height: 500px;">
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FusionTec Partner Section -->
+<section class="py-5" style="background: #e9ecef;">
+    <div class="container py-5">
+        <div class="row">
+            <div class="col-lg-10 mx-auto">
+                <div class="partner-card text-center p-5 rounded-4 shadow-lg" style="background: white; border: 1px solid #e5e7eb;" data-aos="fade-up">
+                    <h3 class="display-5 fw-bold mb-4" style="color: #1e3a8a;">FusionTec - Your Trusted Partner</h3>
+                    <p class="lead mb-5" style="color: #4b5563; max-width: 700px; margin: 0 auto;">
+                        FusionTec is a leading Tally Authorised Partner with the vision of providing Business Solutions to its Customers. We are committed to helping businesses grow with the right tools and support.
+                    </p>
+                    <div class="d-flex gap-3 justify-content-center flex-wrap">
+                        <a href="{% url 'contact' %}" class="btn btn-primary btn-lg px-5 py-3 fw-semibold shadow">
+                            <i class="bi bi-telephone me-2"></i>Contact Us
+                        </a>
+                        <a href="{% url 'product_catalog' %}" class="btn btn-outline-primary btn-lg px-5 py-3 fw-semibold">
+                            <i class="bi bi-box-seam me-2"></i>Explore Products
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="py-5" style="background: white;">
+    <div class="container py-5">
+        <div class="row">
+            <div class="col-lg-8 mx-auto text-center">
+                <h2 class="display-4 fw-bold mb-4" style="color: #1e3a8a;">Ready to Unleash Enterprise Power?</h2>
+                <p class="lead mb-5" style="color: #4b5563;">Get started with TallyPrime Server today and experience the difference</p>
+                <div class="d-flex gap-3 justify-content-center flex-wrap">
+                    <a href="{% url 'contact' %}" class="btn btn-primary btn-lg px-5 py-3 fw-semibold shadow-lg">
+                        <i class="bi bi-envelope me-2"></i>Get a Free Quote
+                    </a>
+                    <a href="{% url 'product_catalog' %}" class="btn btn-outline-primary btn-lg px-5 py-3 fw-semibold">
+                        <i class="bi bi-grid me-2"></i>View All Products
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    /* Hero Section */
+    .hero-section {
+        min-height: 90vh;
+        display: flex;
+        align-items: center;
+    }
+    
+    .min-vh-75 {
+        min-height: 75vh;
+    }
+    
+    /* Partner Card */
+    .partner-card {
+        transition: transform 0.3s ease;
+    }
+    
+    .partner-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    /* Section Spacing */
+    section {
+        position: relative;
+    }
+    
+    /* Ensure content visibility */
+    [data-aos] {
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+    
+    /* Badge styling */
+    .badge {
+        letter-spacing: 1px;
+        font-weight: 600;
+    }
+</style>
+
+<script>
+    // Initialize AOS
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof AOS !== 'undefined') {
+            AOS.init({
+                duration: 800,
+                once: true,
+                offset: 100,
+                easing: 'ease-in-out'
+            });
+        }
+    });
+</script>
+
+{% endblock %}
+

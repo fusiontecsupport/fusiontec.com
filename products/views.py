@@ -874,11 +874,29 @@ def tally_prime_page(request):
     """Tally Prime product page"""
     return render(request, 'products/tally_prime.html')
 
+def tally_prime_server_page(request):
+    """Tally Prime Server product page"""
+    return render(request, 'products/tally_prime_server.html')
+
+def tally_prime_aws_page(request):
+    """Tally Prime on AWS product page"""
+    return render(request, 'products/tally_prime_aws.html')
+
 def product_catalog(request):
     """Product catalog page showing all products"""
+    # Redirect specific product searches to dedicated pages
+    search_query = request.GET.get('search', '').strip()
+    if search_query:
+        # Redirect Tally Prime Server searches to dedicated page
+        if search_query.lower() in ['tally prime server', 'tallyprime server', 'tally server']:
+            return redirect('tally_prime_server')
+        # Redirect Tally Prime on AWS searches to dedicated page
+        if search_query.lower() in ['tally prime on aws', 'tallyprime on aws', 'tally aws', 'tally prime aws']:
+            return redirect('tally_prime_aws')
+    
     product_masters = ProductMaster.objects.filter(is_active=True).order_by('display_order')
     
-    # Get search query
+    # Get search query again (for non-redirected searches)
     search_query = request.GET.get('search', '')
     if search_query:
         product_items = ProductItem.objects.filter(
