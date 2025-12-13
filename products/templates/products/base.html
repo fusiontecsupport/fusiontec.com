@@ -65,6 +65,31 @@
           <li class="nav-item"><a class="nav-link" href="{% url 'about' %}">About</a></li>
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              Products
+            </a>
+            <ul class="dropdown-menu">
+              <li><h6 class="dropdown-header">Top Tally Products</h6></li>
+              <li><a class="dropdown-item" href="{% url 'tally_prime' %}">
+                <i class="bi bi-box-seam me-2"></i>Tally Prime
+              </a></li>
+              <li><a class="dropdown-item" href="{% url 'product_catalog' %}?search=Tally Prime Server">
+                <i class="bi bi-stack me-2"></i>Tally Prime Server
+              </a></li>
+              <li><a class="dropdown-item" href="{% url 'product_catalog' %}?search=Tally Prime on AWS">
+                <i class="bi bi-cloud-rain me-2"></i>Tally Prime on AWS
+              </a></li>
+              <li><a class="dropdown-item" href="{% url 'product_catalog' %}?search=Tally Software Service">
+                <i class="bi bi-file-earmark-text me-2"></i>Tally Software Service
+              </a></li>
+              <li><a class="dropdown-item" href="{% url 'product_catalog' %}?search=TallyPrime 4.0">
+                <i class="bi bi-stack me-2"></i>TallyPrime 4.0
+              </a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item" href="{% url 'product_catalog' %}">View All Products</a></li>
+            </ul>
+          </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
               Services
             </a>
             <ul class="dropdown-menu">
@@ -146,6 +171,21 @@
     .dropdown-item:hover {
       background-color: #f8fafc;
       color: #3b82f6;
+    }
+
+    .dropdown-header {
+      color: #1e3a8a;
+      font-weight: 600;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 10px 20px 5px;
+    }
+
+    .dropdown-item i {
+      font-size: 1rem;
+      width: 20px;
+      text-align: center;
     }
 
     /* Get a Free Quote Button */
@@ -773,6 +813,55 @@ document.addEventListener("DOMContentLoaded", function () {
 
   <!-- Your custom JS -->
   <script src="{% static 'products/js/scripts.js' %}"></script>
+
+  <!-- Dropdown Hover Functionality -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Enable hover for all navbar dropdowns
+      const dropdowns = document.querySelectorAll('.navbar-nav .nav-item.dropdown');
+      
+      dropdowns.forEach(function(dropdown) {
+        const dropdownToggle = dropdown.querySelector('.dropdown-toggle');
+        const dropdownMenu = dropdown.querySelector('.dropdown-menu');
+        
+        if (!dropdownToggle || !dropdownMenu) return;
+        
+        let hoverTimeout;
+        
+        // Show dropdown on hover
+        dropdown.addEventListener('mouseenter', function() {
+          clearTimeout(hoverTimeout);
+          const bsDropdown = bootstrap.Dropdown.getOrCreateInstance(dropdownToggle);
+          bsDropdown.show();
+        });
+        
+        // Keep dropdown open when hovering over menu
+        dropdownMenu.addEventListener('mouseenter', function() {
+          clearTimeout(hoverTimeout);
+        });
+        
+        // Hide dropdown when mouse leaves (with small delay for better UX)
+        dropdown.addEventListener('mouseleave', function() {
+          hoverTimeout = setTimeout(function() {
+            const bsDropdown = bootstrap.Dropdown.getInstance(dropdownToggle);
+            if (bsDropdown) {
+              bsDropdown.hide();
+            }
+          }, 150); // 150ms delay to allow moving to dropdown menu
+        });
+        
+        // Also hide when leaving the menu
+        dropdownMenu.addEventListener('mouseleave', function() {
+          hoverTimeout = setTimeout(function() {
+            const bsDropdown = bootstrap.Dropdown.getInstance(dropdownToggle);
+            if (bsDropdown) {
+              bsDropdown.hide();
+            }
+          }, 150);
+        });
+      });
+    });
+  </script>
 
   
 

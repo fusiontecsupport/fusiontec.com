@@ -12,6 +12,7 @@ urlpatterns = [
     path('about/', views.about_page, name='about'),
     path('process/', views.process_page, name='process'),
     path('tally', views.products_page, name='products'),
+    path('tally-prime/', views.tally_prime_page, name='tally_prime'),
     path('contact/', views.contact_page, name='contact'),
     path('digital-signature/', views.dsc_page, name='dsc'),
     path('net_banking/', views.net_banking_page, name='net_banking'),

@@ -1,0 +1,291 @@
+{% extends 'products/base.html' %}
+
+{% load static %}
+
+{% block title %}Tally Prime - Your Growth Partner | FusionTec{% endblock %}
+
+{% block content %}
+    <!-- Hero Section -->
+    <section class="py-5" style="background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); color: white !important; padding-top: 100px !important; padding-bottom: 80px !important; position: relative; z-index: 1;">
+        <div class="container px-4 px-lg-5" style="position: relative; z-index: 2;">
+            <div class="row align-items-center">
+                <div class="col-lg-8 mx-auto text-center">
+                    <h1 class="display-3 fw-bold mb-4" style="color: white !important;" data-aos="fade-up">Tally Prime</h1>
+                    <h2 class="display-6 fw-light mb-5" style="color: white !important;" data-aos="fade-up" data-aos-delay="100">Your Growth Partner</h2>
+                    <p class="lead mb-4" data-aos="fade-up" data-aos-delay="200" style="font-size: 1.2rem; line-height: 1.8; color: white !important;">
+                        To grow your business, and to make the right business decisions, you need the right insights. With features like "Go To" and "customisable reports" in the new TallyPrime, you can discover and look at reports, slicing and dicing them the way you want.
+                    </p>
+                    <p class="lead mb-5" data-aos="fade-up" data-aos-delay="250" style="font-size: 1.2rem; line-height: 1.8; color: white !important;">
+                        To help you in your growth journey, TallyPrime enables you to manage multiple companies and incrementally add features such as multiple go-downs, multi-currency, order process, cost centres etc. This helps you get rid of complexities, and in turn, focus on business growth.
+                    </p>
+                    <div class="d-flex gap-3 justify-content-center flex-wrap" data-aos="fade-up" data-aos-delay="300">
+                        <a href="{% url 'contact' %}" class="btn btn-light btn-lg px-5">
+                            <i class="bi bi-envelope me-2"></i>Get Quote
+                        </a>
+                        <a href="{% url 'product_catalog' %}" class="btn btn-outline-light btn-lg px-5">
+                            <i class="bi bi-grid me-2"></i>View All Products
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Your Growth Partner Section -->
+    <section class="py-5">
+        <div class="container px-4 px-lg-5">
+            <div class="row align-items-center mb-5">
+                <div class="col-lg-6" data-aos="fade-right">
+                    <h2 class="display-5 fw-bold mb-4" style="color: #1e3a8a;">Your Growth Partner</h2>
+                    <p class="mb-4" style="font-size: 1.1rem; line-height: 1.8;">
+                        To grow your business, and to make the right business decisions, you need the right insights. With features like "Go To" and "customisable reports" in the new TallyPrime, you can discover and look at reports, slicing and dicing them the way you want.
+                    </p>
+                    <p class="mb-4" style="font-size: 1.1rem; line-height: 1.8;">
+                        To help you in your growth journey, TallyPrime enables you to manage multiple companies and incrementally add features such as multiple go-downs, multi-currency, order process, cost centres etc. This helps you get rid of complexities, and in turn, focus on business growth.
+                    </p>
+                </div>
+                <div class="col-lg-6" data-aos="fade-left">
+                    <div class="text-center">
+                        <div class="bg-light rounded-4 p-5 shadow-sm">
+                            <i class="bi bi-graph-up-arrow" style="font-size: 5rem; color: #3b82f6;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Better Control Over Cash Flow Section -->
+    <section class="py-5" style="background-color: #f8fafc;">
+        <div class="container px-4 px-lg-5">
+            <div class="row align-items-center">
+                <div class="col-lg-6 order-lg-2" data-aos="fade-left">
+                    <h2 class="display-5 fw-bold mb-4" style="color: #1e3a8a;">Better control over cash flow</h2>
+                    <p class="mb-4" style="font-size: 1.1rem; line-height: 1.8;">
+                        Quick and hassle-free bills receivables and payable management help you to get paid faster as well as managing payment timelines. Also, Tally facilitates easy and efficient stock movement, making it possible to optimize the cash flow.
+                    </p>
+                    <p class="mb-4" style="font-size: 1.1rem; line-height: 1.8;">
+                        Besides, the insightful reports at blink of eye help you make confident decisions and plan the growth of your business better.
+                    </p>
+                </div>
+                <div class="col-lg-6 order-lg-1" data-aos="fade-right">
+                    <div class="text-center">
+                        <div class="bg-white rounded-4 p-5 shadow-sm">
+                            <i class="bi bi-cash-coin" style="font-size: 5rem; color: #3b82f6;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Enhanced Business Efficiency Section -->
+    <section class="py-5">
+        <div class="container px-4 px-lg-5">
+            <div class="row align-items-center mb-5">
+                <div class="col-lg-6" data-aos="fade-right">
+                    <h2 class="display-5 fw-bold mb-4" style="color: #1e3a8a;">Enhanced Business Efficiency</h2>
+                    <p class="mb-4" style="font-size: 1.1rem; line-height: 1.8;">
+                        With the speed that Tally brings, you can get things done quickly and save precious time, helping you do more for less. With TallyPrime, you can print or view the reports being in the middle of voucher entry, you can load another company being in a report without abandoning the activity you were on it, get to know the irregularities or odd details from every reports that you view and much more.
+                    </p>
+                    <p class="mb-4" style="font-size: 1.1rem; line-height: 1.8;">
+                        No more remembering short cut keys, you have the intuitive and consistent workflow that helps you do work faster.
+                    </p>
+                </div>
+                <div class="col-lg-6" data-aos="fade-left">
+                    <div class="text-center">
+                        <div class="bg-light rounded-4 p-5 shadow-sm">
+                            <i class="bi bi-speedometer2" style="font-size: 5rem; color: #3b82f6;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Tax Compliance Made Easy Section -->
+    <section class="py-5" style="background-color: #f8fafc;">
+        <div class="container px-4 px-lg-5">
+            <div class="row align-items-center">
+                <div class="col-lg-6 order-lg-2" data-aos="fade-left">
+                    <h2 class="display-5 fw-bold mb-4" style="color: #1e3a8a;">Tax compliance made easy</h2>
+                    <p class="mb-4" style="font-size: 1.1rem; line-height: 1.8;">
+                        Tally's Prevention, Detection and Correction mechanism ensures that your books are always accurate, hence giving you the confidence that the returns you file are always correct!
+                    </p>
+                </div>
+                <div class="col-lg-6 order-lg-1" data-aos="fade-right">
+                    <div class="text-center">
+                        <div class="bg-white rounded-4 p-5 shadow-sm">
+                            <i class="bi bi-shield-check" style="font-size: 5rem; color: #3b82f6;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FusionTec Partner Section -->
+    <section class="py-5">
+        <div class="container px-4 px-lg-5">
+            <div class="row">
+                <div class="col-lg-8 mx-auto text-center">
+                    <div class="bg-light rounded-4 p-5 shadow-sm" data-aos="fade-up">
+                        <h3 class="fw-bold mb-4" style="color: #1e3a8a;">FusionTec - Your Trusted Partner</h3>
+                        <p class="lead mb-4">
+                            FusionTec is a leading Tally Authorised Partner with the vision of providing Business Solutions 
+                            to its Customers. We are committed to helping businesses grow with the right tools and support.
+                        </p>
+                        <div class="d-flex gap-3 justify-content-center flex-wrap mt-4">
+                            <a href="{% url 'contact' %}" class="btn btn-primary btn-lg px-5">
+                                <i class="bi bi-telephone me-2"></i>Contact Us
+                            </a>
+                            <a href="{% url 'product_catalog' %}" class="btn btn-outline-primary btn-lg px-5">
+                                <i class="bi bi-box-seam me-2"></i>Explore Products
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Grid Section -->
+    <section class="py-5" style="background-color: #f8fafc;">
+        <div class="container px-4 px-lg-5">
+            <div class="row">
+                <div class="col-12 text-center mb-5">
+                    <h2 class="display-5 fw-bold mb-3" style="color: #1e3a8a;">Key Features</h2>
+                    <p class="lead text-muted">Everything you need to manage your business efficiently</p>
+                </div>
+            </div>
+            <div class="row g-4">
+                <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center p-4">
+                            <div class="mb-3">
+                                <i class="bi bi-building" style="font-size: 3rem; color: #3b82f6;"></i>
+                            </div>
+                            <h5 class="fw-bold mb-3">Multiple Companies</h5>
+                            <p class="text-muted">Manage multiple companies and incrementally add features as your business grows.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center p-4">
+                            <div class="mb-3">
+                                <i class="bi bi-graph-up" style="font-size: 3rem; color: #3b82f6;"></i>
+                            </div>
+                            <h5 class="fw-bold mb-3">Customizable Reports</h5>
+                            <p class="text-muted">Discover and look at reports, slicing and dicing them the way you want with "Go To" feature.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4" data-aos="fade-up" data-aos-delay="300">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center p-4">
+                            <div class="mb-3">
+                                <i class="bi bi-currency-exchange" style="font-size: 3rem; color: #3b82f6;"></i>
+                            </div>
+                            <h5 class="fw-bold mb-3">Multi-Currency Support</h5>
+                            <p class="text-muted">Handle multiple currencies and go-downs to streamline your operations.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4" data-aos="fade-up" data-aos-delay="400">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center p-4">
+                            <div class="mb-3">
+                                <i class="bi bi-file-earmark-text" style="font-size: 3rem; color: #3b82f6;"></i>
+                            </div>
+                            <h5 class="fw-bold mb-3">Order Processing</h5>
+                            <p class="text-muted">Efficient order process management to keep your business operations smooth.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4" data-aos="fade-up" data-aos-delay="500">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center p-4">
+                            <div class="mb-3">
+                                <i class="bi bi-cash-stack" style="font-size: 3rem; color: #3b82f6;"></i>
+                            </div>
+                            <h5 class="fw-bold mb-3">Cost Centres</h5>
+                            <p class="text-muted">Track and manage cost centres effectively for better financial control.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4" data-aos="fade-up" data-aos-delay="600">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center p-4">
+                            <div class="mb-3">
+                                <i class="bi bi-shield-check" style="font-size: 3rem; color: #3b82f6;"></i>
+                            </div>
+                            <h5 class="fw-bold mb-3">Tax Compliance</h5>
+                            <p class="text-muted">Prevention, Detection and Correction mechanism ensures accurate books and returns.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-5" style="background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); color: white;">
+        <div class="container px-4 px-lg-5">
+            <div class="row">
+                <div class="col-lg-8 mx-auto text-center">
+                    <h2 class="display-5 fw-bold mb-4">Ready to Grow Your Business?</h2>
+                    <p class="lead mb-5">Get started with Tally Prime today and experience the difference</p>
+                    <div class="d-flex gap-3 justify-content-center flex-wrap">
+                        <a href="{% url 'contact' %}" class="btn btn-light btn-lg px-5">
+                            <i class="bi bi-envelope me-2"></i>Get a Free Quote
+                        </a>
+                        <a href="{% url 'product_catalog' %}" class="btn btn-outline-light btn-lg px-5">
+                            <i class="bi bi-grid me-2"></i>View All Products
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+<style>
+    section {
+        padding: 80px 0;
+    }
+    
+    .card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1) !important;
+    }
+    
+    /* Ensure content is visible even if AOS fails */
+    [data-aos] {
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+    
+    /* Make sure text is visible */
+    h1, h2, h3, h4, h5, h6, p, span, div {
+        color: inherit !important;
+    }
+</style>
+
+<script>
+    // Ensure AOS is initialized
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof AOS !== 'undefined') {
+            AOS.init({
+                duration: 800,
+                once: true,
+                offset: 100
+            });
+        }
+    });
+</script>
+
+{% endblock %}

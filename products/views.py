@@ -870,6 +870,10 @@ def net_banking_page(request):
     context = _get_index_context('net_banking')
     return render(request, 'products/index.html', context)
 
+def tally_prime_page(request):
+    """Tally Prime product page"""
+    return render(request, 'products/tally_prime.html')
+
 def product_catalog(request):
     """Product catalog page showing all products"""
     product_masters = ProductMaster.objects.filter(is_active=True).order_by('display_order')
