@@ -1,0 +1,555 @@
+{% extends 'products/base.html' %}
+
+{% load static %}
+
+{% block title %}Tally Prime - Your Growth Partner | FusionTec{% endblock %}
+
+{% block content %}
+
+<!-- Hero Section with Background Image -->
+<section class="hero-section" style="background: linear-gradient(135deg, rgba(248, 249, 250, 0.95) 0%, rgba(233, 236, 239, 0.95) 100%), url('/media/tally/11068.jpg'); background-size: cover; background-position: center; padding: 120px 0 100px; position: relative; overflow: hidden;">
+    <div class="container" style="position: relative; z-index: 2;">
+        <div class="row align-items-center min-vh-75">
+            <div class="col-lg-6" data-aos="fade-right">
+                <div class="hero-content">
+                    <div class="mb-4">
+                        <img src="/media/products/types/Tally_-_Logo.png" alt="Tally Prime" class="img-fluid" style="max-height: 120px;" onerror="this.style.display='none';">
+                    </div>
+                    <h1 class="display-2 fw-bold mb-4" style="color: #1e3a8a;">Tally Prime</h1>
+                    <h2 class="h3 fw-light mb-4" style="color: #4b5563;">Your Growth Partner</h2>
+                    <p class="lead mb-4" style="font-size: 1.25rem; line-height: 1.8; color: #4b5563;">
+                        To grow your business, and to make the right business decisions, you need the right insights. With features like "Go To" and "customisable reports" in the new TallyPrime, you can discover and look at reports, slicing and dicing them the way you want.
+                    </p>
+                    <p class="mb-5" style="font-size: 1.1rem; line-height: 1.8; color: #6b7280;">
+                        To help you in your growth journey, TallyPrime enables you to manage multiple companies and incrementally add features such as multiple go-downs, multi-currency, order process, cost centres etc. This helps you get rid of complexities, and in turn, focus on business growth.
+                    </p>
+                    <div class="d-flex gap-3 flex-wrap">
+                        <button onclick="showEnquiryForm()" class="btn btn-primary btn-lg px-5 py-3 fw-semibold shadow-lg">
+                            <i class="bi bi-envelope me-2"></i>Get Free Quote
+                        </button>
+                        <a href="{% url 'home' %}#products" class="btn btn-outline-primary btn-lg px-5 py-3 fw-semibold">
+                            <i class="bi bi-grid me-2"></i>View Products
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6" data-aos="fade-left">
+                <div class="text-center">
+                    <img src="/media/tally/11116.jpg" alt="Tally Prime" class="img-fluid rounded-4 shadow-lg" style="max-height: 500px; width: 100%; object-fit: cover;">
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Your Growth Partner Section -->
+<section class="py-5" style="background: white;">
+    <div class="container py-5">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-6" data-aos="fade-right">
+                <div class="pe-lg-4">
+                    <span class="badge bg-primary mb-3 px-3 py-2" style="font-size: 0.9rem;">GROWTH PARTNER</span>
+                    <h2 class="display-4 fw-bold mb-4" style="color: #1e3a8a;">Your Growth Partner</h2>
+                    <p class="lead mb-4" style="color: #4b5563; line-height: 1.8;">
+                        To grow your business, and to make the right business decisions, you need the right insights. With features like "Go To" and "customisable reports" in the new TallyPrime, you can discover and look at reports, slicing and dicing them the way you want.
+                    </p>
+                    <p class="mb-0" style="color: #6b7280; line-height: 1.8;">
+                        To help you in your growth journey, TallyPrime enables you to manage multiple companies and incrementally add features such as multiple go-downs, multi-currency, order process, cost centres etc. This helps you get rid of complexities, and in turn, focus on business growth.
+                    </p>
+                </div>
+            </div>
+            <div class="col-lg-6" data-aos="fade-left">
+                <div class="position-relative">
+                    <img src="/media/products/master/Tally_-_Logo.png" alt="Tally Logo" class="img-fluid rounded-4 shadow" style="width: 100%; max-height: 400px; object-fit: contain;" onerror="this.style.display='none';">
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Better Control Over Cash Flow Section -->
+<section class="py-5" style="background: #e9ecef;">
+    <div class="container py-5">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-6 order-lg-2" data-aos="fade-left">
+                <div class="ps-lg-4">
+                    <span class="badge bg-success mb-3 px-3 py-2" style="font-size: 0.9rem;">CASH FLOW</span>
+                    <h2 class="display-4 fw-bold mb-4" style="color: #1e3a8a;">Better control over cash flow</h2>
+                    <p class="lead mb-4" style="color: #4b5563; line-height: 1.8;">
+                        Quick and hassle-free bills receivables and payable management help you to get paid faster as well as managing payment timelines. Also, Tally facilitates easy and efficient stock movement, making it possible to optimize the cash flow.
+                    </p>
+                    <p class="mb-0" style="color: #6b7280; line-height: 1.8;">
+                        Besides, the insightful reports at blink of eye help you make confident decisions and plan the growth of your business better.
+                    </p>
+                </div>
+            </div>
+            <div class="col-lg-6 order-lg-1" data-aos="fade-right">
+                <div class="position-relative">
+                    <img src="/media/tally/11068.jpg" alt="Cash Flow Management" class="img-fluid rounded-4 shadow-lg" style="width: 100%; max-height: 400px; object-fit: cover;">
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Enhanced Business Efficiency Section -->
+<section class="py-5" style="background: white;">
+    <div class="container py-5">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-6" data-aos="fade-right">
+                <div class="pe-lg-4">
+                    <span class="badge bg-info mb-3 px-3 py-2" style="font-size: 0.9rem;">EFFICIENCY</span>
+                    <h2 class="display-4 fw-bold mb-4" style="color: #1e3a8a;">Enhanced Business Efficiency</h2>
+                    <p class="lead mb-4" style="color: #4b5563; line-height: 1.8;">
+                        With the speed that Tally brings, you can get things done quickly and save precious time, helping you do more for less. With TallyPrime, you can print or view the reports being in the middle of voucher entry, you can load another company being in a report without abandoning the activity you were on it, get to know the irregularities or odd details from every reports that you view and much more.
+                    </p>
+                    <p class="mb-0" style="color: #6b7280; line-height: 1.8;">
+                        No more remembering short cut keys, you have the intuitive and consistent workflow that helps you do work faster.
+                    </p>
+                </div>
+            </div>
+            <div class="col-lg-6" data-aos="fade-left">
+                <div class="position-relative">
+                    <img src="/media/tally/11116.jpg" alt="Business Efficiency" class="img-fluid rounded-4 shadow-lg" style="width: 100%; max-height: 400px; object-fit: cover;">
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Tax Compliance Made Easy Section -->
+<section class="py-5" style="background: white;">
+    <div class="container py-5">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-6 order-lg-2" data-aos="fade-left">
+                <div class="ps-lg-4">
+                    <span class="badge bg-secondary mb-3 px-3 py-2" style="font-size: 0.9rem;">TAX COMPLIANCE</span>
+                    <h2 class="display-4 fw-bold mb-4" style="color: #1e3a8a;">Tax compliance made easy</h2>
+                    <p class="lead mb-0" style="color: #4b5563; line-height: 1.8;">
+                        Tally's Prevention, Detection and Correction mechanism ensures that your books are always accurate, hence giving you the confidence that the returns you file are always correct!
+                    </p>
+                </div>
+            </div>
+            <div class="col-lg-6 order-lg-1" data-aos="fade-right">
+                <div class="position-relative">
+                    <img src="/media/tally/20943781.jpg" alt="Tax Compliance" class="img-fluid rounded-4 shadow-lg" style="width: 100%; max-height: 400px; object-fit: cover;">
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Key Features Section -->
+<section class="py-5" style="background: #e9ecef;">
+    <div class="container py-5">
+        <div class="row">
+            <div class="col-12 text-center mb-5">
+                <span class="badge bg-primary mb-3 px-3 py-2" style="font-size: 0.9rem;">FEATURES</span>
+                <h2 class="display-4 fw-bold mb-3" style="color: #1e3a8a;">Key Features</h2>
+                <p class="lead text-muted" style="max-width: 600px; margin: 0 auto;">Everything you need to manage your business efficiently</p>
+            </div>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="100">
+                <div class="feature-card h-100">
+                    <div class="feature-icon mb-4">
+                        <img src="/media/tally/2527.jpg" alt="Multiple Companies" class="img-fluid rounded-3" style="width: 100%; height: 200px; object-fit: cover;">
+                    </div>
+                    <h5 class="fw-bold mb-3" style="color: #1e3a8a;">Multiple Companies</h5>
+                    <p class="text-muted mb-0">Manage multiple companies and incrementally add features as your business grows.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="200">
+                <div class="feature-card h-100">
+                    <div class="feature-icon mb-4">
+                        <img src="/media/tally/11068.jpg" alt="Customizable Reports" class="img-fluid rounded-3" style="width: 100%; height: 200px; object-fit: cover;">
+                    </div>
+                    <h5 class="fw-bold mb-3" style="color: #1e3a8a;">Customizable Reports</h5>
+                    <p class="text-muted mb-0">Discover and look at reports, slicing and dicing them the way you want with "Go To" feature.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="300">
+                <div class="feature-card h-100">
+                    <div class="feature-icon mb-4">
+                        <img src="/media/tally/11116.jpg" alt="Multi-Currency Support" class="img-fluid rounded-3" style="width: 100%; height: 200px; object-fit: cover;">
+                    </div>
+                    <h5 class="fw-bold mb-3" style="color: #1e3a8a;">Multi-Currency Support</h5>
+                    <p class="text-muted mb-0">Handle multiple currencies and go-downs to streamline your operations.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="400">
+                <div class="feature-card h-100">
+                    <div class="feature-icon mb-4">
+                        <img src="/media/tally/20943781.jpg" alt="Order Processing" class="img-fluid rounded-3" style="width: 100%; height: 200px; object-fit: cover;">
+                    </div>
+                    <h5 class="fw-bold mb-3" style="color: #1e3a8a;">Order Processing</h5>
+                    <p class="text-muted mb-0">Efficient order process management to keep your business operations smooth.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="500">
+                <div class="feature-card h-100">
+                    <div class="feature-icon mb-4">
+                        <img src="/media/tally/11116.jpg" alt="Cost Centres" class="img-fluid rounded-3" style="width: 100%; height: 200px; object-fit: cover;">
+                    </div>
+                    <h5 class="fw-bold mb-3" style="color: #1e3a8a;">Cost Centres</h5>
+                    <p class="text-muted mb-0">Track and manage cost centres effectively for better financial control.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="600">
+                <div class="feature-card h-100">
+                    <div class="feature-icon mb-4">
+                        <img src="/media/tally/20943781.jpg" alt="Tax Compliance" class="img-fluid rounded-3" style="width: 100%; height: 200px; object-fit: cover;">
+                    </div>
+                    <h5 class="fw-bold mb-3" style="color: #1e3a8a;">Tax Compliance</h5>
+                    <p class="text-muted mb-0">Prevention, Detection and Correction mechanism ensures accurate books and returns.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FusionTec Partner Section -->
+<section class="py-5" style="background: white;">
+    <div class="container py-5">
+        <div class="row">
+            <div class="col-lg-10 mx-auto">
+                <div class="partner-card text-center p-5 rounded-4 shadow-lg" style="background: white; border: 1px solid #e5e7eb;" data-aos="fade-up">
+                    <h3 class="display-5 fw-bold mb-4" style="color: #1e3a8a;">FusionTec - Your Trusted Partner</h3>
+                    <p class="lead mb-5" style="color: #4b5563; max-width: 700px; margin: 0 auto;">
+                        FusionTec is a leading Tally Authorised Partner with the vision of providing Business Solutions to its Customers. We are committed to helping businesses grow with the right tools and support.
+                    </p>
+                    <div class="d-flex gap-3 justify-content-center flex-wrap">
+                        <a href="{% url 'contact' %}" class="btn btn-primary btn-lg px-5 py-3 fw-semibold shadow">
+                            <i class="bi bi-telephone me-2"></i>Contact Us
+                        </a>
+                        <a href="{% url 'home' %}#products" class="btn btn-outline-primary btn-lg px-5 py-3 fw-semibold">
+                            <i class="bi bi-box-seam me-2"></i>Explore Products
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="py-5" style="background: #e9ecef;">
+    <div class="container py-5">
+        <div class="row">
+            <div class="col-lg-8 mx-auto text-center">
+                <h2 class="display-4 fw-bold mb-4" style="color: #1e3a8a;">Ready to Grow Your Business?</h2>
+                <p class="lead mb-5" style="color: #4b5563;">Get started with Tally Prime today and experience the difference</p>
+                <div class="d-flex gap-3 justify-content-center flex-wrap">
+                    <button onclick="showEnquiryForm()" class="btn btn-primary btn-lg px-5 py-3 fw-semibold shadow-lg">
+                        <i class="bi bi-envelope me-2"></i>Get a Free Quote
+                    </button>
+                    <a href="{% url 'home' %}#products" class="btn btn-outline-primary btn-lg px-5 py-3 fw-semibold">
+                        <i class="bi bi-grid me-2"></i>View All Products
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    /* Hero Section */
+    .hero-section {
+        min-height: 90vh;
+        display: flex;
+        align-items: center;
+    }
+    
+    /* Fix background-attachment on mobile */
+    @media (max-width: 768px) {
+        .hero-section {
+            background-attachment: scroll !important;
+            padding: 80px 0 60px !important;
+            min-height: auto !important;
+        }
+    }
+    
+    .min-vh-75 {
+        min-height: 75vh;
+    }
+    
+    @media (max-width: 768px) {
+        .min-vh-75 {
+            min-height: auto;
+        }
+    }
+    
+    /* Feature Cards */
+    .feature-card {
+        background: white;
+        padding: 2rem;
+        border-radius: 1rem;
+        transition: all 0.3s ease;
+        border: 1px solid #e5e7eb;
+    }
+    
+    .feature-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        border-color: #3b82f6;
+    }
+    
+    @media (max-width: 768px) {
+        .feature-card {
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+    }
+    
+    .feature-icon {
+        transition: transform 0.3s ease;
+    }
+    
+    .feature-card:hover .feature-icon {
+        transform: scale(1.05);
+    }
+    
+    /* Partner Card */
+    .partner-card {
+        transition: transform 0.3s ease;
+    }
+    
+    .partner-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    /* Section Spacing */
+    section {
+        position: relative;
+    }
+    
+    /* Mobile Section Padding */
+    @media (max-width: 768px) {
+        section {
+            padding: 40px 0 !important;
+        }
+        
+        .container.py-5 {
+            padding-top: 2rem !important;
+            padding-bottom: 2rem !important;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        section {
+            padding: 30px 0 !important;
+        }
+        
+        .container.py-5 {
+            padding-top: 1.5rem !important;
+            padding-bottom: 1.5rem !important;
+        }
+    }
+    
+    /* Ensure content visibility */
+    [data-aos] {
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+    
+    /* Image styling */
+    img {
+        transition: transform 0.3s ease;
+    }
+    
+    .feature-card:hover img {
+        transform: scale(1.05);
+    }
+    
+    /* Responsive Images */
+    @media (max-width: 768px) {
+        .hero-section img,
+        section img {
+            max-height: 300px !important;
+            margin-bottom: 1.5rem;
+        }
+        
+        .img-fluid {
+            width: 100% !important;
+            height: auto !important;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .hero-section img,
+        section img {
+            max-height: 250px !important;
+        }
+    }
+    
+    /* Badge styling */
+    .badge {
+        letter-spacing: 1px;
+        font-weight: 600;
+    }
+    
+    /* Responsive Typography */
+    @media (max-width: 768px) {
+        .display-2 {
+            font-size: 2rem !important;
+            line-height: 1.2 !important;
+        }
+        
+        .display-4 {
+            font-size: 1.75rem !important;
+            line-height: 1.3 !important;
+        }
+        
+        .display-5 {
+            font-size: 1.5rem !important;
+            line-height: 1.3 !important;
+        }
+        
+        h1, .h1 {
+            font-size: 1.75rem !important;
+        }
+        
+        h2, .h2, .h3 {
+            font-size: 1.5rem !important;
+        }
+        
+        .lead {
+            font-size: 1rem !important;
+            line-height: 1.6 !important;
+        }
+        
+        p {
+            font-size: 0.95rem !important;
+            line-height: 1.6 !important;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .display-2 {
+            font-size: 1.75rem !important;
+        }
+        
+        .display-4 {
+            font-size: 1.5rem !important;
+        }
+        
+        .display-5 {
+            font-size: 1.35rem !important;
+        }
+        
+        h1, .h1 {
+            font-size: 1.5rem !important;
+        }
+        
+        h2, .h2, .h3 {
+            font-size: 1.35rem !important;
+        }
+        
+        .lead {
+            font-size: 0.95rem !important;
+        }
+        
+        p {
+            font-size: 0.9rem !important;
+        }
+    }
+    
+    /* Responsive Buttons */
+    @media (max-width: 768px) {
+        .btn-lg {
+            padding: 0.75rem 1.5rem !important;
+            font-size: 0.95rem !important;
+        }
+        
+        .d-flex.gap-3 {
+            flex-direction: column !important;
+            gap: 0.75rem !important;
+        }
+        
+        .d-flex.gap-3 .btn {
+            width: 100% !important;
+        }
+    }
+    
+    /* Responsive Columns */
+    @media (max-width: 991px) {
+        .col-lg-6 {
+            margin-bottom: 2rem;
+        }
+        
+        .order-lg-1,
+        .order-lg-2 {
+            order: 0 !important;
+        }
+    }
+    
+    /* Responsive Spacing */
+    @media (max-width: 768px) {
+        .mb-4 {
+            margin-bottom: 1rem !important;
+        }
+        
+        .mb-5 {
+            margin-bottom: 1.5rem !important;
+        }
+        
+        .pe-lg-4,
+        .ps-lg-4 {
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+        }
+        
+        .g-5 {
+            --bs-gutter-y: 1.5rem !important;
+            --bs-gutter-x: 1rem !important;
+        }
+    }
+    
+    /* Partner Card Mobile */
+    @media (max-width: 768px) {
+        .partner-card {
+            padding: 2rem 1.5rem !important;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .partner-card {
+            padding: 1.5rem 1rem !important;
+        }
+    }
+    
+    /* Prevent horizontal scroll */
+    @media (max-width: 768px) {
+        body {
+            overflow-x: hidden;
+        }
+        
+        .container {
+            padding-left: 15px;
+            padding-right: 15px;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .container {
+            padding-left: 12px;
+            padding-right: 12px;
+        }
+    }
+</style>
+
+<script>
+    // Initialize AOS
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof AOS !== 'undefined') {
+            AOS.init({
+                duration: 800,
+                once: true,
+                offset: 100,
+                easing: 'ease-in-out'
+            });
+        }
+    });
+</script>
+
+{% endblock %}

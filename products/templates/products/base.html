@@ -37,17 +37,89 @@
 <!-- Bootstrap 5 JS + Popper -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
+<!-- Immediate Mobile Layout Fix -->
+<script>
+  // Run immediately to fix layout before page renders
+  (function() {
+    function fixMobileLayout() {
+      const topHeader = document.querySelector('.top-header-bar');
+      const navbar = document.getElementById('mainNavbar') || document.querySelector('.navbar');
+      const body = document.body;
+      
+      if (topHeader && navbar && body) {
+        const headerHeight = topHeader.offsetHeight || 40;
+        navbar.style.top = headerHeight + 'px';
+        navbar.style.position = 'fixed';
+        
+        const navbarHeight = navbar.offsetHeight || 80;
+        const totalHeight = headerHeight + navbarHeight;
+        
+        if (window.innerWidth <= 768) {
+          body.style.paddingTop = (totalHeight + 15) + 'px';
+        } else {
+          body.style.paddingTop = (totalHeight + 20) + 'px';
+        }
+      }
+    }
+    
+    // Run as soon as DOM is available
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', fixMobileLayout);
+    } else {
+      fixMobileLayout();
+    }
+    
+    // Also run after a delay
+    setTimeout(fixMobileLayout, 50);
+  })();
+</script>
+
 </head>
-<body class="d-flex flex-column h-100" style="padding-top: 80px;">
+<body class="d-flex flex-column h-100">
   <div id="top"></div>
-  <!-- Top Dark Strip -->
-  <div class="top-strip"></div>
+  <!-- Top Header Bar -->
+  <div class="top-header-bar">
+    <div class="container">
+      <div class="row align-items-center">
+        <div class="col-md-8">
+          <div class="d-flex align-items-center flex-wrap">
+            <!-- Social Media Logos -->
+            <a href="https://www.facebook.com/fusiontecsoftware/" target="_blank" class="social-logo me-3" title="Facebook">
+              <img src="https://upload.wikimedia.org/wikipedia/commons/5/51/Facebook_f_logo_%282019%29.svg" alt="Facebook" onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNMTggMkg2Yy0xLjEgMC0yIC45LTIgMnYxNmMwIDEuMS45IDIgMiAyaDEydi02aC0ydi0yaDJ2LTJjMC0xLjYgMS4zLTMgMy0zaDJ2Mmg0djJoLTJ2Mmg0bC0xIDRIMTV2Nkg2VjRoMTJ2NHoiIGZpbGw9IndoaXRlIi8+PC9zdmc+';">
+            </a>
+            <a href="https://www.instagram.com" target="_blank" class="social-logo me-3" title="Instagram">
+              <img src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png" alt="Instagram" onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNMTIgMi4xNjNjMy4yMDQgMCAzLjU4NC4wMTIgNC44NS4wNyAzLjI1Mi4xNDggNC43NzEgMS42OTEgNC45MTkgNC45MTkuMDU4IDEuMjY1LjA3IDEuNjQ1LjA3IDQuODQ5IDAgMy4yMDQtLjAxMiAzLjU4NC0uMDcgNC44NDktLjE0OCAzLjI1Mi0xLjY5MSA0Ljc3MS00LjkxOSA0LjkxOS0xLjI2NS4wNTgtMS42NDUuMDctNC44NDkuMDctMy4yMDQgMC0zLjU4NC0uMDEyLTQuODQ5LS4wNy0zLjI1Mi0uMTQ4LTQuNzcxLTEuNjkxLTQuOTE5LTQuOTE5LS4wNTgtMS4yNjUtLjA3LTEuNjQ1LS4wNy00Ljg0OSAwLTMuMjA0LjAxMi0zLjU4NC4wNy00Ljg0OS4xNDgtMy4yNTIgMS42OTEtNC43NzEgNC45MTktNC45MTlDOC40MTYgMi4xNzUgOC44MzYgMi4xNjMgMTIgMi4xNjN6bTAtMi4xNjNDOC44MzYgMCA4LjQxNi4wMTIgNy4xNS4wNyAzLjgxLjIyIDIuMjIgMS44MSAyLjA3IDUuMTUuMDEyIDYuNDE2IDAgNi44MzYgMCAxMGMwIDMuMTY0LjAxMiAzLjU4NC4wNyA0Ljg0OS4xNSAzLjM0IDEuNzEgNC45MyA1LjA4IDUuMDggMS4yNjUuMDU4IDEuNjQ1LjA3IDQuODUuMDcgMy4yMDQgMCAzLjU4NC0uMDEyIDQuODQ5LS4wNyAzLjM0LS4xNSA0LjkzLTEuNzEgNS4wOC01LjA4LjA1OC0xLjI2NS4wNy0xLjY0NS4wNy00Ljg0OSAwLTMuMTY0LS4wMTItMy41ODQtLjA3LTQuODQ5LS4xNS0zLjM0LTEuNzEtNC45My01LjA4LTUuMDhDMTUuNTg0LjAxMiAxNS4xNjQgMCAxMiAwem0wIDUuODM4YTMuMTYyIDMuMTYyIDAgMSAwIDAgNi4zMjQgMy4xNjIgMy4xNjIgMCAwIDAgMC02LjMyNHptMCA1LjE3YTEuOTkzIDEuOTkzIDAgMSAxIDAtMy45ODYgMS45OTMgMS45OTMgMCAwIDEgMCAzLjk4NnptNi40MDgtMy4zNDZhMS4xNDQgMS4xNDQgMCAxIDEtMi4yODggMCAxLjE0NCAxLjE0NCAwIDAgMSAyLjI4OCAweiIgZmlsbD0id2hpdGUiLz48L3N2Zz4=';">
+            </a>
+            
+            <!-- Contact Info -->
+            <span class="header-divider me-3"></span>
+            <a href="mailto:sales@fusiontec.com" class="contact-info me-3">
+              <i class="bi bi-envelope me-1"></i>sales@fusiontec.com
+            </a>
+            <a href="tel:+914446072076" class="contact-info">
+              <i class="bi bi-telephone me-1"></i>044 - 46072076
+            </a>
+          </div>
+        </div>
+        <div class="col-md-4 text-end">
+          <div class="d-flex align-items-center justify-content-end flex-wrap">
+            <a href="{% url 'contact' %}" class="header-btn me-2">Demo</a>
+            <span class="header-divider-vertical me-2"></span>
+            <a href="{% url 'tally_prime_aws' %}" class="header-btn me-3">Tally On Cloud</a>
+            <a href="https://wa.me/919841699963" target="_blank" class="whatsapp-contact">
+              <i class="bi bi-whatsapp me-1"></i>+91 98416 99963
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
   
   <!-- Navigation -->
-  <nav class="navbar fixed-top navbar-expand-lg navbar-light bg-white py-3 shadow" style="top: 4px;">
+  <nav class="navbar fixed-top navbar-expand-lg navbar-light bg-white py-3 shadow" id="mainNavbar">
     <div class="container px-5">
       <!-- Logo -->
-      <a href="" class="navbar-brand d-flex flex-column align-items-center">
+      <a href="{% url 'home' %}" class="navbar-brand d-flex flex-column align-items-center">
         <img src="{% static 'products/img/fusiontec.png' %}" class="logo" alt="Logo">
         {% block logo_subtitle %}<span class="logo-subtitle">Simplifying Complexity</span>{% endblock %}
       </a>
@@ -63,6 +135,35 @@
         <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
           <li class="nav-item"><a class="nav-link" href="{% url 'home' %}">Home</a></li>
           <li class="nav-item"><a class="nav-link" href="{% url 'about' %}">About</a></li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="{% url 'home' %}#products" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              Products
+            </a>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="{% url 'home' %}#products">
+                <i class="bi bi-grid me-2"></i>Our Products
+              </a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><h6 class="dropdown-header">Top Tally Products</h6></li>
+              <li><a class="dropdown-item" href="{% url 'tally_prime' %}">
+                <i class="bi bi-box-seam me-2"></i>Tally Prime
+              </a></li>
+              <li><a class="dropdown-item" href="{% url 'tally_prime_server' %}">
+                <i class="bi bi-stack me-2"></i>Tally Prime Server
+              </a></li>
+              <li><a class="dropdown-item" href="{% url 'tally_prime_aws' %}">
+                <i class="bi bi-cloud-rain me-2"></i>Tally Prime on AWS
+              </a></li>
+              <li><a class="dropdown-item" href="{% url 'tally_software_service' %}">
+                <i class="bi bi-file-earmark-text me-2"></i>Tally Software Service
+              </a></li>
+              <li><a class="dropdown-item" href="{% url 'tally_prime_4' %}">
+                <i class="bi bi-stack me-2"></i>TallyPrime 4.0
+              </a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item" href="{% url 'home' %}#products">View All Products</a></li>
+            </ul>
+          </li>
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
               Services
@@ -85,15 +186,237 @@
 
   <!-- Navigation Styles -->
   <style>
-    /* Top Dark Strip */
-    .top-strip {
+    /* Top Header Bar */
+    .top-header-bar {
       position: fixed;
       top: 0;
       left: 0;
       right: 0;
-      height: 4px;
-      background-color: #333;
-      z-index: 1031;
+      height: 40px;
+      min-height: 40px;
+      background-color: #1e3a8a;
+      z-index: 1032;
+      display: flex;
+      align-items: center;
+      padding: 0;
+      overflow: visible;
+    }
+    
+    .top-header-bar .container {
+      padding: 0 15px;
+    }
+    
+    .top-header-bar a {
+      color: white;
+      text-decoration: none;
+      font-size: 0.85rem;
+      transition: opacity 0.3s ease;
+    }
+    
+    .top-header-bar a:hover {
+      opacity: 0.8;
+      color: white;
+    }
+    
+    .social-logo {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+    }
+    
+    .social-logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      transition: opacity 0.3s ease;
+    }
+    
+    .social-logo .whatsapp-icon {
+      filter: brightness(0) invert(1);
+      background: transparent;
+      display: block !important;
+      opacity: 1 !important;
+      visibility: visible !important;
+      width: 28px !important;
+      height: 28px !important;
+      object-fit: contain !important;
+    }
+    
+    .social-logo .facebook-icon,
+    .social-logo .instagram-icon {
+      filter: brightness(0) invert(1);
+    }
+    
+    .social-logo:hover img {
+      opacity: 0.8;
+    }
+    
+    .social-icon {
+      font-size: 1rem;
+      width: 24px;
+      height: 24px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .contact-info {
+      font-size: 0.85rem;
+      white-space: nowrap;
+    }
+    
+    .header-divider {
+      width: 1px;
+      height: 20px;
+      background-color: rgba(255, 255, 255, 0.3);
+      display: inline-block;
+    }
+    
+    .header-divider-vertical {
+      width: 1px;
+      height: 20px;
+      background-color: rgba(255, 255, 255, 0.3);
+      display: inline-block;
+    }
+    
+    .header-btn {
+      background-color: white;
+      color: #1e3a8a !important;
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-weight: 500;
+      font-size: 0.8rem;
+      white-space: nowrap;
+      transition: background-color 0.3s ease;
+    }
+    
+    .header-btn:hover {
+      background-color: #f0f0f0;
+      color: #1e3a8a !important;
+    }
+    
+    .whatsapp-contact {
+      display: inline-flex;
+      align-items: center;
+      background-color: #25D366;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      white-space: nowrap;
+    }
+    
+    .whatsapp-contact:hover {
+      background-color: #20ba5a;
+      color: white !important;
+    }
+    
+    /* Mobile and Tablet Optimizations */
+    @media (max-width: 768px) {
+      .top-header-bar {
+        height: auto !important;
+        min-height: auto !important;
+        padding: 8px 0 !important;
+        display: block !important;
+      }
+      
+      .top-header-bar .container {
+        padding: 0 10px !important;
+      }
+      
+      .top-header-bar .row {
+        margin: 0 !important;
+        flex-wrap: wrap;
+      }
+      
+      .top-header-bar .col-md-8,
+      .top-header-bar .col-md-4 {
+        text-align: center !important;
+        margin-bottom: 8px !important;
+        width: 100% !important;
+        flex: 0 0 100% !important;
+        max-width: 100% !important;
+        padding-left: 5px !important;
+        padding-right: 5px !important;
+      }
+      
+      .top-header-bar .col-md-4 {
+        margin-bottom: 0 !important;
+      }
+      
+      .top-header-bar .d-flex {
+        justify-content: center !important;
+        flex-wrap: wrap !important;
+        gap: 6px !important;
+        align-items: center !important;
+      }
+      
+      .social-logo {
+        width: 24px !important;
+        height: 24px !important;
+        margin: 0 2px !important;
+        flex-shrink: 0 !important;
+      }
+      
+      .contact-info {
+        font-size: 0.7rem !important;
+        white-space: nowrap !important;
+        word-break: keep-all !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        flex-shrink: 0 !important;
+      }
+      
+      .header-btn {
+        font-size: 0.7rem !important;
+        padding: 5px 10px !important;
+        margin: 2px !important;
+        white-space: nowrap !important;
+        flex-shrink: 0 !important;
+      }
+      
+      .whatsapp-contact {
+        font-size: 0.7rem !important;
+        padding: 5px 10px !important;
+        margin: 2px !important;
+        white-space: nowrap !important;
+        flex-shrink: 0 !important;
+      }
+      
+      .header-divider,
+      .header-divider-vertical {
+        display: none !important;
+      }
+    }
+    
+    @media (max-width: 576px) {
+      .top-header-bar {
+        padding: 6px 0;
+      }
+      
+      .top-header-bar .col-md-8 .d-flex {
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+      }
+      
+      .social-logo {
+        width: 22px;
+        height: 22px;
+      }
+      
+      .contact-info {
+        font-size: 0.65rem;
+        display: block;
+        margin: 2px 0;
+      }
+      
+      .header-btn,
+      .whatsapp-contact {
+        font-size: 0.65rem;
+        padding: 3px 8px;
+      }
     }
 
     /* Logo Styling */
@@ -148,6 +471,21 @@
       color: #3b82f6;
     }
 
+    .dropdown-header {
+      color: #1e3a8a;
+      font-weight: 600;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 10px 20px 5px;
+    }
+
+    .dropdown-item i {
+      font-size: 1rem;
+      width: 20px;
+      text-align: center;
+    }
+
     /* Get a Free Quote Button */
     .quote-btn {
       background-color: #1e3a8a !important;
@@ -174,22 +512,109 @@
     .navbar {
       border-bottom: 1px solid #e5e7eb;
     }
-
-    /* Responsive Design */
+    
+    /* Ensure navbar-toggler is visible and properly styled */
+    .navbar-toggler {
+      border: 1px solid rgba(30, 58, 138, 0.3);
+      padding: 0.4rem 0.75rem;
+      background-color: transparent;
+      z-index: 1050;
+      display: none; /* Hidden by default on desktop */
+    }
+    
+    /* Show toggler on mobile/tablet */
     @media (max-width: 991.98px) {
+      .navbar-toggler {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+      }
+    }
+    
+    .navbar-toggler:focus {
+      box-shadow: 0 0 0 0.2rem rgba(30, 58, 138, 0.25);
+      outline: none;
+    }
+    
+    .navbar-toggler:hover {
+      background-color: rgba(30, 58, 138, 0.05);
+      border-color: rgba(30, 58, 138, 0.5);
+    }
+    
+    .navbar-toggler-icon {
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%2830, 58, 138, 0.85%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+      width: 1.5em;
+      height: 1.5em;
+      display: inline-block;
+    }
+    
+    /* Ensure navbar container has proper flex layout */
+    .navbar > .container {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+    }
+    
+    /* Ensure navbar-brand and toggler are properly positioned */
+    @media (max-width: 991.98px) {
+      .navbar-brand {
+        flex: 0 0 auto;
+        margin-right: auto;
+        max-width: calc(100% - 60px);
+      }
+      
+      .navbar-toggler {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        order: 2;
+        margin-left: auto;
+        position: relative;
+        z-index: 1051;
+      }
+      
+      .navbar-collapse {
+        order: 3;
+        width: 100%;
+        flex-basis: 100%;
+        flex-grow: 1;
+        margin-top: 1rem;
+        background-color: white;
+        border-top: 1px solid #e5e7eb;
+        padding-top: 1rem;
+      }
+      
+      .navbar-collapse.collapsing,
+      .navbar-collapse.show {
+        display: block !important;
+      }
+    }
+
+    /* Responsive Design - Tablet */
+    @media (max-width: 991.98px) {
+      .navbar {
+        padding: 0.5rem 1rem;
+      }
+      
       .navbar-nav {
         text-align: center;
         margin: 1rem 0;
       }
       
       .navbar-nav .nav-link {
-        margin: 5px 0;
+        margin: 8px 0;
+        font-size: 0.9rem;
+        padding: 8px 15px;
       }
       
       .quote-btn {
         margin-top: 1rem;
         width: 100%;
         text-align: center;
+        padding: 12px 20px;
+        font-size: 0.85rem;
       }
       
       .logo {
@@ -198,14 +623,334 @@
       .logo-subtitle {
         font-size: 0.65rem;
       }
+      
+      .dropdown-menu {
+        text-align: left;
+        max-width: 100%;
+        position: static !important;
+        float: none;
+        width: 100%;
+        margin-top: 0.5rem;
+        border: 1px solid #e5e7eb;
+        box-shadow: none;
+      }
+      
+      .dropdown-item {
+        padding: 10px 20px;
+        font-size: 0.9rem;
+      }
+      
+      /* Make dropdowns work on touch devices */
+      .navbar-nav .dropdown-menu {
+        position: static;
+        float: none;
+      }
+    }
+    
+    /* Responsive Design - Mobile */
+    @media (max-width: 768px) {
+      .navbar {
+        padding: 0.5rem !important;
+        /* top will be set by JavaScript dynamically */
+      }
+      
+      .navbar > .container {
+        padding: 0 10px !important;
+        flex-wrap: wrap;
+      }
+      
+      .navbar-brand {
+        flex: 0 0 auto;
+        max-width: calc(100% - 60px);
+      }
+      
+      .navbar-toggler {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        order: 2;
+        margin-left: auto;
+        margin-right: 0;
+        flex-shrink: 0;
+        width: 44px;
+        height: 44px;
+        padding: 0.35rem 0.65rem;
+      }
+      
+      .navbar-nav {
+        margin: 0.5rem 0;
+        width: 100%;
+      }
+      
+      .navbar-nav .nav-link {
+        margin: 5px 0;
+        font-size: 0.85rem;
+        padding: 10px 15px;
+      }
+      
+      .quote-btn {
+        margin-top: 0.5rem;
+        padding: 10px 18px;
+        font-size: 0.8rem;
+        width: 100%;
+      }
+      
+      .logo {
+        height: 40px;
+      }
+      
+      .logo-subtitle {
+        font-size: 0.6rem;
+      }
+      
+      .dropdown-menu {
+        width: 100%;
+        border-radius: 0;
+        box-shadow: none;
+        border: 1px solid #e5e7eb;
+        margin-top: 5px;
+        position: static !important;
+        float: none;
+        background-color: #f8f9fa;
+        z-index: 1000;
+      }
+      
+      .dropdown-item {
+        padding: 12px 20px;
+        font-size: 0.85rem;
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+        color: #1e3a8a !important;
+        text-decoration: none;
+        width: 100%;
+        clear: both;
+        white-space: nowrap;
+      }
+      
+      .dropdown-item:hover,
+      .dropdown-item:focus {
+        background-color: #e9ecef;
+        color: #1e3a8a !important;
+      }
+      
+      .dropdown-item i {
+        margin-right: 8px;
+        font-size: 1rem;
+      }
+      
+      .dropdown-header {
+        font-size: 0.75rem;
+        padding: 12px 20px 8px;
+        color: #1e3a8a;
+        font-weight: 600;
+      }
+      
+      .dropdown-divider {
+        margin: 0.5rem 0;
+        border-top: 1px solid #e5e7eb;
+      }
+      
+      /* Ensure dropdown toggles work on mobile */
+      .navbar-nav .dropdown-toggle {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+      }
+      
+      .navbar-nav .dropdown-toggle::after {
+        margin-left: auto;
+        transition: transform 0.3s ease;
+      }
+      
+      .navbar-nav .dropdown.show .dropdown-toggle::after {
+        transform: rotate(180deg);
+      }
+      
+      .navbar-nav .dropdown-menu {
+        position: static !important;
+        float: none !important;
+        display: none !important;
+        visibility: hidden;
+        opacity: 0;
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease, opacity 0.3s ease, visibility 0.3s ease;
+        margin-top: 0.5rem;
+        padding: 0.5rem 0;
+      }
+      
+      .navbar-nav .dropdown.show .dropdown-menu,
+      .navbar-nav .dropdown-menu.show {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        max-height: 1000px !important;
+        overflow: visible !important;
+      }
+      
+      /* Ensure all dropdown items are visible */
+      .navbar-nav .dropdown.show .dropdown-item,
+      .navbar-nav .dropdown-menu.show .dropdown-item {
+        display: flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+      }
+    }
+    
+    @media (max-width: 576px) {
+      .navbar {
+        padding: 0.4rem !important;
+      }
+      
+      .navbar > .container {
+        padding: 0 8px !important;
+      }
+      
+      .navbar-brand {
+        max-width: calc(100% - 50px);
+      }
+      
+      .navbar-toggler {
+        width: 40px;
+        height: 40px;
+        padding: 0.3rem 0.6rem;
+      }
+      
+      .navbar-nav .nav-link {
+        font-size: 0.8rem;
+        padding: 8px 12px;
+      }
+      
+      .quote-btn {
+        padding: 8px 16px;
+        font-size: 0.75rem;
+      }
+      
+      .logo {
+        height: 35px;
+      }
+      
+      .logo-subtitle {
+        font-size: 0.55rem;
+      }
     }
 
-    /* Adjust body padding for the top strip */
+    /* Body padding will be set dynamically by JavaScript */
+    /* Initial padding to prevent flash of unstyled content */
     body {
-      padding-top: 84px !important;
+      padding-top: 120px;
+    }
+    
+    @media (max-width: 768px) {
+      body {
+        padding-top: 100px;
+      }
+    }
+    
+    @media (max-width: 576px) {
+      body {
+        padding-top: 90px;
+      }
     }
 
     /* Removed modal-open lock to restore old popup behavior */
+    
+    /* General Mobile & Tablet Optimizations */
+    @media (max-width: 991.98px) {
+      /* Improve touch targets */
+      .nav-link,
+      .dropdown-item,
+      .btn {
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+      
+      /* Better spacing for mobile */
+      .container {
+        padding-left: 15px;
+        padding-right: 15px;
+      }
+      
+      /* Prevent horizontal scroll */
+      body {
+        overflow-x: hidden;
+      }
+      
+      /* Better text readability */
+      p, li, span {
+        font-size: 0.95rem;
+        line-height: 1.6;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      /* Touch-friendly buttons */
+      .btn {
+        min-height: 44px;
+        padding: 10px 20px;
+      }
+      
+      /* Better spacing */
+      .container {
+        padding-left: 12px;
+        padding-right: 12px;
+      }
+      
+      /* Improve readability */
+      h1 { font-size: 1.75rem; }
+      h2 { font-size: 1.5rem; }
+      h3 { font-size: 1.25rem; }
+      h4 { font-size: 1.1rem; }
+      h5 { font-size: 1rem; }
+      h6 { font-size: 0.9rem; }
+      
+      /* Better form inputs */
+      input[type="text"],
+      input[type="email"],
+      input[type="tel"],
+      textarea,
+      select {
+        font-size: 16px; /* Prevents zoom on iOS */
+        min-height: 44px;
+      }
+    }
+    
+    @media (max-width: 576px) {
+      /* Extra small devices */
+      .container {
+        padding-left: 10px;
+        padding-right: 10px;
+      }
+      
+      h1 { font-size: 1.5rem; }
+      h2 { font-size: 1.35rem; }
+      h3 { font-size: 1.2rem; }
+      
+      .btn {
+        padding: 8px 16px;
+        font-size: 0.875rem;
+      }
+    }
+    
+    /* Smooth scrolling for all devices */
+    html {
+      scroll-behavior: smooth;
+    }
+    
+    /* Prevent text size adjustment on orientation change */
+    @media screen and (max-width: 768px) {
+      body {
+        -webkit-text-size-adjust: 100%;
+        -moz-text-size-adjust: 100%;
+        -ms-text-size-adjust: 100%;
+        text-size-adjust: 100%;
+      }
+    }
   </style>
 
     <main>
@@ -220,86 +965,93 @@
     {% endblock %}
   </main>
 
- <!-- Modern Floating Enquiry Form -->
-<div id="enquiryForm" class="floating-form hide">
-  <div class="enquiry-header">
-    <div class="enquiry-title">
-      <i class="bi bi-chat-dots-fill me-2"></i>
-      <span>Get In Touch</span>
-    </div>
-    <button id="closeEnquiry" class="close-btn" aria-label="Close enquiry form">
-      <i class="bi bi-x-lg"></i>
-    </button>
-  </div>
-  
-  <div class="enquiry-body">
-    <form method="POST" action="{% url 'footer_contact_form' %}" enctype="multipart/form-data" class="enquiry-form">
-      {% csrf_token %}
-      {% if messages %}
-      <div id="message-container">
-        {% for message in messages %}
-        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-          {{ message }}
-          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+<!-- Enquiry Form Modal Popup -->
+<div class="modal fade" id="enquiryModal" tabindex="-1" aria-labelledby="enquiryModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+    <div class="modal-content enquiry-modal-content">
+      <div class="modal-header enquiry-modal-header">
+        <div class="enquiry-title">
+          <i class="bi bi-chat-dots-fill me-2"></i>
+          <h5 class="modal-title mb-0" id="enquiryModalLabel">Get In Touch</h5>
         </div>
-        {% endfor %}
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <script>
-        (function(){
-          const container = document.getElementById('message-container');
-          if(!container) return;
-          setTimeout(() => {
-            // Close any Bootstrap alerts for proper fade animation
-            container.querySelectorAll('.alert').forEach(el => {
-              try { new bootstrap.Alert(el).close(); } catch(e){ el.style.display='none'; }
-            });
-          }, 5000);
-        })();
-      </script>
-      {% endif %}
+      <div class="modal-body enquiry-modal-body">
+        <form method="POST" action="{% url 'footer_contact_form' %}" enctype="multipart/form-data" class="enquiry-form">
+          {% csrf_token %}
+          {% if messages %}
+          <div id="message-container">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+              {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endfor %}
+          </div>
+          <script>
+            (function(){
+              const container = document.getElementById('message-container');
+              if(!container) return;
+              setTimeout(() => {
+                container.querySelectorAll('.alert').forEach(el => {
+                  try { new bootstrap.Alert(el).close(); } catch(e){ el.style.display='none'; }
+                });
+              }, 5000);
+            })();
+          </script>
+          {% endif %}
 
-      <div class="form-row">
-        <div class="form-group">
-          <div class="input-icon-wrapper">
-            <i class="bi bi-person-fill input-icon"></i>
-            <input id="name" name="name" type="text" class="form-control modern-input" placeholder="Name" required>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <div class="form-group">
+                <div class="input-icon-wrapper">
+                  <i class="bi bi-person-fill input-icon"></i>
+                  <input id="name" name="name" type="text" class="form-control modern-input" placeholder="Name" required>
+                </div>
+              </div>
+            </div>
+            
+            <div class="col-md-6">
+              <div class="form-group">
+                <div class="input-icon-wrapper">
+                  <i class="bi bi-telephone-fill input-icon"></i>
+                  <input id="phone" name="phone" type="tel" class="form-control modern-input" placeholder="Phone" pattern="[0-9]{10}" required>
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
-        
-        <div class="form-group">
-          <div class="input-icon-wrapper">
-            <i class="bi bi-telephone-fill input-icon"></i>
-            <input id="phone" name="phone" type="tel" class="form-control modern-input" placeholder="Phone" pattern="[0-9]{10}" required>
+          
+          <div class="form-group">
+            <div class="input-icon-wrapper">
+              <i class="bi bi-envelope-fill input-icon"></i>
+              <input id="email" name="email" type="email" class="form-control modern-input" placeholder="Email" required>
+            </div>
           </div>
-        </div>
+          
+          <div class="form-group">
+            <div class="input-icon-wrapper">
+              <i class="bi bi-tag-fill input-icon"></i>
+              <input id="subject" name="subject" type="text" class="form-control modern-input" placeholder="Subject" required maxlength="50">
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <div class="input-icon-wrapper">
+              <i class="bi bi-chat-text-fill input-icon"></i>
+              <textarea id="message" name="message" class="form-control modern-input" placeholder="Message" rows="4" required></textarea>
+            </div>
+          </div>
+          
+          <div class="text-end mt-4">
+            <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-primary submit-btn">
+              <i class="bi bi-send-fill me-1"></i>
+              Send Message
+            </button>
+          </div>
+        </form>
       </div>
-      
-      <div class="form-group">
-        <div class="input-icon-wrapper">
-          <i class="bi bi-envelope-fill input-icon"></i>
-          <input id="email" name="email" type="email" class="form-control modern-input" placeholder="Email" required>
-        </div>
-      </div>
-      
-      <div class="form-group">
-        <div class="input-icon-wrapper">
-          <i class="bi bi-tag-fill input-icon"></i>
-          <input id="subject" name="subject" type="text" class="form-control modern-input" placeholder="Subject" required maxlength="50">
-        </div>
-      </div>
-      
-      <div class="form-group">
-        <div class="input-icon-wrapper">
-          <i class="bi bi-chat-text-fill input-icon"></i>
-          <textarea id="message" name="message" class="form-control modern-input" placeholder="Message" rows="2" required></textarea>
-        </div>
-      </div>
-      
-      <button type="submit" class="btn btn-primary submit-btn">
-        <i class="bi bi-send-fill me-1"></i>
-        Send
-      </button>
-    </form>
+    </div>
   </div>
 </div>
 
@@ -309,41 +1061,111 @@
   <i class="bi bi-chat-dots-fill fs-5"></i>
 </div>
 
-<!-- Modern Enquiry Form Styles -->
+<!-- Enquiry Modal Styles -->
 <style>
-  .floating-form {
-    position: fixed;
-    bottom: 20px;
-    left: 20px;
-    width: 300px;
-    max-width: 320px;
-    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  .enquiry-modal-content {
     border: none;
-    border-radius: 16px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15), 0 8px 25px rgba(0, 0, 0, 0.1);
-    z-index: 1050;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 20px;
     overflow: hidden;
-    height: auto;
-    transform: translateX(0);
-    backdrop-filter: blur(10px);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3), 0 8px 25px rgba(0, 0, 0, 0.2);
+  }
+  
+  /* Mobile Modal Optimization */
+  @media (max-width: 768px) {
+    #enquiryModal .modal-dialog {
+      margin: 10px;
+      max-width: calc(100% - 20px);
+    }
+    
+    .enquiry-modal-content {
+      border-radius: 16px;
+    }
+    
+    .enquiry-modal-header {
+      padding: 18px 20px !important;
+    }
+    
+    .enquiry-title {
+      font-size: 1.1rem !important;
+    }
+    
+    .enquiry-title i {
+      font-size: 1.3rem !important;
+    }
+    
+    .enquiry-modal-body {
+      padding: 20px !important;
+    }
+    
+    .modern-input {
+      font-size: 16px !important; /* Prevents zoom on iOS */
+      padding: 12px 12px 12px 35px !important;
+    }
+    
+    .submit-btn {
+      width: 100%;
+      padding: 12px 20px;
+      font-size: 0.95rem;
+    }
+    
+    .enquiry-modal-body .btn-secondary {
+      width: 100%;
+      margin-bottom: 10px;
+    }
+  }
+  
+  @media (max-width: 576px) {
+    #enquiryModal .modal-dialog {
+      margin: 5px;
+      max-width: calc(100% - 10px);
+    }
+    
+    .enquiry-modal-content {
+      border-radius: 12px;
+    }
+    
+    .enquiry-modal-header {
+      padding: 16px 15px !important;
+    }
+    
+    .enquiry-title {
+      font-size: 1rem !important;
+    }
+    
+    .enquiry-modal-body {
+      padding: 15px !important;
+    }
+    
+    .modern-input {
+      padding: 10px 10px 10px 32px !important;
+      font-size: 16px !important;
+    }
+    
+    .input-icon {
+      font-size: 0.75rem !important;
+      left: 8px !important;
+    }
+    
+    .submit-btn {
+      padding: 10px 18px;
+      font-size: 0.9rem;
+    }
   }
 
-  .floating-form.hide {
-    transform: translateX(-120%);
+  .modal-backdrop {
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(5px);
   }
 
-  .enquiry-header {
+  .enquiry-modal-header {
     background: linear-gradient(135deg, #4154f1 0%, #012970 100%);
     color: white;
-    padding: 16px 18px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    padding: 24px 30px;
+    border-bottom: none;
     position: relative;
   }
 
-  .enquiry-header::before {
+  .enquiry-modal-header::before {
     content: '';
     position: absolute;
     top: 0;
@@ -355,42 +1177,29 @@
   }
 
   .enquiry-title {
-    font-size: 1.1rem;
+    font-size: 1.3rem;
     font-weight: 600;
     display: flex;
     align-items: center;
     position: relative;
     z-index: 1;
+    color: white;
   }
 
   .enquiry-title i {
-    font-size: 1.2rem;
-    margin-right: 8px;
+    font-size: 1.5rem;
+    margin-right: 10px;
   }
 
-  .close-btn {
-    background: rgba(255, 255, 255, 0.2);
-    border: none;
-    color: white;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.3s ease;
+  .enquiry-modal-body {
+    padding: 30px;
+    background: #ffffff;
+  }
+
+  .btn-close-white {
+    filter: invert(1) grayscale(100%) brightness(200%);
     position: relative;
     z-index: 1;
-  }
-
-  .close-btn:hover {
-    background: rgba(255, 255, 255, 0.3);
-    transform: scale(1.1);
-  }
-
-  .enquiry-body {
-    padding: 18px;
   }
 
   .enquiry-form {
@@ -454,26 +1263,24 @@
   }
 
   textarea.modern-input {
-    resize: none;
-    min-height: 60px;
-    max-height: 60px;
+    resize: vertical;
+    min-height: 100px;
   }
 
   .submit-btn {
     background: linear-gradient(135deg, #4154f1 0%, #012970 100%);
     border: none;
-    padding: 10px 20px;
+    padding: 12px 30px;
     border-radius: 10px;
     font-weight: 600;
-    font-size: 0.9rem;
+    font-size: 1rem;
     color: white;
     cursor: pointer;
     transition: all 0.3s ease;
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
-    margin-top: 4px;
+    gap: 8px;
   }
 
   .submit-btn:hover {
@@ -513,7 +1320,7 @@
     background: linear-gradient(135deg, #4154f1 0%, #012970 100%);
     color: white;
     border-radius: 50%;
-    display: none;
+    display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
@@ -554,37 +1361,36 @@
     100% { transform: translateY(-8px); }
   }
 
-  /* Responsive Design */
-  @media (max-width: 992px) {
-    .floating-form {
-      width: 90vw;
-      max-width: 350px;
-      left: 5vw;
+  /* Responsive Design - Enquiry Icon */
+  @media (max-width: 768px) {
+    .enquiry-icon {
+      width: 50px;
+      height: 50px;
+      bottom: 15px;
+      left: 15px;
+      font-size: 1.2rem;
+    }
+    
+    .enquiry-icon .tooltip-text {
+      font-size: 11px;
+      padding: 6px 10px;
+      bottom: 60px;
     }
   }
-
+  
   @media (max-width: 576px) {
-    .floating-form {
-      width: 95vw;
-      left: 2.5vw;
-      border-radius: 12px;
+    .enquiry-icon {
+      width: 45px;
+      height: 45px;
+      bottom: 10px;
+      left: 10px;
+      font-size: 1rem;
     }
     
-    .enquiry-header {
-      padding: 14px 16px;
-    }
-    
-    .enquiry-body {
-      padding: 16px;
-    }
-    
-    .enquiry-title {
-      font-size: 0.95rem;
-    }
-
-    .form-row {
-      flex-direction: column;
-      gap: 12px;
+    .enquiry-icon .tooltip-text {
+      font-size: 10px;
+      padding: 5px 8px;
+      bottom: 55px;
     }
   }
 
@@ -626,53 +1432,15 @@ document.addEventListener("DOMContentLoaded", function () {
       window.history.replaceState({}, '', url);
     }
   } catch (e) {}
-  const form = document.getElementById('enquiryForm');
+  const modal = document.getElementById('enquiryModal');
   const icon = document.getElementById('enquiryIcon');
-  const closeBtn = document.getElementById('closeEnquiry');
 
-  // Helper: check if form is visible
-  function isFormVisible() {
-    return !form.classList.contains('hide');
-  }
-
-  // Show the form, hide the icon
-  function showForm() {
-    if (!isFormVisible()) {
-      form.classList.remove('hide');
-      icon.style.display = 'none';
-    }
-  }
-
-  // Hide the form, show the icon
-  function hideForm() {
-    if (isFormVisible()) {
-      form.classList.add('hide');
-      icon.style.display = 'flex';
-    }
-  }
-
-  // On load: hide form initially, show icon
-  form.classList.add('hide');
-  icon.style.display = 'flex';
-
-  // Check if we should show the form (e.g., redirected from contact page)
-  const shouldShowForm = window.location.search.includes('show_form=true') || 
-                        document.referrer.includes('/contact/');
-  
-  if (shouldShowForm) {
-    setTimeout(() => {
-      showForm();
-      form.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }, 500);
-  }
-
-  // Global function to show enquiry form (accessible from other pages)
+  // Global function to show enquiry form modal (accessible from other pages)
   window.showEnquiryForm = function() {
-    showForm();
-    // Scroll to form if it's not in viewport
-    setTimeout(() => {
-      form.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }, 100);
+    if (modal) {
+      const bootstrapModal = new bootstrap.Modal(modal);
+      bootstrapModal.show();
+    }
   };
 
   // Handle form submission
@@ -680,35 +1448,39 @@ document.addEventListener("DOMContentLoaded", function () {
   if (enquiryForm) {
     enquiryForm.addEventListener('submit', function(e) {
       const submitBtn = this.querySelector('.submit-btn');
-      submitBtn.classList.add('loading');
-      submitBtn.innerHTML = '<i class="bi bi-arrow-clockwise me-1"></i>Sending...';
-      
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="bi bi-arrow-clockwise me-1"></i>Sending...';
+      }
       // Allow form to submit normally
       // The server will handle the response and redirect
     });
   }
 
-  // On hover or click icon, show form
-  icon.addEventListener('mouseenter', () => {
-    showForm();
-  });
+  // On click icon, show modal
+  if (icon) {
+    icon.addEventListener('click', () => {
+      showEnquiryForm();
+    });
 
-  icon.addEventListener('click', () => {
-    showForm();
-  });
+    // Keyboard access for icon
+    icon.addEventListener('keydown', function (event) {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        showEnquiryForm();
+      }
+    });
+  }
 
-  // Close button hides form and shows icon
-  closeBtn.addEventListener('click', () => {
-    hideForm();
-  });
-
-  // Keyboard access for icon
-  icon.addEventListener('keydown', function (event) {
-    if ((event.key === 'Enter' || event.key === ' ') && !isFormVisible()) {
-      event.preventDefault();
-      showForm();
-    }
-  });
+  // Check if we should show the modal (e.g., redirected from contact page)
+  const shouldShowForm = window.location.search.includes('show_form=true') || 
+                        document.referrer.includes('/contact/');
+  
+  if (shouldShowForm && modal) {
+    setTimeout(() => {
+      showEnquiryForm();
+    }, 500);
+  }
 });
 </script>
 
@@ -747,6 +1519,37 @@ document.addEventListener("DOMContentLoaded", function () {
   font-size: 14px;
   font-weight: 500;
 }
+
+/* Mobile optimizations for scroll to top button */
+@media (max-width: 768px) {
+  .scroll-top-btn {
+    bottom: 70px;
+    right: 15px;
+    padding: 10px 16px;
+    font-size: 0.9rem;
+  }
+  
+  .scroll-label {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 576px) {
+  .scroll-top-btn {
+    bottom: 60px;
+    right: 10px;
+    padding: 8px 14px;
+    font-size: 0.85rem;
+  }
+  
+  .scroll-label {
+    font-size: 11px;
+  }
+  
+  .scroll-top-btn i {
+    font-size: 0.9rem;
+  }
+}
 </style>
 <script>
   const scrollBtn = document.getElementById("scrollTopBtn");
@@ -773,6 +1576,250 @@ document.addEventListener("DOMContentLoaded", function () {
 
   <!-- Your custom JS -->
   <script src="{% static 'products/js/scripts.js' %}"></script>
+
+   <!-- Dropdown Hover Functionality -->
+   <script>
+     document.addEventListener('DOMContentLoaded', function() {
+       // Ensure navbar-toggler is visible on mobile
+       function ensureMobileMenuVisible() {
+         const navbarToggler = document.querySelector('.navbar-toggler');
+         const navbar = document.querySelector('#mainNavbar');
+         
+         if (navbarToggler && navbar) {
+           if (window.innerWidth <= 991.98) {
+             navbarToggler.style.display = 'block';
+             navbarToggler.style.visibility = 'visible';
+             navbarToggler.style.opacity = '1';
+           }
+         }
+       }
+       
+       // Run on load and resize
+       ensureMobileMenuVisible();
+       window.addEventListener('resize', ensureMobileMenuVisible);
+       
+      // Fix dropdown behavior on mobile - ensure they work with touch
+      const dropdownToggles = document.querySelectorAll('.navbar-nav .dropdown-toggle');
+      dropdownToggles.forEach(function(toggle) {
+        // Remove Bootstrap's default dropdown behavior on mobile and use custom
+        toggle.addEventListener('click', function(e) {
+          if (window.innerWidth <= 991.98) {
+            const dropdown = this.closest('.dropdown');
+            const menu = dropdown.querySelector('.dropdown-menu');
+            const isExpanded = this.getAttribute('aria-expanded') === 'true';
+            
+            // Close other dropdowns
+            document.querySelectorAll('.navbar-nav .dropdown').forEach(function(otherDropdown) {
+              if (otherDropdown !== dropdown) {
+                const otherToggle = otherDropdown.querySelector('.dropdown-toggle');
+                const otherMenu = otherDropdown.querySelector('.dropdown-menu');
+                if (otherToggle && otherMenu) {
+                  otherToggle.setAttribute('aria-expanded', 'false');
+                  otherDropdown.classList.remove('show');
+                  otherMenu.classList.remove('show');
+                  otherMenu.style.display = 'none';
+                }
+              }
+            });
+            
+            // Toggle current dropdown
+            if (isExpanded) {
+              this.setAttribute('aria-expanded', 'false');
+              dropdown.classList.remove('show');
+              menu.classList.remove('show');
+              menu.style.display = 'none';
+            } else {
+              this.setAttribute('aria-expanded', 'true');
+              dropdown.classList.add('show');
+              menu.classList.add('show');
+              // Force menu to be visible with multiple methods
+              menu.style.display = 'block';
+              menu.style.visibility = 'visible';
+              menu.style.opacity = '1';
+              menu.style.maxHeight = '1000px';
+              
+              // Ensure all items are visible
+              const items = menu.querySelectorAll('.dropdown-item, .dropdown-header, .dropdown-divider');
+              items.forEach(function(item) {
+                item.style.display = '';
+                item.style.visibility = 'visible';
+                item.style.opacity = '1';
+              });
+            }
+            
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+            return false;
+          }
+        }, true); // Use capture phase to run before Bootstrap's handler
+      });
+       
+      // Close dropdowns when clicking outside
+      document.addEventListener('click', function(e) {
+        if (window.innerWidth <= 991.98) {
+          if (!e.target.closest('.dropdown')) {
+            document.querySelectorAll('.navbar-nav .dropdown').forEach(function(dropdown) {
+              const toggle = dropdown.querySelector('.dropdown-toggle');
+              const menu = dropdown.querySelector('.dropdown-menu');
+              if (toggle && menu) {
+                toggle.setAttribute('aria-expanded', 'false');
+                dropdown.classList.remove('show');
+                menu.classList.remove('show');
+                menu.style.display = 'none';
+              }
+            });
+          }
+        }
+      });
+       
+       // Dynamically adjust navbar and body padding based on header height (especially for mobile)
+       function adjustLayoutForHeader() {
+         const topHeader = document.querySelector('.top-header-bar');
+         const navbar = document.getElementById('mainNavbar') || document.querySelector('.navbar');
+         const body = document.body;
+         
+         if (topHeader && navbar && body) {
+           // Force reflow to get accurate measurements
+           topHeader.style.display = 'block';
+           
+           const headerHeight = topHeader.offsetHeight;
+           
+           // Set navbar top position dynamically
+           navbar.style.top = headerHeight + 'px';
+           navbar.style.position = 'fixed';
+           
+           // Calculate total height (header + navbar)
+           const navbarHeight = navbar.offsetHeight;
+           const totalHeight = headerHeight + navbarHeight;
+           
+           // Set body padding dynamically
+           if (window.innerWidth <= 768) {
+             // Mobile: add extra padding for better spacing
+             body.style.paddingTop = (totalHeight + 15) + 'px';
+           } else {
+             // Desktop: standard padding
+             body.style.paddingTop = (totalHeight + 20) + 'px';
+           }
+           
+           // Debug log (remove in production)
+           // console.log('Layout adjusted - Header:', headerHeight, 'Navbar:', navbarHeight, 'Total:', totalHeight, 'Screen:', window.innerWidth);
+         }
+       }
+       
+       // Run immediately
+       adjustLayoutForHeader();
+       
+       // Run on load
+       window.addEventListener('load', function() {
+         adjustLayoutForHeader();
+       });
+       
+       // Run on resize (with debounce)
+       let resizeTimeout;
+       window.addEventListener('resize', function() {
+         clearTimeout(resizeTimeout);
+         resizeTimeout = setTimeout(function() {
+           adjustLayoutForHeader();
+         }, 150);
+       });
+       
+       // Also run after delays to ensure all elements are rendered
+       setTimeout(adjustLayoutForHeader, 100);
+       setTimeout(adjustLayoutForHeader, 300);
+       setTimeout(adjustLayoutForHeader, 500);
+       
+       // Enable hover for all navbar dropdowns
+      const dropdowns = document.querySelectorAll('.navbar-nav .nav-item.dropdown');
+      
+      dropdowns.forEach(function(dropdown) {
+        const dropdownToggle = dropdown.querySelector('.dropdown-toggle');
+        const dropdownMenu = dropdown.querySelector('.dropdown-menu');
+        
+        if (!dropdownToggle || !dropdownMenu) return;
+        
+        let hoverTimeout;
+        
+        // Show dropdown on hover
+        dropdown.addEventListener('mouseenter', function() {
+          clearTimeout(hoverTimeout);
+          const bsDropdown = bootstrap.Dropdown.getOrCreateInstance(dropdownToggle);
+          bsDropdown.show();
+        });
+        
+        // Keep dropdown open when hovering over menu
+        dropdownMenu.addEventListener('mouseenter', function() {
+          clearTimeout(hoverTimeout);
+        });
+        
+        // Hide dropdown when mouse leaves (with small delay for better UX)
+        dropdown.addEventListener('mouseleave', function() {
+          hoverTimeout = setTimeout(function() {
+            const bsDropdown = bootstrap.Dropdown.getInstance(dropdownToggle);
+            if (bsDropdown) {
+              bsDropdown.hide();
+            }
+          }, 150); // 150ms delay to allow moving to dropdown menu
+        });
+        
+        // Also hide when leaving the menu
+        dropdownMenu.addEventListener('mouseleave', function() {
+          hoverTimeout = setTimeout(function() {
+            const bsDropdown = bootstrap.Dropdown.getInstance(dropdownToggle);
+            if (bsDropdown) {
+              bsDropdown.hide();
+            }
+          }, 150);
+        });
+      });
+
+      // Handle Products dropdown link click - navigate to home products section
+      const productsDropdown = document.querySelector('.nav-item.dropdown .dropdown-toggle[href*="#products"]');
+      if (productsDropdown) {
+        productsDropdown.addEventListener('click', function(e) {
+          const currentPath = window.location.pathname;
+          const homePath = this.getAttribute('href').split('#')[0];
+          
+          // If not on home page, navigate there
+          if (currentPath !== homePath && currentPath !== homePath + '/') {
+            // Let the href handle navigation
+            return true;
+          } else {
+            // Already on home page, scroll to products section
+            e.preventDefault();
+            const productsSection = document.getElementById('products');
+            if (productsSection) {
+              const offsetTop = productsSection.offsetTop - 140; // Account for fixed navbar + top header
+              window.scrollTo({
+                top: offsetTop,
+                behavior: 'smooth'
+              });
+            }
+          }
+        });
+      }
+
+      // Smooth scroll for anchor links
+      document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+          const href = this.getAttribute('href');
+          if (href === '#') return;
+          
+          const targetId = href.substring(1);
+          const targetElement = document.getElementById(targetId);
+          
+          if (targetElement) {
+            e.preventDefault();
+            const offsetTop = targetElement.offsetTop - 100; // Account for fixed navbar
+            window.scrollTo({
+              top: offsetTop,
+              behavior: 'smooth'
+            });
+          }
+        });
+      });
+    });
+  </script>
 
   
 
