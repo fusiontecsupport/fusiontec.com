@@ -21,9 +21,9 @@
                         TallyPrime powered by AWS is a collaborative solution with Amazon Web Services (AWS) to provide an option to our customers who need to access their TallyPrime license and data virtually. As part of this collaboration, virtual machines provided by AWS which will allow you to use your TallyPrime anywhere, are being made available through our network of partners.
                     </p>
                     <div class="d-flex gap-3 flex-wrap">
-                        <a href="{% url 'contact' %}" class="btn btn-primary btn-lg px-5 py-3 fw-semibold shadow-lg">
+                        <button onclick="showEnquiryForm()" class="btn btn-primary btn-lg px-5 py-3 fw-semibold shadow-lg">
                             <i class="bi bi-envelope me-2"></i>Get Free Quote
-                        </a>
+                        </button>
                         <a href="{% url 'product_catalog' %}" class="btn btn-outline-primary btn-lg px-5 py-3 fw-semibold">
                             <i class="bi bi-grid me-2"></i>View Products
                         </a>
@@ -213,9 +213,9 @@
                 <h2 class="display-4 fw-bold mb-4" style="color: #1e3a8a;">Ready to Go Cloud?</h2>
                 <p class="lead mb-5" style="color: #4b5563;">Get started with TallyPrime on AWS today and experience the power of cloud computing</p>
                 <div class="d-flex gap-3 justify-content-center flex-wrap">
-                    <a href="{% url 'contact' %}" class="btn btn-primary btn-lg px-5 py-3 fw-semibold shadow-lg">
+                    <button onclick="showEnquiryForm()" class="btn btn-primary btn-lg px-5 py-3 fw-semibold shadow-lg">
                         <i class="bi bi-envelope me-2"></i>Get a Free Quote
-                    </a>
+                    </button>
                     <a href="{% url 'product_catalog' %}" class="btn btn-outline-primary btn-lg px-5 py-3 fw-semibold">
                         <i class="bi bi-grid me-2"></i>View All Products
                     </a>
@@ -279,4 +279,5 @@
 </script>
 
 {% endblock %}
+
 

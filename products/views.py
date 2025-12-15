@@ -882,6 +882,14 @@ def tally_prime_aws_page(request):
     """Tally Prime on AWS product page"""
     return render(request, 'products/tally_prime_aws.html')
 
+def tally_software_service_page(request):
+    """Tally Software Service product page"""
+    return render(request, 'products/tally_software_service.html')
+
+def tally_prime_4_page(request):
+    """Tally Prime 4.0 product page"""
+    return render(request, 'products/tally_prime_4.html')
+
 def product_catalog(request):
     """Product catalog page showing all products"""
     # Redirect specific product searches to dedicated pages
@@ -893,6 +901,12 @@ def product_catalog(request):
         # Redirect Tally Prime on AWS searches to dedicated page
         if search_query.lower() in ['tally prime on aws', 'tallyprime on aws', 'tally aws', 'tally prime aws']:
             return redirect('tally_prime_aws')
+        # Redirect Tally Software Service searches to dedicated page
+        if search_query.lower() in ['tally software service', 'tally software services', 'tss', 'tally service']:
+            return redirect('tally_software_service')
+        # Redirect Tally Prime 4.0 searches to dedicated page
+        if search_query.lower() in ['tally prime 4.0', 'tallyprime 4.0', 'tally prime 4', 'tallyprime 4']:
+            return redirect('tally_prime_4')
     
     product_masters = ProductMaster.objects.filter(is_active=True).order_by('display_order')
     

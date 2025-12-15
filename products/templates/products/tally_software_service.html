@@ -1,0 +1,339 @@
+{% extends 'products/base.html' %}
+
+{% load static %}
+
+{% block title %}Tally Software Service - Connected Services | FusionTec{% endblock %}
+
+{% block content %}
+
+<!-- Hero Section with Background Image -->
+<section class="hero-section" style="background: linear-gradient(135deg, rgba(248, 249, 250, 0.95) 0%, rgba(233, 236, 239, 0.95) 100%), url('/media/tally/11068.jpg'); background-size: cover; background-position: center; background-attachment: fixed; padding: 120px 0 100px; position: relative; overflow: hidden;">
+    <div class="container" style="position: relative; z-index: 2;">
+        <div class="row align-items-center min-vh-75">
+            <div class="col-lg-6" data-aos="fade-right">
+                <div class="hero-content">
+                    <h1 class="display-2 fw-bold mb-4" style="color: #1e3a8a;">Tally Software Service</h1>
+                    <h2 class="h3 fw-light mb-4" style="color: #4b5563;">Powerful Upgrades and Connected Services for your growing Business</h2>
+                    <p class="lead mb-5" style="font-size: 1.25rem; line-height: 1.8; color: #4b5563;">
+                        Tally Software Services (TSS) is a software subscription for a collection of services which add great value to your TallyPrime by giving you the latest developments in technology and statutory laws. Continuous product upgrades and Updates, connectivity driven functionalities such as online data exchange between your branches, remote access, seamless banking and payment services and much more, enhance your business performance by leaps and bounds.
+                    </p>
+                    <div class="d-flex gap-3 flex-wrap">
+                        <button onclick="showEnquiryForm()" class="btn btn-primary btn-lg px-5 py-3 fw-semibold shadow-lg">
+                            <i class="bi bi-envelope me-2"></i>Get Free Quote
+                        </button>
+                        <a href="{% url 'product_catalog' %}" class="btn btn-outline-primary btn-lg px-5 py-3 fw-semibold">
+                            <i class="bi bi-grid me-2"></i>View Products
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6" data-aos="fade-left">
+                <div class="text-center">
+                    <img src="/media/tally/11116.jpg" alt="Tally Software Service" class="img-fluid rounded-4 shadow-lg" style="width: 100%; object-fit: contain; max-height: 600px;">
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- What is TSS Section -->
+<section class="py-5" style="background: white;">
+    <div class="container py-5">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-12" data-aos="fade-up">
+                <div class="text-center">
+                    <span class="badge bg-primary mb-3 px-3 py-2" style="font-size: 0.9rem;">SOFTWARE SERVICE</span>
+                    <h2 class="display-4 fw-bold mb-4" style="color: #1e3a8a;">What is Tally Software Service?</h2>
+                    <p class="lead mb-4" style="color: #4b5563; line-height: 1.8; max-width: 900px; margin: 0 auto;">
+                        Tally Software Services (TSS) is a software subscription for a collection of services which add great value to your TallyPrime by giving you the latest developments in technology and statutory laws. Continuous product upgrades and Updates, connectivity driven functionalities such as online data exchange between your branches, remote access, seamless banking and payment services and much more, enhance your business performance by leaps and bounds.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Key Benefits Header -->
+<section class="py-5" style="background: #e9ecef;">
+    <div class="container py-5">
+        <div class="row">
+            <div class="col-12 text-center mb-5">
+                <span class="badge bg-success mb-3 px-3 py-2" style="font-size: 0.9rem;">KEY BENEFITS</span>
+                <h2 class="display-4 fw-bold mb-3" style="color: #1e3a8a;">Key Benefits</h2>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- e-Way Bills Section -->
+<section class="py-5" style="background: white;">
+    <div class="container py-5">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-6" data-aos="fade-right">
+                <div class="pe-lg-4">
+                    <span class="badge bg-info mb-3 px-3 py-2" style="font-size: 0.9rem;">E-WAY BILLS</span>
+                    <h2 class="display-4 fw-bold mb-4" style="color: #1e3a8a;">Connected Services to Generate e-Way Bills Instantly</h2>
+                    <p class="lead mb-4" style="color: #4b5563; line-height: 1.8;">
+                        Tally's fully connected e-way bill solution is simple, seamless and reliable with zero manual work. Tally being one of the recognised ISO certified GSP (GST Suvidha Provider), TallyPrime directly integrates with the e-way portal to seamlessly generate e-way bill for you without the need to do it manually.
+                    </p>
+                    <ul class="list-unstyled" style="color: #6b7280; line-height: 2;">
+                        <li><i class="bi bi-check-circle-fill text-success me-2"></i>Instantly generate e-way bill for a single invoice or multiple invoices</li>
+                        <li><i class="bi bi-check-circle-fill text-success me-2"></i>Extend, cancel and update e-way bill details online within TallyPrime</li>
+                        <li><i class="bi bi-check-circle-fill text-success me-2"></i>Flexible to generate e-way bill along with e-invoice or separately as it suits your need</li>
+                        <li><i class="bi bi-check-circle-fill text-success me-2"></i>Exclusive e-way bill report giving you a complete view of transactions and the status</li>
+                        <li><i class="bi bi-check-circle-fill text-success me-2"></i>Supports offline generation of e-way bills to handle the exigency cases</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-lg-6" data-aos="fade-left">
+                <div class="position-relative">
+                    <img src="/media/tally/2527.jpg" alt="e-Way Bills" class="img-fluid rounded-4 shadow-lg" style="width: 100%; object-fit: contain; max-height: 500px;">
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- e-Invoice Section -->
+<section class="py-5" style="background: #e9ecef;">
+    <div class="container py-5">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-6 order-lg-2" data-aos="fade-left">
+                <div class="ps-lg-4">
+                    <span class="badge bg-warning mb-3 px-3 py-2" style="font-size: 0.9rem;">E-INVOICE</span>
+                    <h2 class="display-4 fw-bold mb-4" style="color: #1e3a8a;">Connected Service to Generate e-Invoice</h2>
+                    <p class="lead mb-4" style="color: #4b5563; line-height: 1.8;">
+                        Generating and printing e-invoice is amazingly simpler with TallyPrime's connected services. Tally being a recognized and ISO certified GSP (GST Suvidha Provider), TallyPrime directly integrates with IRP portal to seamlessly generate e-invoices.
+                    </p>
+                    <ul class="list-unstyled" style="color: #6b7280; line-height: 2;">
+                        <li><i class="bi bi-check-circle-fill text-success me-2"></i>Auto-generate e-invoice instantly</li>
+                        <li><i class="bi bi-check-circle-fill text-success me-2"></i>Print IRN and QR code automatically with no changes to the invoicing process that you follow</li>
+                        <li><i class="bi bi-check-circle-fill text-success me-2"></i>Flexibility to send individual/selective/ bulk invoices to IRP</li>
+                        <li><i class="bi bi-check-circle-fill text-success me-2"></i>Generate e-invoice along with the e-way bill, wherever applicable</li>
+                        <li><i class="bi bi-check-circle-fill text-success me-2"></i>e-Invoice report to get a bird's-eye view on the status (generated / pending / cancelled)</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-lg-6 order-lg-1" data-aos="fade-right">
+                <div class="position-relative">
+                    <img src="/media/tally/11068.jpg" alt="e-Invoice" class="img-fluid rounded-4 shadow-lg" style="width: 100%; object-fit: contain; max-height: 500px;">
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Business Reports Section -->
+<section class="py-5" style="background: white;">
+    <div class="container py-5">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-6" data-aos="fade-right">
+                <div class="pe-lg-4">
+                    <span class="badge bg-primary mb-3 px-3 py-2" style="font-size: 0.9rem;">BUSINESS REPORTS</span>
+                    <h2 class="display-4 fw-bold mb-4" style="color: #1e3a8a;">Business Reports on Any Device, Anywhere</h2>
+                    <p class="lead mb-4" style="color: #4b5563; line-height: 1.8;">
+                        Real-time and secure access to important business report from a web browser, on any device, anywhere.
+                    </p>
+                    <ul class="list-unstyled" style="color: #6b7280; line-height: 2;">
+                        <li><i class="bi bi-check-circle-fill text-success me-2"></i>View your important business reports anywhere on a web browser</li>
+                        <li><i class="bi bi-check-circle-fill text-success me-2"></i>Convenience of accessing your data anywhere while your data stays only with you</li>
+                        <li><i class="bi bi-check-circle-fill text-success me-2"></i>Access important business reports such as Bills Receivable & Payable, Stock Summary, Sales/Purchase Register, Profit & Loss A/C, Balance Sheet etc on the go</li>
+                        <li><i class="bi bi-check-circle-fill text-success me-2"></i>Helping you make the business decisions faster than before</li>
+                        <li><i class="bi bi-check-circle-fill text-success me-2"></i>You can download an invoice or any report and share it on the go</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-lg-6" data-aos="fade-left">
+                <div class="position-relative">
+                    <img src="/media/tally/11116.jpg" alt="Business Reports" class="img-fluid rounded-4 shadow-lg" style="width: 100%; object-fit: contain; max-height: 500px;">
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Product Updates Section -->
+<section class="py-5" style="background: #e9ecef;">
+    <div class="container py-5">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-6 order-lg-2" data-aos="fade-left">
+                <div class="ps-lg-4">
+                    <span class="badge bg-secondary mb-3 px-3 py-2" style="font-size: 0.9rem;">UPDATES</span>
+                    <h2 class="display-4 fw-bold mb-4" style="color: #1e3a8a;">Product updates</h2>
+                    <p class="lead mb-4" style="color: #4b5563; line-height: 1.8;">
+                        Regular product updates ensure that your TallyPrime caters to your ever-changing business requirements.
+                    </p>
+                    <ul class="list-unstyled" style="color: #6b7280; line-height: 2;">
+                        <li><i class="bi bi-check-circle-fill text-success me-2"></i>Avail new product enhancements & major releases at frequent intervals</li>
+                        <li><i class="bi bi-check-circle-fill text-success me-2"></i>Ensure compatibility with the latest technological and statutory changes</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-lg-6 order-lg-1" data-aos="fade-right">
+                <div class="position-relative">
+                    <img src="/media/tally/20943781.jpg" alt="Product Updates" class="img-fluid rounded-4 shadow-lg" style="width: 100%; object-fit: contain; max-height: 500px;">
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Banking & Payment Section -->
+<section class="py-5" style="background: white;">
+    <div class="container py-5">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-6" data-aos="fade-right">
+                <div class="pe-lg-4">
+                    <span class="badge bg-success mb-3 px-3 py-2" style="font-size: 0.9rem;">BANKING</span>
+                    <h2 class="display-4 fw-bold mb-4" style="color: #1e3a8a;">Banking & Payment</h2>
+                    <p class="lead mb-4" style="color: #4b5563; line-height: 1.8;">
+                        Experience smooth and ease of banking using Banking and Payment Services provided through TSS.
+                    </p>
+                    <ul class="list-unstyled" style="color: #6b7280; line-height: 2;">
+                        <li><i class="bi bi-check-circle-fill text-success me-2"></i>Receive updates for all the latest cheque formats of banks available in your TallyPrime</li>
+                        <li><i class="bi bi-check-circle-fill text-success me-2"></i>Automatically reconcile your books of accounts with your bank statements. It's quick, simple, accurate and stress-free. It saves your time, manpower and money</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-lg-6" data-aos="fade-left">
+                <div class="position-relative">
+                    <img src="/media/tally/2527.jpg" alt="Banking & Payment" class="img-fluid rounded-4 shadow-lg" style="width: 100%; object-fit: contain; max-height: 500px;">
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Online Data Synchronization Section -->
+<section class="py-5" style="background: #e9ecef;">
+    <div class="container py-5">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-6 order-lg-2" data-aos="fade-left">
+                <div class="ps-lg-4">
+                    <span class="badge bg-info mb-3 px-3 py-2" style="font-size: 0.9rem;">SYNCHRONIZATION</span>
+                    <h2 class="display-4 fw-bold mb-4" style="color: #1e3a8a;">Online Data Synchronization</h2>
+                    <p class="lead mb-4" style="color: #4b5563; line-height: 1.8;">
+                        Decentralization of your books of accounts across branches is no more difficult. With TallyPrime's data synchronization, you can synchronize data across your head office and branches, factories or warehouses.
+                    </p>
+                    <ul class="list-unstyled" style="color: #6b7280; line-height: 2;">
+                        <li><i class="bi bi-check-circle-fill text-success me-2"></i>Exchange and consolidate Data across branches at click of a button</li>
+                        <li><i class="bi bi-check-circle-fill text-success me-2"></i>Greater control on the direction of data synchronizes and data to be synchronized</li>
+                        <li><i class="bi bi-check-circle-fill text-success me-2"></i>Synchronize the data without needing to be 'connected to each other live' using on-demand synchronization</li>
+                        <li><i class="bi bi-check-circle-fill text-success me-2"></i>Complete visibility of business through consolidated reports of Head office and Branch office(Balance Sheet, P&L, Stock report, etc.)</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-lg-6 order-lg-1" data-aos="fade-right">
+                <div class="position-relative">
+                    <img src="/media/tally/11068.jpg" alt="Data Synchronization" class="img-fluid rounded-4 shadow-lg" style="width: 100%; object-fit: contain; max-height: 500px;">
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FusionTec Partner Section -->
+<section class="py-5" style="background: white;">
+    <div class="container py-5">
+        <div class="row">
+            <div class="col-lg-10 mx-auto">
+                <div class="partner-card text-center p-5 rounded-4 shadow-lg" style="background: white; border: 1px solid #e5e7eb;" data-aos="fade-up">
+                    <h3 class="display-5 fw-bold mb-4" style="color: #1e3a8a;">FusionTec - Your Trusted Partner</h3>
+                    <p class="lead mb-5" style="color: #4b5563; max-width: 700px; margin: 0 auto;">
+                        FusionTec is a leading Tally Authorised Partner with the vision of providing Business Solutions to its Customers. We are committed to helping businesses grow with the right tools and support.
+                    </p>
+                    <div class="d-flex gap-3 justify-content-center flex-wrap">
+                        <a href="{% url 'contact' %}" class="btn btn-primary btn-lg px-5 py-3 fw-semibold shadow">
+                            <i class="bi bi-telephone me-2"></i>Contact Us
+                        </a>
+                        <a href="{% url 'product_catalog' %}" class="btn btn-outline-primary btn-lg px-5 py-3 fw-semibold">
+                            <i class="bi bi-box-seam me-2"></i>Explore Products
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="py-5" style="background: #e9ecef;">
+    <div class="container py-5">
+        <div class="row">
+            <div class="col-lg-8 mx-auto text-center">
+                <h2 class="display-4 fw-bold mb-4" style="color: #1e3a8a;">Ready to Enhance Your Business?</h2>
+                <p class="lead mb-5" style="color: #4b5563;">Get started with Tally Software Service today and unlock powerful connected services</p>
+                <div class="d-flex gap-3 justify-content-center flex-wrap">
+                    <button onclick="showEnquiryForm()" class="btn btn-primary btn-lg px-5 py-3 fw-semibold shadow-lg">
+                        <i class="bi bi-envelope me-2"></i>Get a Free Quote
+                    </button>
+                    <a href="{% url 'product_catalog' %}" class="btn btn-outline-primary btn-lg px-5 py-3 fw-semibold">
+                        <i class="bi bi-grid me-2"></i>View All Products
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    /* Hero Section */
+    .hero-section {
+        min-height: 90vh;
+        display: flex;
+        align-items: center;
+    }
+    
+    .min-vh-75 {
+        min-height: 75vh;
+    }
+    
+    /* Partner Card */
+    .partner-card {
+        transition: transform 0.3s ease;
+    }
+    
+    .partner-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    /* Section Spacing */
+    section {
+        position: relative;
+    }
+    
+    /* Ensure content visibility */
+    [data-aos] {
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+    
+    /* Badge styling */
+    .badge {
+        letter-spacing: 1px;
+        font-weight: 600;
+    }
+    
+    /* List styling */
+    .list-unstyled li {
+        margin-bottom: 0.75rem;
+    }
+</style>
+
+<script>
+    // Initialize AOS
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof AOS !== 'undefined') {
+            AOS.init({
+                duration: 800,
+                once: true,
+                offset: 100,
+                easing: 'ease-in-out'
+            });
+        }
+    });
+</script>
+
+{% endblock %}
+
+
