@@ -70,6 +70,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'products.context_processors.new_products',
             ],
         },
     },
@@ -84,11 +85,14 @@ WSGI_APPLICATION = 'fusiontec.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'fusion_db',          # Your MySQL database name
-        'USER': 'root',                  # Your MySQL username
-        'PASSWORD': 'acer',              # Your MySQL password
-        'HOST': '127.0.0.1',             # Your database host
-        'PORT': '3306',                  # Your database port
+        'NAME': 'fusion_db',
+        'USER': 'root',
+        'PASSWORD': 'Logesh@123',
+        'HOST': 'localhost',   # IMPORTANT
+        'PORT': '',            # IMPORTANT (empty)
+        'OPTIONS': {
+            'unix_socket': '/tmp/mysql.sock',
+        },
     }
 }
 

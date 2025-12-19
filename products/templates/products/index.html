@@ -852,6 +852,242 @@
     </div>
 </section>
 
+<!-- New Products Section -->
+{% if new_products %}
+<section class="py-5 new-products-section" id="new-products">
+    <div class="new-products-background"></div>
+    <div class="container px-5 position-relative">
+        <div class="text-center mb-5" data-aos="fade-up">
+            <span class="badge bg-primary mb-3 px-3 py-2" style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.9) 0%, rgba(118, 75, 162, 0.9) 100%) !important; backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.3);">
+                <i class="bi bi-star-fill me-2"></i>New Arrivals
+            </span>
+            <h2 class="fw-bolder mb-3" style="color: #2c3e50;">New Products</h2>
+            <p class="lead" style="color: #6c757d;">Discover our latest offerings and promotional products</p>
+        </div>
+        
+        <div class="row g-4 justify-content-center">
+            {% for product in new_products %}
+            <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:'100' }}">
+                <div class="card new-product-card h-100 border-0 shadow-sm overflow-hidden">
+                    <div class="new-product-image-wrapper position-relative">
+                        <img src="{{ product.image.url }}" alt="{{ product.title|default:'New Product' }}" class="new-product-image">
+                        <div class="new-product-overlay">
+                            <button class="btn btn-light btn-sm view-product-btn" onclick="openProductModal({{ forloop.counter0 }})">
+                                <i class="bi bi-eye me-1"></i>View Full
+                            </button>
+                        </div>
+                        {% if product.title %}
+                        <div class="new-product-badge">
+                            <i class="bi bi-star-fill"></i> New
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="card-body p-4" style="background: rgba(255, 255, 255, 0.5);">
+                        {% if product.title %}
+                        <h5 class="card-title fw-bold mb-2" style="color: #2c3e50;">{{ product.title }}</h5>
+                        {% endif %}
+                        {% if product.description %}
+                        <p class="card-text small mb-3" style="color: #6c757d;">{{ product.description|truncatewords:20 }}</p>
+                        {% endif %}
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small style="color: #6c757d;">
+                                <i class="bi bi-calendar3 me-1"></i>{{ product.created_at|date:"M d, Y" }}
+                            </small>
+                            <button class="btn btn-outline-primary btn-sm" onclick="openProductModal({{ forloop.counter0 }})" style="border-color: rgba(102, 126, 234, 0.5); color: #667eea; backdrop-filter: blur(10px);">
+                                View Details <i class="bi bi-arrow-right ms-1"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        {% if new_products|length > 3 %}
+        <div class="text-center mt-5" data-aos="fade-up">
+            <button class="btn btn-lg" onclick="showAllNewProducts()" style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.9) 0%, rgba(118, 75, 162, 0.9) 100%); border: 1px solid rgba(255, 255, 255, 0.3); color: white; backdrop-filter: blur(10px); box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);">
+                <i class="bi bi-grid me-2"></i>View All New Products
+            </button>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- New Products Modal -->
+<div class="modal fade" id="newProductModal" tabindex="-1" aria-labelledby="newProductModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0">
+            <div class="modal-header border-0 pb-0">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0">
+                <div id="newProductCarousel" class="carousel slide" data-bs-ride="carousel">
+                    <div class="carousel-inner">
+                        {% for product in new_products %}
+                        <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                            <img src="{{ product.image.url }}" class="d-block w-100" alt="{{ product.title|default:'New Product' }}" style="max-height: 70vh; object-fit: contain;">
+                            {% if product.title or product.description %}
+                            <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-75 rounded p-3 mb-3">
+                                {% if product.title %}
+                                <h5 class="text-white">{{ product.title }}</h5>
+                                {% endif %}
+                                {% if product.description %}
+                                <p class="text-white-50 mb-0">{{ product.description }}</p>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% if new_products|length > 1 %}
+                    <button class="carousel-control-prev" type="button" data-bs-target="#newProductCarousel" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Previous</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#newProductCarousel" data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Next</span>
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.new-products-section {
+    position: relative;
+    background: transparent;
+    overflow: hidden;
+}
+
+.new-products-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    z-index: 0;
+}
+
+.new-products-section .container {
+    z-index: 1;
+}
+
+.new-product-card {
+    transition: all 0.3s ease;
+    border-radius: 16px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.new-product-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 32px rgba(0,0,0,0.2) !important;
+    background: rgba(255, 255, 255, 0.85);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+.new-product-image-wrapper {
+    height: 250px;
+    overflow: hidden;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.new-product-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.new-product-card:hover .new-product-image {
+    transform: scale(1.1);
+}
+
+.new-product-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.new-product-card:hover .new-product-overlay {
+    opacity: 1;
+}
+
+.new-product-badge {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(255, 107, 107, 0.4);
+    z-index: 2;
+}
+
+.view-product-btn {
+    border-radius: 25px;
+    font-weight: 600;
+    padding: 10px 20px;
+}
+
+.view-product-btn:hover {
+    transform: scale(1.05);
+}
+
+@media (max-width: 768px) {
+    .new-product-image-wrapper {
+        height: 200px;
+    }
+    
+    .new-product-badge {
+        top: 10px;
+        right: 10px;
+        padding: 4px 10px;
+        font-size: 0.7rem;
+    }
+}
+</style>
+
+<script>
+function openProductModal(index) {
+    const modal = new bootstrap.Modal(document.getElementById('newProductModal'));
+    const carousel = bootstrap.Carousel.getOrCreateInstance(document.getElementById('newProductCarousel'));
+    carousel.to(index);
+    modal.show();
+}
+
+function showAllNewProducts() {
+    // Scroll to new products section and highlight
+    document.getElementById('new-products').scrollIntoView({ behavior: 'smooth' });
+    // Optionally open first product modal
+    if (document.querySelectorAll('.new-product-card').length > 0) {
+        openProductModal(0);
+    }
+}
+</script>
+{% endif %}
+
 {% include 'products/partials/our_products.html' %}
 
 <!-- Dedicated DSC Section -->

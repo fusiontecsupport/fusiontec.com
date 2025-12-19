@@ -685,7 +685,7 @@ from .models import (
     QuoteSubmission, ContactSubmission, PaymentTransaction, 
     PaymentSettings, Applicant, QuoteRequest,
     ProductTypeMaster, ProductMasterV2, ProductSubMaster, RateCardEntry,
-    ProductFormSubmission, DscPrice, DscSubmission, DscEnquiry,
+    ProductFormSubmission, DscPrice, DscSubmission, DscEnquiry, NewProduct,
 )
 
 # ============================================================================
@@ -807,6 +807,9 @@ def index(request):
     payment_infos = PaymentSettings.objects.filter(setting_type='qr_code', is_active=True)
     bank_infos = PaymentSettings.objects.filter(setting_type='bank_transfer', is_active=True)
     
+    # Get new products for promotional popup
+    new_products = NewProduct.objects.filter(is_active=True).order_by('display_order', '-created_at')
+    
     context = {
         'product_masters': product_masters,
         'product_type_masters': product_type_masters,
@@ -814,6 +817,7 @@ def index(request):
         'razorpay_infos': razorpay_infos,
         'payment_infos': payment_infos,
         'bank_infos': bank_infos,
+        'new_products': new_products,
     }
     return render(request, 'products/index.html', context)
 
@@ -825,6 +829,7 @@ def _get_index_context(highlight_section=None):
     razorpay_infos = PaymentSettings.objects.filter(setting_type='razorpay', is_active=True)
     payment_infos = PaymentSettings.objects.filter(setting_type='qr_code', is_active=True)
     bank_infos = PaymentSettings.objects.filter(setting_type='bank_transfer', is_active=True)
+    new_products = NewProduct.objects.filter(is_active=True).order_by('display_order', '-created_at')
     
     context = {
         'product_masters': product_masters,
@@ -833,6 +838,7 @@ def _get_index_context(highlight_section=None):
         'razorpay_infos': razorpay_infos,
         'payment_infos': payment_infos,
         'bank_infos': bank_infos,
+        'new_products': new_products,
     }
     
     if highlight_section:
@@ -3489,6 +3495,64 @@ def custom_admin_products(request):
         'sub_products': ProductSubMaster.objects.select_related('product').all().order_by('id'),
     }
     return render(request, 'products/admin/products.html', context)
+
+@admin_required
+def custom_admin_new_products(request):
+    """Admin management for New Products (promotional images)"""
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        
+        try:
+            if action == 'delete':
+                product_id = request.POST.get('product_id')
+                NewProduct.objects.get(id=product_id).delete()
+                messages.success(request, 'New Product deleted successfully.')
+                return redirect('custom_admin_new_products')
+            elif action == 'edit':
+                product_id = request.POST.get('product_id')
+                title = request.POST.get('title', '').strip()
+                description = request.POST.get('description', '').strip()
+                is_active = request.POST.get('is_active') == 'on'
+                display_order = int(request.POST.get('display_order', 0))
+                image = request.FILES.get('image')
+                
+                product = NewProduct.objects.get(id=product_id)
+                product.title = title if title else None
+                product.description = description if description else None
+                product.is_active = is_active
+                product.display_order = display_order
+                if image:
+                    product.image = image
+                product.save()
+                messages.success(request, 'New Product updated successfully.')
+                return redirect('custom_admin_new_products')
+            elif action == 'create':
+                title = request.POST.get('title', '').strip()
+                description = request.POST.get('description', '').strip()
+                is_active = request.POST.get('is_active') == 'on'
+                display_order = int(request.POST.get('display_order', 0))
+                image = request.FILES.get('image')
+                
+                if not image:
+                    messages.error(request, 'Image is required.')
+                else:
+                    NewProduct.objects.create(
+                        title=title if title else None,
+                        description=description if description else None,
+                        image=image,
+                        is_active=is_active,
+                        display_order=display_order
+                    )
+                    messages.success(request, 'New Product created successfully.')
+                    return redirect('custom_admin_new_products')
+        except Exception as exc:
+            messages.error(request, f'Error: {exc}')
+    
+    new_products = NewProduct.objects.all().order_by('display_order', '-created_at')
+    context = {
+        'new_products': new_products,
+    }
+    return render(request, 'products/admin/new_products.html', context)
 
 @admin_required
 def admin_product_types(request, master_id):

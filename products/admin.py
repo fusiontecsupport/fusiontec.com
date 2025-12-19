@@ -6,7 +6,7 @@ from .models import (
     ProductMaster, ProductType, ProductItem, RateCardMaster, Customer, QuoteSubmission,
     ContactSubmission, PaymentTransaction, PaymentSettings, Applicant,
     ProductTypeMaster, ProductMasterV2, ProductSubMaster, RateCardEntry, ProductFormSubmission, QuoteRequest,
-    DscEnquiry, DscSubmission,
+    DscEnquiry, DscSubmission, NewProduct,
 )
 
 # ============================================================================
@@ -666,3 +666,34 @@ class DscSubmissionAdmin(admin.ModelAdmin):
         updated = queryset.update(status='cancelled')
         self.message_user(request, f'{updated} submission(s) marked as cancelled.')
     mark_cancelled.short_description = "Mark as cancelled"
+
+# ============================================================================
+# NEW PRODUCTS ADMIN
+# ============================================================================
+
+@admin.register(NewProduct)
+class NewProductAdmin(admin.ModelAdmin):
+    list_display = ['id', 'title', 'image_preview', 'is_active', 'display_order', 'created_at']
+    list_filter = ['is_active', 'created_at']
+    search_fields = ['title', 'description']
+    ordering = ['display_order', '-created_at']
+    readonly_fields = ['image_preview', 'created_at', 'updated_at']
+    
+    fieldsets = (
+        ('Basic Information', {
+            'fields': ('title', 'description', 'is_active', 'display_order')
+        }),
+        ('Image', {
+            'fields': ('image', 'image_preview')
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    def image_preview(self, obj):
+        if obj.image:
+            return format_html('<img src="{}" style="max-width: 200px; max-height: 200px;" />', obj.image.url)
+        return "No image"
+    image_preview.short_description = 'Image Preview'
