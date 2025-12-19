@@ -1061,6 +1061,35 @@
   <i class="bi bi-chat-dots-fill fs-5"></i>
 </div>
 
+<!-- Compact Chatbot Form Widget (Always Visible) -->
+<div id="chatbotWidget" class="chatbot-widget-compact">
+  <div class="chatbot-widget-header">
+    <div class="chatbot-header-left">
+      <div class="chatbot-header-icon">
+        <i class="bi bi-robot"></i>
+      </div>
+      <span class="chatbot-header-title">Quick Contact</span>
+    </div>
+    <button type="button" class="chatbot-minimize-btn" id="chatbotMinimizeBtn" aria-label="Minimize">
+      <i class="bi bi-dash-lg minimize-icon"></i>
+      <i class="bi bi-plus-lg maximize-icon" style="display: none;"></i>
+    </button>
+  </div>
+  <div class="chatbot-widget-body" id="chatbotWidgetBody">
+    <form id="chatbotForm" class="chatbot-form-compact" method="POST" action="{% url 'footer_contact_form' %}">
+      {% csrf_token %}
+      <input type="text" id="chatbotName" name="name" class="chatbot-input-compact" placeholder="Name" required>
+      <input type="email" id="chatbotEmail" name="email" class="chatbot-input-compact" placeholder="Email" required>
+      <input type="tel" id="chatbotPhone" name="phone" class="chatbot-input-compact" placeholder="Phone" required>
+      <textarea id="chatbotMessage" name="message" class="chatbot-input-compact chatbot-textarea" rows="2" placeholder="Message" required></textarea>
+      <input type="hidden" id="chatbotSubject" name="subject" value="Quick Contact Form">
+      <button type="submit" class="chatbot-submit-compact">
+        <i class="bi bi-send-fill"></i> Send
+      </button>
+    </form>
+  </div>
+</div>
+
 <!-- Enquiry Modal Styles -->
 <style>
   .enquiry-modal-content {
@@ -1412,6 +1441,260 @@
     from { transform: rotate(0deg); }
     to { transform: rotate(360deg); }
   }
+
+  /* Compact Chatbot Widget (Always Visible) */
+  .chatbot-widget-compact {
+    position: fixed;
+    bottom: 90px; /* Position above enquiry icon */
+    left: 20px;
+    width: 280px;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15), 0 4px 12px rgba(0, 0, 0, 0.1);
+    z-index: 1049;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    max-height: 400px;
+  }
+
+  .chatbot-widget-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+
+  .chatbot-header-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+  }
+
+  .chatbot-header-icon {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+  }
+
+  .chatbot-header-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+
+  .chatbot-minimize-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    padding: 0;
+    flex-shrink: 0;
+  }
+
+  .chatbot-minimize-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1);
+  }
+
+  .chatbot-minimize-btn i {
+    font-size: 1rem;
+    line-height: 1;
+  }
+
+  .chatbot-widget-body {
+    transition: max-height 0.3s ease, opacity 0.3s ease;
+    overflow: hidden;
+  }
+
+  .chatbot-widget-compact.minimized .chatbot-widget-body {
+    max-height: 0;
+    opacity: 0;
+    padding: 0;
+  }
+
+  .chatbot-widget-compact.minimized {
+    height: auto;
+  }
+
+  .chatbot-form-compact {
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 360px;
+    overflow-y: auto;
+  }
+
+  .chatbot-input-compact {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1.5px solid #e9ecef;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    transition: all 0.2s ease;
+    font-family: inherit;
+  }
+
+  .chatbot-input-compact:focus {
+    border-color: #667eea;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  }
+
+  .chatbot-input-compact::placeholder {
+    color: #adb5bd;
+    font-size: 0.8rem;
+  }
+
+  .chatbot-textarea {
+    resize: vertical;
+    min-height: 50px;
+    max-height: 80px;
+    font-family: inherit;
+  }
+
+  .chatbot-submit-compact {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 4px;
+  }
+
+  .chatbot-submit-compact:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  }
+
+  .chatbot-submit-compact:active {
+    transform: translateY(0);
+  }
+
+  .chatbot-submit-compact:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  /* Mobile Responsive */
+  @media (max-width: 768px) {
+    .chatbot-widget-compact {
+      width: 260px;
+      bottom: 75px; /* Position above enquiry icon on mobile */
+      left: 15px;
+      max-height: 380px;
+    }
+
+    .chatbot-widget-header {
+      padding: 8px 10px;
+    }
+
+    .chatbot-header-title {
+      font-size: 0.8rem;
+    }
+
+    .chatbot-minimize-btn {
+      width: 22px;
+      height: 22px;
+    }
+
+    .chatbot-minimize-btn i {
+      font-size: 0.9rem;
+    }
+
+    .chatbot-form-compact {
+      padding: 10px;
+      gap: 6px;
+    }
+
+    .chatbot-input-compact {
+      padding: 7px 9px;
+      font-size: 0.75rem;
+    }
+
+    .chatbot-submit-compact {
+      padding: 7px 10px;
+      font-size: 0.75rem;
+    }
+  }
+
+  @media (max-width: 576px) {
+    .chatbot-widget-compact {
+      width: 240px;
+      bottom: 65px; /* Position above enquiry icon on small mobile */
+      left: 10px;
+      max-height: 350px;
+    }
+
+    .chatbot-widget-header {
+      padding: 7px 9px;
+    }
+
+    .chatbot-header-icon {
+      width: 20px;
+      height: 20px;
+      font-size: 0.9rem;
+    }
+
+    .chatbot-header-title {
+      font-size: 0.75rem;
+    }
+
+    .chatbot-minimize-btn {
+      width: 20px;
+      height: 20px;
+    }
+
+    .chatbot-minimize-btn i {
+      font-size: 0.85rem;
+    }
+
+    .chatbot-form-compact {
+      padding: 8px;
+      gap: 5px;
+    }
+
+    .chatbot-input-compact {
+      padding: 6px 8px;
+      font-size: 0.7rem;
+    }
+
+    .chatbot-textarea {
+      min-height: 45px;
+      max-height: 70px;
+    }
+
+    .chatbot-submit-compact {
+      padding: 6px 9px;
+      font-size: 0.7rem;
+    }
+  }
+
 </style>
 
 <script>
@@ -1480,6 +1763,100 @@ document.addEventListener("DOMContentLoaded", function () {
     setTimeout(() => {
       showEnquiryForm();
     }, 500);
+  }
+
+  // Compact Chatbot Form Functionality
+  const chatbotWidget = document.getElementById('chatbotWidget');
+  const chatbotMinimizeBtn = document.getElementById('chatbotMinimizeBtn');
+  const chatbotWidgetBody = document.getElementById('chatbotWidgetBody');
+  const chatbotForm = document.getElementById('chatbotForm');
+
+  // Minimize/Maximize functionality
+  if (chatbotMinimizeBtn && chatbotWidget) {
+    chatbotMinimizeBtn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      chatbotWidget.classList.toggle('minimized');
+      
+      const minimizeIcon = this.querySelector('.minimize-icon');
+      const maximizeIcon = this.querySelector('.maximize-icon');
+      
+      if (chatbotWidget.classList.contains('minimized')) {
+        minimizeIcon.style.display = 'none';
+        maximizeIcon.style.display = 'block';
+      } else {
+        minimizeIcon.style.display = 'block';
+        maximizeIcon.style.display = 'none';
+      }
+    });
+
+    // Also allow clicking header to toggle (optional)
+    const chatbotHeader = chatbotWidget.querySelector('.chatbot-widget-header');
+    if (chatbotHeader) {
+      chatbotHeader.addEventListener('click', function(e) {
+        // Only toggle if not clicking the minimize button
+        if (!e.target.closest('.chatbot-minimize-btn')) {
+          chatbotMinimizeBtn.click();
+        }
+      });
+    }
+  }
+
+  // Handle chatbot form submission
+  if (chatbotForm) {
+    chatbotForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const submitBtn = this.querySelector('.chatbot-submit-compact');
+      const originalText = submitBtn.innerHTML;
+      const originalBg = submitBtn.style.background;
+      
+      // Show loading state
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<i class="bi bi-arrow-clockwise"></i> Sending...';
+      
+      // Get form data
+      const formData = new FormData(this);
+      
+      // Submit form via AJAX
+      fetch(this.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest'
+        }
+      })
+      .then(response => {
+        if (response.ok) {
+          return response.json().catch(() => ({ success: true }));
+        }
+        throw new Error('Network response was not ok');
+      })
+      .then(data => {
+        // Show success message
+        submitBtn.innerHTML = '<i class="bi bi-check-circle"></i> Sent!';
+        submitBtn.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
+        
+        // Reset form
+        setTimeout(() => {
+          this.reset();
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = originalText;
+          submitBtn.style.background = originalBg;
+        }, 2000);
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        // Show error message
+        submitBtn.innerHTML = '<i class="bi bi-x-circle"></i> Error';
+        submitBtn.style.background = 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)';
+        
+        setTimeout(() => {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = originalText;
+          submitBtn.style.background = originalBg;
+        }, 2000);
+      });
+    });
   }
 });
 </script>
