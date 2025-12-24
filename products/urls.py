@@ -75,6 +75,7 @@ urlpatterns = [
     path('api/quote-request/<int:request_id>/', views.quote_request_detail, name='quote_request_detail'),
     path('api/quote-request/<int:request_id>/update-status/', views.update_quote_request_status, name='update_quote_request_status'),
     path('admin-products/', views.custom_admin_products, name='custom_admin_products'),
+    path('admin-new-products/', views.custom_admin_new_products, name='custom_admin_new_products'),
     path('admin-dsc-prices/', views.admin_dsc_prices, name='admin_dsc_prices'),
     path('admin-tally-submissions/', views.custom_admin_tally_submissions, name='custom_admin_tally_submissions'),
     path('admin-emudhra-submissions/', views.custom_admin_emudhra_submissions, name='custom_admin_emudhra_submissions'),

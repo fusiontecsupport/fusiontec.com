@@ -1231,3 +1231,42 @@ class QuoteRequest(BaseTimestampModel):
         self.save()
         
         return quote
+
+# ============================================================================
+# NEW PRODUCTS (Promotional Images)
+# ============================================================================
+
+class NewProduct(BaseTimestampModel):
+    """Model for storing promotional new product images that appear in full-screen popup"""
+    
+    image = models.ImageField(
+        upload_to='products/new_products/',
+        help_text="Promotional image for new products"
+    )
+    title = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        help_text="Optional title for the product"
+    )
+    description = models.TextField(
+        blank=True,
+        null=True,
+        help_text="Optional description for the product"
+    )
+    is_active = models.BooleanField(
+        default=True,
+        help_text="Whether this product should be displayed"
+    )
+    display_order = models.PositiveIntegerField(
+        default=0,
+        help_text="Order for display (lower numbers appear first)"
+    )
+    
+    class Meta:
+        ordering = ['display_order', '-created_at']
+        verbose_name = "New Product"
+        verbose_name_plural = "New Products"
+    
+    def __str__(self):
+        return f"New Product #{self.id} - {self.title or 'Untitled'}"
