@@ -5,3 +5,8 @@ def new_products(request):
     return {
         'new_products': NewProduct.objects.filter(is_active=True).order_by('display_order', '-created_at')
     }
+
+
+
+
+
