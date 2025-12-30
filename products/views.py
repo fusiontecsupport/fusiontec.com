@@ -876,6 +876,10 @@ def net_banking_page(request):
     context = _get_index_context('net_banking')
     return render(request, 'products/index.html', context)
 
+def privacy_policy(request):
+    """Privacy Policy page"""
+    return render(request, 'products/privacy_policy.html')
+
 def tally_prime_page(request):
     """Tally Prime product page"""
     return render(request, 'products/tally_prime.html')
@@ -893,8 +897,12 @@ def tally_software_service_page(request):
     return render(request, 'products/tally_software_service.html')
 
 def tally_prime_4_page(request):
-    """Tally Prime 4.0 product page"""
+    """Tally 7.0 product page"""
     return render(request, 'products/tally_prime_4.html')
+
+def emudhra_digital_signature_page(request):
+    """eMudhra Digital Signature product page"""
+    return render(request, 'products/emudhra_digital_signature.html')
 
 def product_catalog(request):
     """Product catalog page showing all products"""
@@ -910,8 +918,8 @@ def product_catalog(request):
         # Redirect Tally Software Service searches to dedicated page
         if search_query.lower() in ['tally software service', 'tally software services', 'tss', 'tally service']:
             return redirect('tally_software_service')
-        # Redirect Tally Prime 4.0 searches to dedicated page
-        if search_query.lower() in ['tally prime 4.0', 'tallyprime 4.0', 'tally prime 4', 'tallyprime 4']:
+        # Redirect Tally 7.0 searches to dedicated page (also supports old Tally Prime 4.0 searches for backward compatibility)
+        if search_query.lower() in ['tally 7.0', 'tally 7', 'tally prime 4.0', 'tallyprime 4.0', 'tally prime 4', 'tallyprime 4']:
             return redirect('tally_prime_4')
     
     product_masters = ProductMaster.objects.filter(is_active=True).order_by('display_order')

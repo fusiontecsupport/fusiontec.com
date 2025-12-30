@@ -400,7 +400,33 @@
     </div>
     <!-- End Product Types -->
 
-
+    <!-- eMudhra Digital Signature Card -->
+    <div class="row g-4 justify-content-center mt-4" data-aos="fade-up" data-aos-delay="200">
+      <div class="col-12 col-lg-10 col-xl-8">
+        <div class="card product-type-card h-100 shadow-sm border-0">
+          <div class="row g-0 h-100">
+            <!-- Left Section - Image/Logo -->
+            <div class="col-md-4 d-flex align-items-center justify-content-center p-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+              <div class="text-center">
+                {% load static %}
+                <img src="{% static 'products/img/e-mudhra.jpg' %}" alt="eMudhra Digital Signature" class="img-fluid" style="max-height: 200px; width: auto; filter: brightness(0) invert(1);" onerror="this.style.display='none'; this.parentElement.innerHTML='<i class=\'bi bi-shield-check text-white\' style=\'font-size: 5rem;\'></i>';">
+              </div>
+            </div>
+            
+            <!-- Right Section - Product Info & CTA -->
+            <div class="col-md-8 p-4 d-flex flex-column justify-content-center">
+              <h3 class="product-heading mb-3">eMudhra Digital Signature</h3>
+              <p class="product-description mb-4">Buy Digital Signature Certificate in 3 clicks. 100% paperless. Used for GST, MCA, Income Tax, Tender submissions, EPFO filings, and more.</p>
+              <div class="d-flex gap-3 flex-wrap">
+                <a href="{% url 'emudhra_digital_signature' %}" class="btn btn-buy-online">Learn More</a>
+                <a href="https://fusiontec.com/digital_signature/" target="_blank" rel="noopener noreferrer" class="btn btn-enquiry">Buy Now</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- End eMudhra Digital Signature Card -->
 
     <!-- Quote Form Modal -->
     <div class="modal fade" id="quoteFormModal" tabindex="-1" aria-labelledby="quoteFormModalLabel" aria-hidden="true">

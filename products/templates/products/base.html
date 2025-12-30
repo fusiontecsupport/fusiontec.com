@@ -179,7 +179,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 <i class="bi bi-file-earmark-text me-2"></i>Tally Software Service
               </a></li>
               <li><a class="dropdown-item" href="{% url 'tally_prime_4' %}">
-                <i class="bi bi-stack me-2"></i>TallyPrime 4.0
+                <i class="bi bi-stack me-2"></i>Tally 7.0
+              </a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><h6 class="dropdown-header">Digital Solutions</h6></li>
+              <li><a class="dropdown-item" href="{% url 'emudhra_digital_signature' %}">
+                <i class="bi bi-shield-check me-2"></i>eMudhra Digital Signature
               </a></li>
               <li><hr class="dropdown-divider"></li>
               <li><a class="dropdown-item" href="{% url 'home' %}#products">View All Products</a></li>
@@ -1600,6 +1605,15 @@ document.addEventListener("DOMContentLoaded", function () {
               <span id="currentImageIndex">1</span> / <span id="totalImages">{{ new_products|length }}</span>
             </div>
             {% endif %}
+            <!-- Action Buttons -->
+            <div class="product-popup-buttons">
+              <button type="button" class="product-action-btn product-interest-btn" onclick="handleProductInterest()">
+                <i class="bi bi-heart-fill me-2"></i>Interest
+              </button>
+              <button type="button" class="product-action-btn product-decline-btn" onclick="handleProductDecline()">
+                <i class="bi bi-x-circle me-2"></i>Decline
+              </button>
+            </div>
           {% else %}
             <div class="text-center py-5">
               <p class="text-white">No new products available at the moment.</p>
@@ -1940,6 +1954,77 @@ document.addEventListener("DOMContentLoaded", function () {
   -webkit-backdrop-filter: blur(5px);
 }
 
+/* Product Popup Action Buttons */
+.product-popup-buttons {
+  position: absolute;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 15px;
+  z-index: 1050;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Adjust button position when image counter is present */
+#productPopupModal:has(.product-image-counter) .product-popup-buttons {
+  bottom: 80px;
+}
+
+/* When no image counter, buttons can be lower */
+#productPopupModal:not(:has(.product-image-counter)) .product-popup-buttons {
+  bottom: 30px;
+}
+
+.product-action-btn {
+  padding: 12px 30px;
+  border: none;
+  border-radius: 30px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  min-width: 140px;
+}
+
+.product-interest-btn {
+  background: linear-gradient(135deg, #4154f1 0%, #012970 100%);
+  color: white;
+}
+
+.product-interest-btn:hover {
+  background: linear-gradient(135deg, #012970 0%, #4154f1 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(65, 84, 241, 0.4);
+}
+
+.product-interest-btn:active {
+  transform: translateY(0);
+}
+
+.product-decline-btn {
+  background: rgba(255, 255, 255, 0.9);
+  color: #333;
+}
+
+.product-decline-btn:hover {
+  background: rgba(255, 255, 255, 1);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.product-decline-btn:active {
+  transform: translateY(0);
+}
+
 @media (max-width: 768px) {
   .product-popup-body {
     min-height: 100vh;
@@ -1975,6 +2060,27 @@ document.addEventListener("DOMContentLoaded", function () {
     bottom: 15px;
     font-size: 0.8rem;
     padding: 6px 12px;
+  }
+  
+  .product-popup-buttons {
+    bottom: 70px;
+    gap: 10px;
+    width: 90%;
+    max-width: 400px;
+  }
+  
+  #productPopupModal:has(.product-image-counter) .product-popup-buttons {
+    bottom: 70px;
+  }
+  
+  #productPopupModal:not(:has(.product-image-counter)) .product-popup-buttons {
+    bottom: 20px;
+  }
+  
+  .product-action-btn {
+    padding: 10px 20px;
+    font-size: 0.9rem;
+    min-width: 120px;
   }
 }
 
@@ -2013,6 +2119,29 @@ document.addEventListener("DOMContentLoaded", function () {
     bottom: 10px;
     font-size: 0.75rem;
     padding: 5px 10px;
+  }
+  
+  .product-popup-buttons {
+    bottom: 60px;
+    gap: 8px;
+    width: 95%;
+    flex-direction: column;
+  }
+  
+  .product-action-btn {
+    padding: 10px 18px;
+    font-size: 0.85rem;
+    min-width: 100%;
+    width: 100%;
+    max-width: 280px;
+  }
+  
+  #productPopupModal:has(.product-image-counter) .product-popup-buttons {
+    bottom: 60px;
+  }
+  
+  #productPopupModal:not(:has(.product-image-counter)) .product-popup-buttons {
+    bottom: 15px;
   }
 }
 
@@ -2496,6 +2625,41 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
   
+  // Handle Interest button click
+  function handleProductInterest() {
+    const productModal = document.getElementById('productPopupModal');
+    const enquiryModal = document.getElementById('enquiryModal');
+    
+    if (productModal && enquiryModal) {
+      // Close product popup
+      const bsProductModal = bootstrap.Modal.getInstance(productModal);
+      if (bsProductModal) {
+        bsProductModal.hide();
+      }
+      
+      // Open enquiry modal after a short delay to allow product modal to close
+      setTimeout(function() {
+        if (typeof showEnquiryForm === 'function') {
+          showEnquiryForm();
+        } else {
+          const bsEnquiryModal = new bootstrap.Modal(enquiryModal);
+          bsEnquiryModal.show();
+        }
+      }, 300);
+    }
+  }
+  
+  // Handle Decline button click
+  function handleProductDecline() {
+    const productModal = document.getElementById('productPopupModal');
+    if (productModal) {
+      const bsProductModal = bootstrap.Modal.getInstance(productModal);
+      if (bsProductModal) {
+        bsProductModal.hide();
+      }
+    }
+  }
+  
   // Product image navigation
   let currentProductIndex = 0;
   
@@ -2546,6 +2710,31 @@ document.addEventListener("DOMContentLoaded", function () {
           const currentIndexSpan = document.getElementById('currentImageIndex');
           if (currentIndexSpan) {
             currentIndexSpan.textContent = '1';
+          }
+        }
+        
+        // Adjust button position based on image counter presence
+        const imageCounter = document.querySelector('.product-image-counter');
+        const buttonsContainer = document.querySelector('.product-popup-buttons');
+        if (buttonsContainer) {
+          if (imageCounter) {
+            // Position buttons above the counter
+            if (window.innerWidth <= 576) {
+              buttonsContainer.style.bottom = '60px';
+            } else if (window.innerWidth <= 768) {
+              buttonsContainer.style.bottom = '70px';
+            } else {
+              buttonsContainer.style.bottom = '80px';
+            }
+          } else {
+            // Position buttons lower when no counter
+            if (window.innerWidth <= 576) {
+              buttonsContainer.style.bottom = '15px';
+            } else if (window.innerWidth <= 768) {
+              buttonsContainer.style.bottom = '20px';
+            } else {
+              buttonsContainer.style.bottom = '30px';
+            }
           }
         }
       });
