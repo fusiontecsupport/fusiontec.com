@@ -179,7 +179,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 <i class="bi bi-file-earmark-text me-2"></i>Tally Software Service
               </a></li>
               <li><a class="dropdown-item" href="{% url 'tally_prime_4' %}">
-                <i class="bi bi-stack me-2"></i>TallyPrime 4.0
+                <i class="bi bi-stack me-2"></i>Tally 7.0
+              </a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><h6 class="dropdown-header">Digital Solutions</h6></li>
+              <li><a class="dropdown-item" href="{% url 'emudhra_digital_signature' %}">
+                <i class="bi bi-shield-check me-2"></i>eMudhra Digital Signature
               </a></li>
               <li><hr class="dropdown-divider"></li>
               <li><a class="dropdown-item" href="{% url 'home' %}#products">View All Products</a></li>
@@ -2687,7 +2692,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
   
-      // Initialize first image when modal is shown
+  // Initialize first image when modal is shown
   document.addEventListener('DOMContentLoaded', function() {
     const productModal = document.getElementById('productPopupModal');
     if (productModal) {

@@ -1,0 +1,535 @@
+{% extends 'products/base.html' %}
+
+{% load static %}
+
+{% block title %}eMudhra Digital Signature Certificate - Buy in 3 Clicks | FusionTec{% endblock %}
+
+{% block content %}
+
+<style>
+    /* Unique Modern Design - Different from other pages */
+    .emudhra-page {
+        background: #f8f9fa;
+    }
+    
+    /* Hero Section with Image Background */
+    .emudhra-hero-section {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.95) 0%, rgba(118, 75, 162, 0.95) 100%), url('/media/tally/11068.jpg');
+        background-size: cover;
+        background-position: center;
+        padding-top: 180px;
+        padding-bottom: 100px;
+        color: white;
+        position: relative;
+        overflow: hidden;
+        margin-top: 0;
+    }
+    
+    .emudhra-hero-section::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: radial-gradient(circle at 30% 50%, rgba(102, 126, 234, 0.3) 0%, transparent 50%);
+        z-index: 1;
+    }
+    
+    .emudhra-hero-content {
+        position: relative;
+        z-index: 2;
+    }
+    
+    .emudhra-hero-image {
+        position: relative;
+        z-index: 2;
+    }
+    
+    .emudhra-hero-image img {
+        filter: drop-shadow(0 20px 40px rgba(0,0,0,0.3));
+        animation: float 3s ease-in-out infinite;
+    }
+    
+    @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-20px); }
+    }
+    
+    /* Feature Grid with Images */
+    .emudhra-feature-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+        margin-top: 3rem;
+    }
+    
+    .emudhra-feature-item {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        text-align: center;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+        border-top: 4px solid transparent;
+        height: 100%;
+    }
+    
+    .emudhra-feature-item:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 50px rgba(102, 126, 234, 0.2);
+        border-top-color: #667eea;
+    }
+    
+    .emudhra-feature-item img {
+        transition: transform 0.3s ease;
+    }
+    
+    .emudhra-feature-item:hover img {
+        transform: scale(1.05);
+    }
+    
+    /* Image Showcase Section */
+    .emudhra-showcase {
+        background: white;
+        padding: 100px 0;
+        position: relative;
+    }
+    
+    .emudhra-showcase::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100px;
+        background: linear-gradient(180deg, #f8f9fa 0%, white 100%);
+    }
+    
+    .emudhra-image-card {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 24px;
+        padding: 3rem;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+        text-align: center;
+        transition: transform 0.3s ease;
+    }
+    
+    .emudhra-image-card:hover {
+        transform: scale(1.05);
+    }
+    
+    .emudhra-image-card img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 16px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+    }
+    
+    /* Info Section with Side Image */
+    .emudhra-info-section {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 100px 0;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .emudhra-info-section::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -10%;
+        width: 500px;
+        height: 500px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 50%;
+    }
+    
+    .emudhra-info-content {
+        position: relative;
+        z-index: 2;
+    }
+    
+    .emudhra-info-image-wrapper {
+        position: relative;
+        z-index: 2;
+    }
+    
+    .emudhra-info-image-wrapper img {
+        border-radius: 20px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        background: white;
+        padding: 20px;
+    }
+    
+    /* Uses List Section */
+    .emudhra-uses-section {
+        background: #f8f9fa;
+        padding: 100px 0;
+    }
+    
+    .emudhra-use-card {
+        background: white;
+        border-radius: 16px;
+        padding: 2rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        transition: all 0.3s ease;
+        border-left: 4px solid #667eea;
+    }
+    
+    .emudhra-use-card:hover {
+        transform: translateX(10px);
+        box-shadow: 0 8px 30px rgba(102, 126, 234, 0.2);
+    }
+    
+    .emudhra-use-card i {
+        color: #667eea;
+        font-size: 1.5rem;
+        margin-right: 1rem;
+    }
+    
+    /* CTA Section */
+    .emudhra-cta-section {
+        background: linear-gradient(135deg, #1e3a8a 0%, #4c1d95 100%);
+        color: white;
+        padding: 100px 0;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .emudhra-cta-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('/media/tally/11068.jpg') center/cover;
+        opacity: 0.1;
+        z-index: 1;
+    }
+    
+    .emudhra-cta-content {
+        position: relative;
+        z-index: 2;
+    }
+    
+    .emudhra-cta-button {
+        background: white;
+        color: #667eea;
+        padding: 18px 50px;
+        border-radius: 50px;
+        font-weight: 700;
+        font-size: 1.2rem;
+        border: none;
+        box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        transition: all 0.3s ease;
+        display: inline-block;
+        text-decoration: none;
+    }
+    
+    .emudhra-cta-button:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+        color: #667eea;
+    }
+    
+    /* Stats Section */
+    .emudhra-stats-section {
+        background: white;
+        padding: 80px 0;
+    }
+    
+    .emudhra-stat-box {
+        text-align: center;
+        padding: 2rem;
+    }
+    
+    .emudhra-stat-number {
+        font-size: 3.5rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        display: block;
+        margin-bottom: 0.5rem;
+    }
+    
+    .emudhra-stat-label {
+        color: #6b7280;
+        font-size: 1.1rem;
+        font-weight: 600;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .emudhra-hero-section {
+            padding: 150px 0 80px;
+        }
+        
+        .emudhra-feature-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .emudhra-showcase,
+        .emudhra-info-section,
+        .emudhra-uses-section,
+        .emudhra-cta-section {
+            padding: 60px 0;
+        }
+    }
+</style>
+
+<!-- Hero Section with Image -->
+<section class="emudhra-hero-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6 emudhra-hero-content" data-aos="fade-right">
+                <h1 class="display-2 fw-bold mb-4" style="text-shadow: 2px 2px 8px rgba(0,0,0,0.3);">
+                    Buy Digital Signature Certificate in 3 clicks. 100% paperless.
+                </h1>
+                <p class="lead mb-5" style="font-size: 1.4rem; line-height: 1.8;">
+                    Used for GST, MCA, Income Tax, Tender submissions, EPFO filings, and more
+                </p>
+                <a href="https://fusiontec.com/digital_signature/" class="emudhra-cta-button">
+                    <i class="bi bi-arrow-right-circle me-2"></i>Buy Now
+                </a>
+            </div>
+            <div class="col-lg-6 emudhra-hero-image text-center" data-aos="fade-left">
+                <img src="{% static 'products/img/e-mudhra.jpg' %}" alt="eMudhra Digital Signature" class="img-fluid rounded-4 shadow-lg" style="max-height: 500px; width: 100%; object-fit: contain; background: rgba(255,255,255,0.1); padding: 20px;" onerror="this.onerror=null; this.src='/media/products/2.e-mudhra.jpg'; this.style.background='rgba(255,255,255,0.1)'; this.style.padding='20px';">
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Key Features Section -->
+<section class="emudhra-showcase">
+    <div class="container">
+        <div class="text-center mb-5" data-aos="fade-up">
+            <span class="badge bg-primary mb-3 px-4 py-2" style="font-size: 1rem; font-weight: 600; letter-spacing: 1px;">WHY CHOOSE eMUDHRA</span>
+            <h2 class="display-4 fw-bold mb-4" style="color: #1e3a8a;">Trusted by Millions</h2>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="100">
+                <div class="emudhra-feature-item">
+                    <div class="mb-3">
+                        <img src="/media/tally/2527.jpg" alt="Government Licensed" class="img-fluid rounded-3" style="width: 100%; height: 200px; object-fit: cover;">
+                    </div>
+                    <h5 class="fw-bold mb-3" style="color: #1e3a8a;">Government Licensed</h5>
+                    <p class="text-muted mb-0">Certifying authority since 2008</p>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="200">
+                <div class="emudhra-feature-item">
+                    <div class="mb-3">
+                        <img src="/media/tally/11068.jpg" alt="100 Million+ Certificates" class="img-fluid rounded-3" style="width: 100%; height: 200px; object-fit: cover;">
+                    </div>
+                    <h5 class="fw-bold mb-3" style="color: #1e3a8a;">100 Million+ Certificates</h5>
+                    <p class="text-muted mb-0">Issued under 30 minutes</p>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="300">
+                <div class="emudhra-feature-item">
+                    <div class="mb-3">
+                        <img src="/media/tally/11116.jpg" alt="24/7 Live Support" class="img-fluid rounded-3" style="width: 100%; height: 200px; object-fit: cover;">
+                    </div>
+                    <h5 class="fw-bold mb-3" style="color: #1e3a8a;">24/7 Live Support</h5>
+                    <p class="text-muted mb-0">Less than 5 mins response time</p>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="400">
+                <div class="emudhra-feature-item">
+                    <div class="mb-3">
+                        <img src="/media/tally/20943781.jpg" alt="2048 Bit Encryption" class="img-fluid rounded-3" style="width: 100%; height: 200px; object-fit: cover;">
+                    </div>
+                    <h5 class="fw-bold mb-3" style="color: #1e3a8a;">2048 Bit Encryption</h5>
+                    <p class="text-muted mb-0">In line with global standards</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Stats Section -->
+<section class="emudhra-stats-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-4 emudhra-stat-box" data-aos="fade-up" data-aos-delay="100">
+                <span class="emudhra-stat-number">100M+</span>
+                <span class="emudhra-stat-label">Certificates Issued</span>
+            </div>
+            <div class="col-md-4 emudhra-stat-box" data-aos="fade-up" data-aos-delay="200">
+                <span class="emudhra-stat-number">30min</span>
+                <span class="emudhra-stat-label">Average Processing Time</span>
+            </div>
+            <div class="col-md-4 emudhra-stat-box" data-aos="fade-up" data-aos-delay="300">
+                <span class="emudhra-stat-number">24/7</span>
+                <span class="emudhra-stat-label">Customer Support</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- What is Class 3 DSC Section with Image -->
+<section class="emudhra-info-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6 emudhra-info-content" data-aos="fade-right">
+                <span class="badge bg-white text-primary mb-3 px-4 py-2" style="font-size: 0.9rem; font-weight: 600;">CLASS 3 DSC</span>
+                <h2 class="display-4 fw-bold mb-4">What is Class 3 Digital Signature Certificate?</h2>
+                <p class="lead mb-4" style="line-height: 1.8; opacity: 0.95;">
+                    eMudhra offers Paper-less steps to issue Class-3 Digital Signature for individuals and organizations. The DSC is available with validity period of 1 year, 2 years, or 3 years.
+                </p>
+                <p class="mb-4" style="line-height: 1.8; opacity: 0.9;">
+                    Class 3 DSC is now mandated to be used for all types of transactions in India. Our experts are available 24x7 to help you seamlessly adopt Class 3 Digital Signature Certificate.
+                </p>
+                <div class="mb-4">
+                    <h5 class="fw-bold mb-3">Unlimited Re-issuance</h5>
+                    <p style="opacity: 0.9;">Get unlimited re-issuance of your Digital Signature Certificate without any hassle.</p>
+                </div>
+                <a href="https://emudhradigital.com/allproducts" target="_blank" rel="noopener noreferrer" class="btn btn-light btn-lg">
+                    <i class="bi bi-box-arrow-up-right me-2"></i>View All Products
+                </a>
+            </div>
+            <div class="col-lg-6 emudhra-info-image-wrapper" data-aos="fade-left">
+                <div class="position-relative">
+                    <img src="{% static 'products/img/e-mudhra.jpg' %}" alt="eMudhra Digital Signature Certificate" class="img-fluid rounded-4 shadow-lg" style="width: 100%; max-height: 400px; object-fit: contain; background: white; padding: 20px;" onerror="this.onerror=null; this.src='/media/products/2.e-mudhra.jpg'; this.style.background='white'; this.style.padding='20px';">
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- DSC Uses Section -->
+<section class="emudhra-uses-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-10 mx-auto">
+                <div class="text-center mb-5" data-aos="fade-up">
+                    <span class="badge bg-primary mb-3 px-4 py-2" style="font-size: 1rem; font-weight: 600;">USES</span>
+                    <h2 class="display-4 fw-bold mb-4" style="color: #1e3a8a;">Class 3 DSC can be used for:</h2>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6" data-aos="fade-up" data-aos-delay="100">
+                        <div class="emudhra-use-card">
+                            <i class="bi bi-check-circle-fill"></i>
+                            <strong>MCA e-filing, Income Tax e-filing</strong>
+                        </div>
+                    </div>
+                    <div class="col-md-6" data-aos="fade-up" data-aos-delay="200">
+                        <div class="emudhra-use-card">
+                            <i class="bi bi-check-circle-fill"></i>
+                            <strong>e-Tendering, e-Procurement</strong>
+                        </div>
+                    </div>
+                    <div class="col-md-6" data-aos="fade-up" data-aos-delay="300">
+                        <div class="emudhra-use-card">
+                            <i class="bi bi-check-circle-fill"></i>
+                            <strong>LLP Registration, GST Application</strong>
+                        </div>
+                    </div>
+                    <div class="col-md-6" data-aos="fade-up" data-aos-delay="400">
+                        <div class="emudhra-use-card">
+                            <i class="bi bi-check-circle-fill"></i>
+                            <strong>e-Biding, ICEGATE, Foreign Trade</strong>
+                        </div>
+                    </div>
+                    <div class="col-md-6" data-aos="fade-up" data-aos-delay="500">
+                        <div class="emudhra-use-card">
+                            <i class="bi bi-check-circle-fill"></i>
+                            <strong>IE Code Registration, Form 16</strong>
+                        </div>
+                    </div>
+                    <div class="col-md-6" data-aos="fade-up" data-aos-delay="600">
+                        <div class="emudhra-use-card">
+                            <i class="bi bi-check-circle-fill"></i>
+                            <strong>Patent and Trademark e-filing</strong>
+                        </div>
+                    </div>
+                    <div class="col-md-6" data-aos="fade-up" data-aos-delay="700">
+                        <div class="emudhra-use-card">
+                            <i class="bi bi-check-circle-fill"></i>
+                            <strong>CBSE School, Director's KYC, etc</strong>
+                        </div>
+                    </div>
+                    <div class="col-md-6" data-aos="fade-up" data-aos-delay="800">
+                        <div class="emudhra-use-card">
+                            <i class="bi bi-check-circle-fill"></i>
+                            <strong>Customs e-filing, e-Auction, etc</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Image Showcase Section -->
+<section class="emudhra-showcase" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);">
+    <div class="container">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-6" data-aos="fade-right">
+                <div class="pe-lg-4">
+                    <span class="badge bg-primary mb-3 px-3 py-2" style="font-size: 0.9rem;">DIGITAL SIGNATURE</span>
+                    <h2 class="display-4 fw-bold mb-4" style="color: #1e3a8a;">eMudhra Digital Signature Certificate</h2>
+                    <p class="lead mb-4" style="color: #4b5563; line-height: 1.8;">
+                        Trusted by millions of users across India for secure digital transactions. Get your Class 3 DSC in just 3 clicks with 100% paperless process.
+                    </p>
+                    <p class="mb-0" style="color: #6b7280; line-height: 1.8;">
+                        Our experts are available 24x7 to help you seamlessly adopt Class 3 Digital Signature Certificate for all your business needs.
+                    </p>
+                </div>
+            </div>
+            <div class="col-lg-6" data-aos="fade-left">
+                <div class="position-relative">
+                    <img src="{% static 'products/img/e-mudhra.jpg' %}" alt="eMudhra DSC" class="img-fluid rounded-4 shadow-lg" style="width: 100%; max-height: 400px; object-fit: contain; background: white; padding: 20px;" onerror="this.onerror=null; this.src='/media/products/2.e-mudhra.jpg'; this.style.background='white'; this.style.padding='20px';">
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="emudhra-cta-section">
+    <div class="container">
+        <div class="emudhra-cta-content">
+            <h2 class="display-3 fw-bold mb-4" style="text-shadow: 2px 2px 8px rgba(0,0,0,0.3);">Ready to Get Your Digital Signature Certificate?</h2>
+            <p class="lead mb-5" style="font-size: 1.3rem; opacity: 0.95;">
+                Buy your Class 3 Digital Signature Certificate in just 3 clicks. 100% paperless process with 24/7 support.
+            </p>
+            <div class="d-flex gap-3 justify-content-center flex-wrap">
+                <a href="https://fusiontec.com/digital_signature/" class="emudhra-cta-button">
+                    <i class="bi bi-cart-check me-2"></i>Buy Digital Signature
+                </a>
+                <a href="https://emudhradigital.com/allproducts" target="_blank" rel="noopener noreferrer" class="btn btn-outline-light btn-lg" style="border-radius: 50px; padding: 18px 50px; font-weight: 600;">
+                    <i class="bi bi-box-arrow-up-right me-2"></i>View All Products
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    // Initialize AOS
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof AOS !== 'undefined') {
+            AOS.init({
+                duration: 800,
+                once: true,
+                offset: 100,
+                easing: 'ease-in-out'
+            });
+        }
+    });
+</script>
+
+{% endblock %}

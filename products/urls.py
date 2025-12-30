@@ -17,6 +17,7 @@ urlpatterns = [
     path('tally-prime-aws/', views.tally_prime_aws_page, name='tally_prime_aws'),
     path('tally-software-service/', views.tally_software_service_page, name='tally_software_service'),
     path('tally-prime-4/', views.tally_prime_4_page, name='tally_prime_4'),
+    path('emudhra-digital-signature/', views.emudhra_digital_signature_page, name='emudhra_digital_signature'),
     path('contact/', views.contact_page, name='contact'),
     path('digital-signature/', views.dsc_page, name='dsc'),
     path('net_banking/', views.net_banking_page, name='net_banking'),
