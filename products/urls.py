@@ -20,6 +20,7 @@ urlpatterns = [
     path('contact/', views.contact_page, name='contact'),
     path('digital-signature/', views.dsc_page, name='dsc'),
     path('net_banking/', views.net_banking_page, name='net_banking'),
+    path('privacy-policy/', views.privacy_policy, name='privacy_policy'),
     path('catalog/', views.product_catalog, name='product_catalog'),
     path('product/<int:product_id>/', views.product_detail, name='product_detail'),
     path('product-type/<int:type_id>/', views.product_type_products, name='product_type_products'),

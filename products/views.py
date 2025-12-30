@@ -876,6 +876,10 @@ def net_banking_page(request):
     context = _get_index_context('net_banking')
     return render(request, 'products/index.html', context)
 
+def privacy_policy(request):
+    """Privacy Policy page"""
+    return render(request, 'products/privacy_policy.html')
+
 def tally_prime_page(request):
     """Tally Prime product page"""
     return render(request, 'products/tally_prime.html')

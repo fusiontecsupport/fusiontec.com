@@ -2,21 +2,26 @@
 
 {% load static %}
 
-{% block title %}Tally Prime - Your Growth Partner | FusionTec{% endblock %}
+{% block title %}Get Tally Prime - Authorized Partner in Chennai | Sales, Licensing & Support | FusionTec{% endblock %}
 
 {% block content %}
 
 <!-- Hero Section with Background Image -->
-<section class="hero-section" style="background: linear-gradient(135deg, rgba(248, 249, 250, 0.95) 0%, rgba(233, 236, 239, 0.95) 100%), url('/media/tally/11068.jpg'); background-size: cover; background-position: center; padding: 120px 0 100px; position: relative; overflow: hidden;">
+<section class="hero-section" style="background: linear-gradient(135deg, rgba(248, 249, 250, 0.95) 0%, rgba(233, 236, 239, 0.95) 100%), url('/media/tally/11068.jpg'); background-size: cover; background-position: center; padding-top: 180px; padding-bottom: 100px; position: relative; overflow: hidden; margin-top: 0;">
     <div class="container" style="position: relative; z-index: 2;">
-        <div class="row align-items-center min-vh-75">
+        <div class="row align-items-center">
             <div class="col-lg-6" data-aos="fade-right">
                 <div class="hero-content">
                     <div class="mb-4">
-                        <img src="/media/products/types/Tally_-_Logo.png" alt="Tally Prime" class="img-fluid" style="max-height: 120px;" onerror="this.style.display='none';">
+                        <img src="/media/products/types/Tally_-_Logo.png" alt="Tally Prime" class="img-fluid" style="max-height: 100px; width: auto;" onerror="this.style.display='none';">
                     </div>
-                    <h1 class="display-2 fw-bold mb-4" style="color: #1e3a8a;">Tally Prime</h1>
-                    <h2 class="h3 fw-light mb-4" style="color: #4b5563;">Your Growth Partner</h2>
+                    <div class="mb-3">
+                        <span class="badge bg-success px-3 py-2" style="font-size: 0.85rem; font-weight: 600; letter-spacing: 0.5px;">
+                            <i class="bi bi-shield-check me-1"></i>Authorized Tally Partner
+                        </span>
+                    </div>
+                    <h1 class="hero-main-title fw-bold mb-3" style="color: #1e3a8a; line-height: 1.2;">Get Tally Prime – Authorized Partner in Chennai</h1>
+                    <h2 class="hero-subtitle fw-normal mb-4" style="color: #4b5563; line-height: 1.4;">Authorized Tally Prime Sales, Licensing, Implementation & Support</h2>
                     <p class="lead mb-4" style="font-size: 1.25rem; line-height: 1.8; color: #4b5563;">
                         To grow your business, and to make the right business decisions, you need the right insights. With features like "Go To" and "customisable reports" in the new TallyPrime, you can discover and look at reports, slicing and dicing them the way you want.
                     </p>
@@ -239,12 +244,17 @@
             <div class="col-lg-8 mx-auto text-center">
                 <h2 class="display-4 fw-bold mb-4" style="color: #1e3a8a;">Ready to Grow Your Business?</h2>
                 <p class="lead mb-5" style="color: #4b5563;">Get started with Tally Prime today and experience the difference</p>
-                <div class="d-flex gap-3 justify-content-center flex-wrap">
+                <div class="d-flex gap-3 justify-content-center flex-wrap mb-4">
                     <button onclick="showEnquiryForm()" class="btn btn-primary btn-lg px-5 py-3 fw-semibold shadow-lg">
                         <i class="bi bi-envelope me-2"></i>Get a Free Quote
                     </button>
                     <a href="{% url 'home' %}#products" class="btn btn-outline-primary btn-lg px-5 py-3 fw-semibold">
                         <i class="bi bi-grid me-2"></i>View All Products
+                    </a>
+                </div>
+                <div class="privacy-link mt-4">
+                    <a href="{% url 'privacy_policy' %}" style="color: #6b7280; text-decoration: none; font-size: 0.9rem;">
+                        <i class="bi bi-shield-check me-1"></i>Privacy Policy
                     </a>
                 </div>
             </div>
@@ -255,17 +265,87 @@
 <style>
     /* Hero Section */
     .hero-section {
-        min-height: 90vh;
+        min-height: 85vh;
         display: flex;
         align-items: center;
+        margin-top: 0;
+    }
+    
+    /* Hero Title Optimization */
+    .hero-main-title {
+        font-size: 2.75rem;
+        font-weight: 700;
+        line-height: 1.2;
+        margin-bottom: 1rem;
+    }
+    
+    .hero-subtitle {
+        font-size: 1.25rem;
+        font-weight: 400;
+        line-height: 1.5;
+        color: #4b5563;
     }
     
     /* Fix background-attachment on mobile */
+    @media (max-width: 991px) {
+        .hero-section {
+            padding-top: 160px !important;
+            padding-bottom: 80px !important;
+        }
+        
+        .hero-main-title {
+            font-size: 2rem;
+            line-height: 1.3;
+        }
+        
+        .hero-subtitle {
+            font-size: 1.1rem;
+        }
+    }
+    
     @media (max-width: 768px) {
         .hero-section {
             background-attachment: scroll !important;
-            padding: 80px 0 60px !important;
+            padding-top: 140px !important;
+            padding-bottom: 60px !important;
             min-height: auto !important;
+        }
+        
+        .hero-main-title {
+            font-size: 1.75rem;
+            line-height: 1.3;
+            margin-bottom: 0.75rem;
+        }
+        
+        .hero-subtitle {
+            font-size: 1rem;
+            line-height: 1.4;
+            margin-bottom: 1.5rem;
+        }
+        
+        .hero-content img {
+            max-height: 80px !important;
+            margin-bottom: 1rem !important;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .hero-section {
+            padding-top: 120px !important;
+            padding-bottom: 50px !important;
+        }
+        
+        .hero-main-title {
+            font-size: 1.5rem;
+            line-height: 1.3;
+        }
+        
+        .hero-subtitle {
+            font-size: 0.95rem;
+        }
+        
+        .hero-content img {
+            max-height: 60px !important;
         }
     }
     
@@ -422,6 +502,17 @@
             font-size: 0.95rem !important;
             line-height: 1.6 !important;
         }
+        
+        /* Hero title override for mobile */
+        .hero-main-title {
+            font-size: 1.75rem !important;
+            line-height: 1.3 !important;
+        }
+        
+        .hero-subtitle {
+            font-size: 1rem !important;
+            line-height: 1.4 !important;
+        }
     }
     
     @media (max-width: 576px) {
@@ -451,6 +542,17 @@
         
         p {
             font-size: 0.9rem !important;
+        }
+        
+        /* Hero title override for small mobile */
+        .hero-main-title {
+            font-size: 1.5rem !important;
+            line-height: 1.3 !important;
+        }
+        
+        .hero-subtitle {
+            font-size: 0.95rem !important;
+            line-height: 1.4 !important;
         }
     }
     
