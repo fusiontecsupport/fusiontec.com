@@ -237,6 +237,178 @@
     </div>
 </section>
 
+<!-- Quick Enquiry Section -->
+<section class="py-5" style="background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);">
+    <div class="container py-5">
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <div class="text-center text-white mb-5" data-aos="fade-up">
+                    <h2 class="display-4 fw-bold mb-3">Quick Enquiry</h2>
+                    <p class="lead mb-0">Get in touch with us for Tally Prime pricing, licensing, and support</p>
+                </div>
+                <div class="card shadow-lg rounded-4 border-0" data-aos="fade-up" data-aos-delay="100">
+                    <div class="card-body p-4 p-lg-5">
+                        <form method="POST" action="{% url 'footer_contact_form' %}" enctype="multipart/form-data" class="quick-enquiry-form">
+                            {% csrf_token %}
+                            <input type="hidden" name="subject" value="Tally Prime 7.0 - Quick Enquiry">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label fw-semibold">Name <span class="text-danger">*</span></label>
+                                        <input type="text" name="name" class="form-control form-control-lg" placeholder="Your Name" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label fw-semibold">Phone <span class="text-danger">*</span></label>
+                                        <input type="tel" name="phone" class="form-control form-control-lg" placeholder="Mobile Number" pattern="[0-9]{10}" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <label class="form-label fw-semibold">Email <span class="text-danger">*</span></label>
+                                        <input type="email" name="email" class="form-control form-control-lg" placeholder="Your Email" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <label class="form-label fw-semibold">Message <span class="text-danger">*</span></label>
+                                        <textarea name="message" class="form-control" rows="4" placeholder="Tell us about your requirements..." required></textarea>
+                                    </div>
+                                </div>
+                                <div class="col-md-12">
+                                    <button type="submit" class="btn btn-primary btn-lg w-100 py-3 fw-semibold">
+                                        <i class="bi bi-send-fill me-2"></i>Send Enquiry
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Testimonials / Client Logos Section -->
+<section class="testimonials-section py-5" style="background: #ffffff;">
+    <div class="container px-5">
+        <div class="text-center mb-5" data-aos="fade-up">
+            <h2 class="fw-bold mb-0" style="color: #1e293b; font-size: 2rem;">Trusted by businesses across industries</h2>
+        </div>
+        
+        <div class="client-logos-scroll-wrapper" data-aos="fade-up" data-aos-delay="100">
+            <div class="client-logos-scroll">
+                <!-- First set of logos -->
+                <div class="client-logo-item">
+                    <img src="/media/clients/Jains_car_shopping.png" alt="Jains Car Shoppe" class="client-logo">
+                </div>
+                <div class="client-logo-item">
+                    <img src="/media/clients/KAS.png" alt="KAS India" class="client-logo">
+                </div>
+                <div class="client-logo-item">
+                    <img src="/media/clients/KGK.png" alt="KGK JET India" class="client-logo">
+                </div>
+                <div class="client-logo-item">
+                    <img src="/media/clients/MVD.png" alt="MVD Scholarship" class="client-logo">
+                </div>
+                <div class="client-logo-item">
+                    <img src="/media/clients/prr_travels.jpg" alt="PRR Travels" class="client-logo">
+                </div>
+                <div class="client-logo-item">
+                    <img src="/media/clients/SBBS-saibaba.png" alt="Sai Baba Business Machines" class="client-logo">
+                </div>
+                <div class="client-logo-item">
+                    <img src="/media/clients/shefa_agri.jpeg" alt="Shefa Agricare Technologies" class="client-logo">
+                </div>
+                <div class="client-logo-item">
+                    <img src="/media/clients/st.thomas_cantonment.webp" alt="St. Thomas Cantonment" class="client-logo">
+                </div>
+                <div class="client-logo-item">
+                    <img src="/media/clients/adyar_time.jpeg" alt="Adyar Time" class="client-logo">
+                </div>
+                <div class="client-logo-item">
+                    <img src="/media/clients/DMC_leisure.jpeg" alt="DMC Leisure" class="client-logo">
+                </div>
+                <div class="client-logo-item">
+                    <img src="/media/clients/entex.png" alt="Entex" class="client-logo">
+                </div>
+                <div class="client-logo-item">
+                    <img src="/media/clients/ferozpur_cantonment.jpeg" alt="Ferozpur Cantonment" class="client-logo">
+                </div>
+                <div class="client-logo-item">
+                    <img src="/media/clients/ICBC.png" alt="ICBC" class="client-logo">
+                </div>
+                <div class="client-logo-item">
+                    <img src="/media/clients/sanco.jpg" alt="Sanco" class="client-logo">
+                </div>
+                <div class="client-logo-item">
+                    <img src="/media/clients/SIPL.jpg" alt="SIPL" class="client-logo">
+                </div>
+                <div class="client-logo-item">
+                    <img src="/media/clients/trend_work.jpeg" alt="Trend Work" class="client-logo">
+                </div>
+                <div class="client-logo-item">
+                    <img src="/media/clients/VBJ.jpeg" alt="VBJ" class="client-logo">
+                </div>
+                
+                <!-- Duplicate set for seamless loop -->
+                <div class="client-logo-item">
+                    <img src="/media/clients/Jains_car_shopping.png" alt="Jains Car Shoppe" class="client-logo">
+                </div>
+                <div class="client-logo-item">
+                    <img src="/media/clients/KAS.png" alt="KAS India" class="client-logo">
+                </div>
+                <div class="client-logo-item">
+                    <img src="/media/clients/KGK.png" alt="KGK JET India" class="client-logo">
+                </div>
+                <div class="client-logo-item">
+                    <img src="/media/clients/MVD.png" alt="MVD Scholarship" class="client-logo">
+                </div>
+                <div class="client-logo-item">
+                    <img src="/media/clients/prr_travels.jpg" alt="PRR Travels" class="client-logo">
+                </div>
+                <div class="client-logo-item">
+                    <img src="/media/clients/SBBS-saibaba.png" alt="Sai Baba Business Machines" class="client-logo">
+                </div>
+                <div class="client-logo-item">
+                    <img src="/media/clients/shefa_agri.jpeg" alt="Shefa Agricare Technologies" class="client-logo">
+                </div>
+                <div class="client-logo-item">
+                    <img src="/media/clients/st.thomas_cantonment.webp" alt="St. Thomas Cantonment" class="client-logo">
+                </div>
+                <div class="client-logo-item">
+                    <img src="/media/clients/adyar_time.jpeg" alt="Adyar Time" class="client-logo">
+                </div>
+                <div class="client-logo-item">
+                    <img src="/media/clients/DMC_leisure.jpeg" alt="DMC Leisure" class="client-logo">
+                </div>
+                <div class="client-logo-item">
+                    <img src="/media/clients/entex.png" alt="Entex" class="client-logo">
+                </div>
+                <div class="client-logo-item">
+                    <img src="/media/clients/ferozpur_cantonment.jpeg" alt="Ferozpur Cantonment" class="client-logo">
+                </div>
+                <div class="client-logo-item">
+                    <img src="/media/clients/ICBC.png" alt="ICBC" class="client-logo">
+                </div>
+                <div class="client-logo-item">
+                    <img src="/media/clients/sanco.jpg" alt="Sanco" class="client-logo">
+                </div>
+                <div class="client-logo-item">
+                    <img src="/media/clients/SIPL.jpg" alt="SIPL" class="client-logo">
+                </div>
+                <div class="client-logo-item">
+                    <img src="/media/clients/trend_work.jpeg" alt="Trend Work" class="client-logo">
+                </div>
+                <div class="client-logo-item">
+                    <img src="/media/clients/VBJ.jpeg" alt="VBJ" class="client-logo">
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
 <!-- CTA Section -->
 <section class="py-5" style="background: #e9ecef;">
     <div class="container py-5">
@@ -636,6 +808,157 @@
         .container {
             padding-left: 12px;
             padding-right: 12px;
+        }
+    }
+    
+    /* Testimonials / Client Logos Section Styles */
+    .testimonials-section {
+        position: relative;
+        overflow: hidden;
+        background: #ffffff;
+    }
+    
+    .client-logos-scroll-wrapper {
+        position: relative;
+        overflow: hidden;
+        padding: 2rem 0;
+        mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+        -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+    }
+    
+    .client-logos-scroll {
+        display: flex;
+        align-items: center;
+        gap: 3rem;
+        animation: scroll-logos 40s linear infinite;
+        width: fit-content;
+    }
+    
+    .client-logo-item {
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem 2rem;
+        height: 100px;
+        transition: all 0.3s ease;
+    }
+    
+    .client-logo {
+        max-width: 150px;
+        max-height: 80px;
+        width: auto;
+        height: auto;
+        object-fit: contain;
+        filter: grayscale(100%);
+        transition: all 0.4s ease;
+        opacity: 0.8;
+    }
+    
+    /* Color on hover */
+    .client-logo-item:hover .client-logo {
+        filter: grayscale(0%);
+        opacity: 1;
+        transform: scale(1.1);
+    }
+    
+    .client-logo-item:hover {
+        transform: translateY(-3px);
+    }
+    
+    /* Continuous scroll animation */
+    @keyframes scroll-logos {
+        0% {
+            transform: translateX(0);
+        }
+        100% {
+            transform: translateX(-50%);
+        }
+    }
+    
+    /* Quick Enquiry Form Styles */
+    .quick-enquiry-form .form-control {
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 12px 16px;
+        transition: all 0.3s ease;
+    }
+    
+    .quick-enquiry-form .form-control:focus {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+    
+    .quick-enquiry-form .form-label {
+        color: #374151;
+        margin-bottom: 8px;
+    }
+    
+    /* Responsive Design for Testimonials */
+    @media (max-width: 991px) {
+        .client-logos-scroll {
+            gap: 2rem;
+            animation-duration: 35s;
+        }
+        
+        .client-logo-item {
+            height: 90px;
+            padding: 0.75rem 1.5rem;
+        }
+        
+        .client-logo {
+            max-width: 120px;
+            max-height: 70px;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .testimonials-section {
+            padding: 3rem 0 !important;
+        }
+        
+        .testimonials-section h2 {
+            font-size: 1.5rem !important;
+        }
+        
+        .client-logos-scroll-wrapper {
+            padding: 1.5rem 0;
+        }
+        
+        .client-logos-scroll {
+            gap: 1.5rem;
+            animation-duration: 30s;
+        }
+        
+        .client-logo-item {
+            height: 80px;
+            padding: 0.5rem 1rem;
+        }
+        
+        .client-logo {
+            max-width: 100px;
+            max-height: 60px;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .testimonials-section h2 {
+            font-size: 1.25rem !important;
+        }
+        
+        .client-logos-scroll {
+            gap: 1rem;
+            animation-duration: 25s;
+        }
+        
+        .client-logo-item {
+            height: 70px;
+            padding: 0.5rem 0.75rem;
+        }
+        
+        .client-logo {
+            max-width: 80px;
+            max-height: 50px;
         }
     }
 </style>
